@@ -67,4 +67,4 @@ Cuando crezca, crea `src/hooks/` para hooks con `useLiveQuery` (por ejemplo `use
 
 Esqueleto listo: las 4 pantallas existen pero están vacías (usan `<PantallaVacia />`). El esquema de Dexie v1 tiene `ejercicios`, `rutinas` y `sesiones`; todavía no se usa en ninguna pantalla.
 
-Pendiente: el ícono de la PWA es solo `icon.svg`. Para instalar bien en iOS y en algunos Android conviene generar PNG de 192 y 512 px (con el texto ZANFIT, sin logo) y agregarlos al manifest.
+Íconos de la PWA: `public/icon-192.png` y `public/icon-512.png` (texto ZANFIT en Space Grotesk 700, lima sobre `#0A0A0A`, dentro de la zona segura para `maskable`), más `icon.svg` como favicon. Se generaron renderizando el texto con Chrome headless a 512 px y reduciendo a 192 px con `sips`. Si cambia la marca, se regeneran de la misma forma.
