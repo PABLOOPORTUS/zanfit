@@ -4,10 +4,11 @@
 //    y 1.jpg). Los ejercicios sin las dos fotos no entran.
 //  - Necesita puppeteer-core, que no es dependencia del proyecto: `npm i --no-save puppeteer-core` antes de correrlo.
 //  - Junto a este script: mapa.json (nombre del catálogo base -> id) y traducciones.json (id -> { nombre, instrucciones }).
-//  - Convierte a WebP con canvas en Google Chrome.
+//  - Convierte a WebP con canvas en Google Chrome. Con --sin-fotos solo regenera los archivos .ts.
 import puppeteer from 'puppeteer-core'
 import fs from 'node:fs'
-const [dir, proyecto] = process.argv.slice(2)
+const [dir, proyecto] = process.argv.slice(2).filter((a) => !a.startsWith('--'))
+const sinFotos = process.argv.includes('--sin-fotos')
 const datos = JSON.parse(fs.readFileSync(`${dir}/exercises.json`, 'utf8'))
 const aqui = new URL('.', import.meta.url).pathname
 const mapa = JSON.parse(fs.readFileSync(`${aqui}/mapa.json`, 'utf8')) // nombre del catálogo base -> id
@@ -22,6 +23,7 @@ const EQUIPAMIENTO = { 'body only': 'peso-corporal', machine: 'maquina', other: 
 const CATEGORIA = { strength: 'fuerza', stretching: 'estiramiento', plyometrics: 'pliometria', strongman: 'strongman', powerlifting: 'powerlifting', cardio: 'cardio', 'olympic weightlifting': 'halterofilia' }
 const NIVEL = { beginner: 'principiante', intermediate: 'intermedio', expert: 'avanzado' }
 const MECANICA = { compound: 'compuesto', isolation: 'aislamiento' }
+const FUERZA = { push: 'empuje', pull: 'tiron', static: 'estatico' }
 const equipamientoDe = (e) => (e.equipment ? EQUIPAMIENTO[e.equipment] : 'ninguno')
 const equipoDe = (e, nombre) => {
   if (/smith/i.test(e.id) || /smith/i.test(nombre)) return 'smith'
@@ -45,6 +47,7 @@ for (const e of datos) {
 }
 
 // Fotos
+if (!sinFotos) {
 const salidaFotos = `${proyecto}/public/medios/fotos`
 fs.rmSync(salidaFotos, { recursive: true, force: true })
 fs.mkdirSync(salidaFotos, { recursive: true })
@@ -73,6 +76,8 @@ for (const [, e] of fichas) {
   fs.writeFileSync(`${salidaFotos}/${a}-mini.webp`, Buffer.from(await convertir(fin, 200, 0.7, true), 'base64'))
 }
 await browser.close()
+console.log('fotos', fs.readdirSync(salidaFotos).length)
+}
 
 // fichasEjercicios.ts
 const J = JSON.stringify
@@ -87,11 +92,12 @@ const lineaFicha = ([nombre, e]) => {
     `equipamiento: ${J(equipamientoDe(e))}`,
   ]
   if (e.mechanic) campos.push(`mecanica: ${J(MECANICA[e.mechanic])}`)
+  if (e.force) campos.push(`fuerza: ${J(FUERZA[e.force])}`)
   if (NOTAS[nombre]) campos.push(`nota: ${J(NOTAS[nombre])}`)
   return `  ${J(nombre)}: { ${campos.join(', ')} },`
 }
 fs.writeFileSync(`${proyecto}/src/db/fichasEjercicios.ts`, `// GENERADO desde free-exercise-db (ver CLAUDE.md, "Recursos gráficos"). No editar a mano.
-import type { Categoria, Equipamiento, Mecanica, Musculo, Nivel } from '../lib/musculos'
+import type { Categoria, Equipamiento, Fuerza, Mecanica, Musculo, Nivel } from '../lib/musculos'
 
 /**
  * Ficha de cada ejercicio del catálogo según free-exercise-db (github.com/yuhonas/free-exercise-db): fotos de inicio
@@ -109,6 +115,8 @@ export interface Ficha {
   categoria: Categoria
   equipamiento: Equipamiento
   mecanica?: Mecanica
+  /** Tipo de movimiento: empuje, tirón o estático (isométrico). */
+  fuerza?: Fuerza
   /** Aclaración cuando la foto muestra una variante (otro implemento o posición). */
   nota?: string
 }
@@ -131,4 +139,4 @@ export const EJERCICIOS_EXTRA: Omit<Exercise, 'id' | 'propio'>[] = [
 ${extra.map((x) => `  { nombre: ${J(x.nombre)}, grupoMuscular: ${J(x.grupoMuscular)}, equipo: ${J(x.equipo)}, instrucciones: ${J(x.instrucciones)} },`).join('\n')}
 ]
 `)
-console.log('fichas', fichas.length, 'extra', extra.length, 'fotos', fs.readdirSync(salidaFotos).length)
+console.log('fichas', fichas.length, 'extra', extra.length)
