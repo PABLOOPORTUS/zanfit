@@ -1,21 +1,57 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
-import Entrenar from './pages/Entrenar'
-import Rutinas from './pages/Rutinas'
-import Progreso from './pages/Progreso'
-import Ejercicios from './pages/Ejercicios'
+import ProveedorAjustes from './components/ProveedorAjustes'
+import ProveedorDescanso from './components/ProveedorDescanso'
+import Ajustes from './pages/ajustes/Ajustes'
+import Entrenar from './pages/entrenar/Entrenar'
+import ResumenEntreno from './pages/entrenar/ResumenEntreno'
+import ListaRutinas from './pages/rutinas/ListaRutinas'
+import DetalleRutina from './pages/rutinas/DetalleRutina'
+import NuevaRutina from './pages/rutinas/NuevaRutina'
+import EditarRutina from './pages/rutinas/EditarRutina'
+import Progreso from './pages/progreso/Progreso'
+import DetalleEntreno from './pages/progreso/DetalleEntreno'
+import ListaEjercicios from './pages/ejercicios/ListaEjercicios'
+import DetalleEjercicio from './pages/ejercicios/DetalleEjercicio'
+import NuevoEjercicio from './pages/ejercicios/NuevoEjercicio'
+import EditarEjercicio from './pages/ejercicios/EditarEjercicio'
+
+// Recharts pesa ~400 kB: se carga en un chunk aparte solo al abrir un gráfico (igual queda en el precache offline).
+const ProgresoEjercicio = lazy(() => import('./pages/progreso/ProgresoEjercicio'))
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Navigate to="/entrenar" replace />} />
-        <Route path="/entrenar" element={<Entrenar />} />
-        <Route path="/rutinas" element={<Rutinas />} />
-        <Route path="/progreso" element={<Progreso />} />
-        <Route path="/ejercicios" element={<Ejercicios />} />
-        <Route path="*" element={<Navigate to="/entrenar" replace />} />
-      </Route>
-    </Routes>
+    <ProveedorAjustes>
+      <ProveedorDescanso>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<Navigate to="/entrenar" replace />} />
+            <Route path="/entrenar" element={<Entrenar />} />
+            <Route path="/entrenar/resumen/:id" element={<ResumenEntreno />} />
+            <Route path="/rutinas" element={<ListaRutinas />} />
+            <Route path="/rutinas/nueva" element={<NuevaRutina />} />
+            <Route path="/rutinas/:id" element={<DetalleRutina />} />
+            <Route path="/rutinas/:id/editar" element={<EditarRutina />} />
+            <Route path="/progreso" element={<Progreso />} />
+            <Route path="/progreso/entrenos/:id" element={<DetalleEntreno />} />
+            <Route
+              path="/progreso/ejercicios/:id"
+              element={
+                <Suspense fallback={null}>
+                  <ProgresoEjercicio />
+                </Suspense>
+              }
+            />
+            <Route path="/ejercicios" element={<ListaEjercicios />} />
+            <Route path="/ejercicios/nuevo" element={<NuevoEjercicio />} />
+            <Route path="/ejercicios/:id" element={<DetalleEjercicio />} />
+            <Route path="/ejercicios/:id/editar" element={<EditarEjercicio />} />
+            <Route path="/ajustes" element={<Ajustes />} />
+            <Route path="*" element={<Navigate to="/entrenar" replace />} />
+          </Route>
+        </Routes>
+      </ProveedorDescanso>
+    </ProveedorAjustes>
   )
 }

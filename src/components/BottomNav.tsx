@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useEntrenoActivo } from '../hooks/useWorkouts'
 
 type Tab = { to: string; label: string; icon: ReactNode }
 
@@ -56,6 +57,7 @@ const tabs: Tab[] = [
 ]
 
 export default function BottomNav() {
+  const enCurso = Boolean(useEntrenoActivo())
   return (
     <nav className="pb-safe fixed inset-x-0 bottom-0 z-20 border-t border-borde bg-superficie">
       <ul className="mx-auto grid max-w-lg grid-cols-4">
@@ -69,7 +71,12 @@ export default function BottomNav() {
                 }`
               }
             >
-              {tab.icon}
+              <span className="relative">
+                {tab.icon}
+                {tab.to === '/entrenar' && enCurso && (
+                  <span className="absolute -top-0.5 -right-1.5 size-2.5 rounded-full bg-lima ring-2 ring-superficie" aria-label="Entreno en curso" />
+                )}
+              </span>
               {tab.label}
             </NavLink>
           </li>

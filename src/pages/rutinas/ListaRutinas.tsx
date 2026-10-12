@@ -1,0 +1,44 @@
+import { Link } from 'react-router-dom'
+import BotonFlotante from '../../components/BotonFlotante'
+import { useExercises } from '../../hooks/useExercises'
+import { useRoutines } from '../../hooks/useRoutines'
+
+export default function ListaRutinas() {
+  const rutinas = useRoutines()
+  const ejercicios = useExercises()
+  if (rutinas === undefined || ejercicios === undefined) return null
+  const nombres = new Map(ejercicios.map((e) => [e.id!, e.nombre]))
+
+  return (
+    <section className="pb-20">
+      <h1 className="font-marca text-3xl font-bold tracking-tight">Rutinas</h1>
+
+      {rutinas.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">
+          Todavía no tienes rutinas. Crea la primera con el botón de abajo.
+        </div>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-3">
+          {rutinas.map((r) => {
+            const series = r.ejercicios.reduce((total, e) => total + e.seriesObjetivo, 0)
+            return (
+              <li key={r.id}>
+                <Link to={`/rutinas/${r.id}`} className="block rounded-2xl border border-borde bg-superficie p-4 active:bg-borde">
+                  <p className="font-marca text-2xl leading-tight font-bold tracking-tight break-words">{r.nombre}</p>
+                  <p className="mt-1 text-sm text-texto-suave">
+                    {r.ejercicios.length} {r.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'} · {series} series
+                  </p>
+                  <p className="mt-2 line-clamp-2 text-texto-suave">
+                    {r.ejercicios.map((e) => nombres.get(e.exerciseId) ?? 'Ejercicio eliminado').join(' · ')}
+                  </p>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      <BotonFlotante to="/rutinas/nueva">Crear</BotonFlotante>
+    </section>
+  )
+}

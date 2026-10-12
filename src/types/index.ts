@@ -1,39 +1,69 @@
-export type GrupoMuscular =
-  | 'pecho'
-  | 'espalda'
-  | 'piernas'
-  | 'hombros'
-  | 'biceps'
-  | 'triceps'
-  | 'core'
-  | 'cardio'
+export type GrupoMuscular = 'pecho' | 'espalda' | 'piernas' | 'hombros' | 'biceps' | 'triceps' | 'core'
+
+export type Equipo =
+  | 'barra'
+  | 'mancuernas'
+  | 'maquina'
+  | 'polea'
+  | 'peso-corporal'
+  | 'kettlebell'
+  | 'banda'
   | 'otro'
 
-export interface Ejercicio {
+export interface Exercise {
   id?: number
   nombre: string
   grupoMuscular: GrupoMuscular
+  equipo: Equipo
+  instrucciones?: string
+  /** `true` si lo creó el usuario; los del catálogo inicial no se editan ni se eliminan. */
+  propio: boolean
+}
+
+export interface RoutineExercise {
+  exerciseId: number
+  seriesObjetivo: number
+  repsObjetivo: number
+  descansoSeg: number
+}
+
+export interface Routine {
+  id?: number
+  nombre: string
+  ejercicios: RoutineExercise[]
+}
+
+export interface Workout {
+  id?: number
+  /** Vacío si es un entrenamiento libre, sin rutina. */
+  routineId?: number
+  /** Copia del nombre de la rutina al iniciar ("Entreno libre" si no hay rutina); sobrevive si la rutina se borra. */
+  nombre: string
+  fechaInicio: number
+  /** Vacío mientras el entreno está en curso. */
+  fechaFin?: number
   notas?: string
 }
 
-export interface Rutina {
+/** Una serie registrada. Se llama WorkoutSet para no chocar con el `Set` de JavaScript. */
+export interface WorkoutSet {
   id?: number
-  nombre: string
-  ejercicioIds: number[]
-  creadaEn: number
-}
-
-export interface Serie {
-  ejercicioId: number
-  repeticiones: number
-  pesoKg: number
+  workoutId: number
+  exerciseId: number
+  numeroSerie: number
+  reps: number
+  /** En kg. */
+  peso: number
   completada: boolean
 }
 
-export interface Sesion {
-  id?: number
-  rutinaId?: number
-  inicio: number
-  fin?: number
-  series: Serie[]
+export type Unidad = 'kg' | 'lb'
+
+/** Una sola fila (`id: 'general'`) en la tabla `ajustes`. */
+export interface Ajustes {
+  id: 'general'
+  /** Solo cambia cómo se muestran e ingresan los pesos: en la base siempre se guardan en kg. */
+  unidad: Unidad
+  /** Descanso para ejercicios que no vienen de una rutina y para los que se agregan a una rutina. */
+  descansoPorDefectoSeg: number
 }
