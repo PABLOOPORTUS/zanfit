@@ -157,7 +157,6 @@ const CATALOGO: Record<string, MediosEjercicio> = {
   Abdominales: { musculos: m([6], [14]), ...ek('0291') },
   'Elevación de piernas colgado': { musculos: m([6], [14]) },
   'Rueda abdominal': { musculos: m([6], [14, 12]) },
-  'Pallof press': { musculos: m([14], [6]) },
   'Crunch en polea': { musculos: m([6], [14]), ...ek('0288') },
 }
 

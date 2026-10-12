@@ -120,6 +120,5 @@ export const CLASIFICACION: Record<string, Clasificacion> = {
   Abdominales: c('core', 1),
   'Elevación de piernas colgado': c('core', 3),
   'Rueda abdominal': c('core', 3, 'espalda'),
-  'Pallof press': c('core', 1),
   'Crunch en polea': c('core', 1),
 }

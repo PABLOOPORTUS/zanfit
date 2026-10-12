@@ -63,3 +63,35 @@
     animation: none;
   }
 }
+
+/* Portada del login: zoom lento de las fotos (efecto "Ken Burns") y cambio suave de frases. */
+@keyframes acercar {
+  from {
+    transform: scale(1.02) translate(0, 0);
+  }
+  to {
+    transform: scale(1.16) translate(-2%, -2%);
+  }
+}
+@utility animate-acercar {
+  animation: acercar 7s ease-out both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@keyframes subir-frase {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@utility animate-subir-frase {
+  animation: subir-frase 0.7s ease-out both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

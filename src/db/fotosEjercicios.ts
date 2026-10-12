@@ -1,5 +1,5 @@
 /**
- * Fotos reales de máquinas y ejercicios, de Wikimedia Commons, solo con licencias libres (CC0, dominio público, CC BY,
+ * Fotos reales de máquinas y ejercicios, de Wikimedia Commons y Flickr (vía Openverse), solo con licencias libres (CC0, dominio público, CC BY,
  * CC BY-SA). Las eligió una persona revisando cada candidata: la foto tiene que mostrar claramente la máquina o el
  * ejercicio. Archivos en public/medios/fotos (<archivo>.webp de 800 px y <archivo>-mini.webp de 240 px).
  * CC BY exige mostrar autor, licencia y enlace a la fuente: lo hace FotoMaquina y la pantalla Créditos.
@@ -8,8 +8,12 @@ export interface FotoEjercicio {
   archivo: string
   autor: string
   licencia: string
-  /** Página del archivo en Wikimedia Commons (fuente y licencia completa). */
+  /** Página de la foto en su sitio de origen (fuente y licencia completa). */
   pagina: string
+  /** Sitio de origen. Si falta, es Wikimedia Commons. */
+  fuente?: string
+  /** Aclaración cuando la foto muestra una variante del ejercicio (se muestra bajo la foto). */
+  nota?: string
 }
 
 const FOTOS_BASE: Record<string, FotoEjercicio> = {
@@ -40,6 +44,25 @@ const FOTOS_BASE: Record<string, FotoEjercicio> = {
   "Extensión de tríceps sobre la cabeza": { archivo: "extension-de-triceps-sobre-la-cabeza", autor: "U.S. Army photo by Sgt. Deziree Keay", licencia: "Public domain", pagina: "https://commons.wikimedia.org/wiki/File:Resistance_training_develops_functional_strength_(9834695).jpg" },
   "Fondos en banco": { archivo: "fondos-en-banco", autor: "U.S. Navy photo by Mass Communication Specialist 3rd Class Kenneth Abbate", licencia: "Public domain", pagina: "https://commons.wikimedia.org/wiki/File:US_Navy_090212-N-2475A-005_Machinist%27s_Mate_2nd_Class_John_Brechwald,_from_San_Jose,_Calif.,_performs_bench_dips_with_two_45_lb_weights.jpg" },
   "Curl predicador": { archivo: "curl-predicador", autor: "Aliva Sahoo", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Bicep_curl_machine.jpg" },
+  "Fondos en paralelas": { archivo: "fondos-en-paralelas", autor: "bodycoach2", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/21569074@N00/3060550012", fuente: "Flickr", nota: "En la foto: estación de fondos y dominadas." },
+  "Remo con mancuerna": { archivo: "remo-con-mancuerna", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/42257963480", fuente: "Flickr" },
+  "Hip thrust": { archivo: "hip-thrust", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/43844582332", fuente: "Flickr", nota: "En la foto: variante a una pierna con pesa rusa." },
+  "Elevaciones laterales": { archivo: "elevaciones-laterales", autor: "Tyler Read", licencia: "CC BY 2.0", pagina: "https://commons.wikimedia.org/w/index.php?curid=141589531", fuente: "Wikimedia Commons" },
+  "Face pull": { archivo: "face-pull", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/42013323680", fuente: "Flickr", nota: "En la foto: con banda elástica en vez de polea." },
+  "Curl martillo": { archivo: "curl-martillo", autor: "Dominic Eltjes", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/93889371@N07/20640150616", fuente: "Flickr" },
+  "Curl en polea": { archivo: "curl-en-polea", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/44067037611", fuente: "Flickr" },
+  "Plancha": { archivo: "plancha", autor: "nenadstojkovicart", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/202846129@N03/54579573594", fuente: "Flickr" },
+  "Elevación de piernas colgado": { archivo: "elevacion-de-piernas-colgado", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/42086223280", fuente: "Flickr", nota: "En la foto: variante con rodillas flectadas, más fácil para partir." },
+  "Rueda abdominal": { archivo: "rueda-abdominal", autor: "PTPioneer", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/182613284@N02/48317668827", fuente: "Flickr", nota: "En la foto: la rueda abdominal (implemento)." },
+  "Aperturas inclinadas en polea": { archivo: "aperturas-inclinadas-en-polea", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/42084333650", fuente: "Flickr" },
+  "Curl femoral sentado": { archivo: "curl-femoral-sentado", autor: "haswell.fitness Equipment from China", licencia: "CC BY-SA 2.0", pagina: "https://www.flickr.com/photos/127311295@N06/36703308310", fuente: "Flickr" },
+  "Pantorrillas sentado en máquina": { archivo: "pantorrillas-sentado-en-maquina", autor: "Teemeah", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/w/index.php?curid=90739536", fuente: "Wikimedia Commons" },
+  "Curl predicador en máquina": { archivo: "curl-predicador-en-maquina", autor: "Aliva Sahoo", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/w/index.php?curid=179972406", fuente: "Wikimedia Commons" },
+  "Curl martillo en polea": { archivo: "curl-martillo-en-polea", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/43893700911", fuente: "Flickr" },
+  "Extensión de tríceps en máquina": { archivo: "extension-de-triceps-en-maquina", autor: "Aliva Sahoo", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/w/index.php?curid=179972396", fuente: "Wikimedia Commons" },
+  "Extensión de tríceps con cuerda": { archivo: "extension-de-triceps-con-cuerda", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/43893697521", fuente: "Flickr" },
+  "Sentadilla búlgara": { archivo: "sentadilla-bulgara", autor: "RickyBennison", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Jumping_split_squat_with_dumbbells_1.png", nota: "En la foto: variante con el pie de atrás en el suelo (en la búlgara va sobre un banco)." },
+  "Pájaros": { archivo: "pajaros", autor: "personaltrainertoronto", licencia: "CC BY 2.0", pagina: "https://www.flickr.com/photos/121183998@N08/43177074414", fuente: "Flickr", nota: "En la foto: el mismo movimiento con banda elástica en vez de mancuernas." },
 }
 
 /** Por nombre del catálogo. Algunas fotos de máquina se reutilizan en sus variantes (el dibujo muestra el agarre o la posición). */
@@ -52,4 +75,5 @@ export const FOTOS: Record<string, FotoEjercicio> = {
   "Encogimientos en máquina Smith": FOTOS_BASE["Press de banca en máquina Smith"],
   "Jalón con agarre supino": FOTOS_BASE["Jalón al pecho"],
   "Jalón con triángulo": FOTOS_BASE["Jalón al pecho"],
+  "Aperturas en polea": FOTOS_BASE["Aperturas inclinadas en polea"],
 }

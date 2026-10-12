@@ -16,6 +16,9 @@ export type BaseZanfit = Dexie & {
 }
 
 /** Base sin cuenta (la de siempre). Cada usuario con cuenta tiene la suya: `zanfit-u-<id de Supabase>`. */
+/** Ejercicios que ya no están en el catálogo (ver la v8). */
+const RETIRADOS_DEL_CATALOGO = ['Pallof press']
+
 export const BASE_INVITADO = 'zanfit'
 export const nombreBase = (userId?: string | null) => (userId ? `zanfit-u-${userId}` : BASE_INVITADO)
 
@@ -70,6 +73,23 @@ export function crearBase(nombre: string): BaseZanfit {
 
   // v7: fotos y videos propios de cada ejercicio (Blobs; no entran en el respaldo JSON general).
   base.version(7).stores({ medios: '++id, exerciseId' })
+
+  // v8: sin cambios de tablas. Se quitan del catálogo los ejercicios sin ninguna imagen libre (Pallof press), salvo que
+  // el usuario ya los use en una rutina o en su historial (así no se pierden datos).
+  base
+    .version(8)
+    .stores({})
+    .upgrade(async (tx) => {
+      const ejercicios = tx.table<Exercise, number>('exercises')
+      const rutinas = await tx.table<Routine, number>('routines').toArray()
+      for (const nombre of RETIRADOS_DEL_CATALOGO) {
+        const ejercicio = await ejercicios.where('nombre').equals(nombre).first()
+        if (!ejercicio || ejercicio.propio) continue
+        const enRutina = rutinas.some((r) => r.ejercicios.some((e) => e.exerciseId === ejercicio.id))
+        const enHistorial = (await tx.table('sets').where('exerciseId').equals(ejercicio.id!).count()) > 0
+        if (!enRutina && !enHistorial) await ejercicios.delete(ejercicio.id!)
+      }
+    })
 
   // `populate` corre cuando la base se crea desde cero; los `upgrade` cuando viene de una versión anterior.
   // El catálogo inicial no cuenta como cambio local (si no, una base recién creada pisaría los datos de la nube).

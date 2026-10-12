@@ -302,13 +302,6 @@ export const EJERCICIOS_BASE: Omit<Exercise, 'id' | 'propio'>[] = [
     instrucciones:
       'De rodillas, rueda hacia adelante estirando el cuerpo tanto como puedas sin arquear la zona lumbar. Vuelve tirando con el abdomen.',
   },
-  {
-    nombre: 'Pallof press',
-    grupoMuscular: 'core',
-    equipo: 'polea',
-    instrucciones:
-      'De lado a la polea y con el agarre en el pecho, estira los brazos hacia adelante sin dejar que el cable te gire. Aguanta un segundo y vuelve.',
-  },
 
   // Gimnasio: máquinas, poleas y máquina Smith (dibujos de Everkinetic)
   {

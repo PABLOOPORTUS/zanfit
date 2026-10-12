@@ -43,7 +43,7 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 
 ## Modelo de datos (Dexie, `src/db/index.ts`)
 
-Esquema actual: **v7** (local, por usuario). En la nube, una sola tabla: `datos_usuario`.
+Esquema actual: **v8** (local, por usuario). En la nube, una sola tabla: `datos_usuario`.
 
 | Tabla | Campos | Índices |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ Esquema actual: **v7** (local, por usuario). En la nube, una sola tabla: `datos_
 | `plan` | id (`'actual'`), division, rutinaIds (orden de la semana), creadoEn | id |
 | `medios` | id, exerciseId, tipo (`'foto'`/`'video'`), archivo (Blob), miniatura (Blob JPEG), creadoEn | exerciseId |
 
-Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`. La v7 agrega `medios` (fotos y videos propios). La v6 agrega `perfil` y `plan` (evaluación inicial y plan generado). La v5 no cambia tablas: agrega a las bases existentes los ejercicios nuevos del catálogo, comparando nombres normalizados para no duplicar ejercicios propios. **Si agregas ejercicios al catálogo, crea una versión nueva con un upgrade igual**, porque `populate` solo corre en bases nuevas.
+Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`. La v8 no cambia tablas: saca del catálogo los ejercicios sin ninguna imagen libre (`RETIRADOS_DEL_CATALOGO`, hoy solo Pallof press), salvo que el usuario ya los use en una rutina o en su historial. La v7 agrega `medios` (fotos y videos propios). La v6 agrega `perfil` y `plan` (evaluación inicial y plan generado). La v5 no cambia tablas: agrega a las bases existentes los ejercicios nuevos del catálogo, comparando nombres normalizados para no duplicar ejercicios propios. **Si agregas ejercicios al catálogo, crea una versión nueva con un upgrade igual**, porque `populate` solo corre en bases nuevas.
 
 `Equipo`: barra, mancuernas, maquina, smith (Máquina Smith), polea, peso-corporal, kettlebell, banda, otro. Las etiquetas están en `lib/catalogos.ts`.
 
@@ -199,7 +199,9 @@ Las 4 tabs y Ajustes están completas:
 Orden en la ficha y en la guía: **fotos y videos propios** (si hay) → **foto real de la máquina** (Commons) → **dibujo animado** (Everkinetic, inicio y final alternando) → pasos → **diagrama de músculos**.
 
 - **Fotos y videos propios (`medios`, `<MediosPropios>`):** el usuario graba la máquina de su gimnasio. `lib/medios.ts` los reduce en el teléfono: fotos a JPEG de 1280 px; videos recodificados con canvas + MediaRecorder a unos 540 px, 1,2 Mbps y máximo 15 s, con portada JPEG. Si no se puede recodificar, se guarda el original. Viven solo en el teléfono y **no entran en el respaldo general**. Se comparten aparte (Ajustes → "Fotos y videos de tu gimnasio"): un JSON con base64 que, al importarse, **se suma** por nombre de ejercicio sin borrar nada y sin duplicar.
-- **Fotos de Wikimedia Commons (`db/fotosEjercicios.ts`, `public/medios/fotos/`):** 27 fotos que cubren 34 ejercicios; las fotos de Smith y de la máquina de jalón se reutilizan en sus variantes. Solo licencias CC0, dominio público, CC BY y CC BY-SA. **Cada una se eligió mirándola**: la búsqueda automática trae mucha basura (botes, suéteres, estatuas). Se descartaron las que no calzan con las instrucciones; por ejemplo, la plancha alta, porque la nuestra es sobre antebrazos. Cada foto va en `<archivo>.webp` (800 px) y `<archivo>-mini.webp` (240 px, 4:3). El crédito (autor, licencia y enlace) se muestra bajo la foto (`FotoMaquina`) y en Créditos. Para agregar una, busca en la API de Commons con `User-Agent` propio y pausas (si no, responde 429), revísala, convierte a WebP con canvas en Chrome y súmala a `fotosEjercicios.ts`.
+- **Regla: ningún ejercicio sin ejemplo.** Los 79 ejercicios tienen foto real (54) o dibujo (25), y muchos tienen ambos. Si un ejercicio nuevo no tiene ninguna imagen libre, no entra al catálogo.
+- **Fotos reales (`db/fotosEjercicios.ts`, `public/medios/fotos/`):** 46 fotos que cubren 54 ejercicios, de Wikimedia Commons y de Flickr (encontradas con la API de **Openverse**, `api.openverse.org`, filtro `license=by,by-sa,cc0,pdm`, sin clave). Cuando la foto muestra una variante (otro implemento o posición), lleva `nota`, que se muestra bajo la foto ("En la foto: …"); las fotos de Smith y de la máquina de jalón se reutilizan en sus variantes. Solo licencias CC0, dominio público, CC BY y CC BY-SA. **Cada una se eligió mirándola**: la búsqueda automática trae mucha basura (botes, suéteres, estatuas). Se descartaron las que no calzan con las instrucciones; por ejemplo, la plancha alta, porque la nuestra es sobre antebrazos. Cada foto va en `<archivo>.webp` (800 px) y `<archivo>-mini.webp` (240 px, 4:3). El crédito (autor, licencia y enlace) se muestra bajo la foto (`FotoMaquina`) y en Créditos. Para agregar una, busca en la API de Commons con `User-Agent` propio y pausas (si no, responde 429), revísala, convierte a WebP con canvas en Chrome y súmala a `fotosEjercicios.ts`.
+- **Portada del login (`PortadaAcceso`):** fotos reales del catálogo con zoom lento y frases motivadoras que cambian cada 6 s. Respeta `prefers-reduced-motion` y muestra el crédito de la foto actual.
 - **Fuentes descartadas (no volver a intentarlas):**
   - **Gymvisual:** de pago. Sus vistas previas con sello de agua no tienen licencia, aunque sean públicas.
   - **API gratuita de ExerciseDB:** no comercial y de baja resolución.

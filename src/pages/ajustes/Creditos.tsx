@@ -28,7 +28,8 @@ export default function Creditos() {
       </Bloque>
 
       <Bloque titulo="Fotos de máquinas y ejercicios">
-        Fotos de <Enlace href="https://commons.wikimedia.org">Wikimedia Commons</Enlace> con licencias libres. Cada una indica su autor y licencia.
+        Fotos con licencias libres de <Enlace href="https://commons.wikimedia.org">Wikimedia Commons</Enlace> y de Flickr (encontradas con{' '}
+        <Enlace href="https://openverse.org">Openverse</Enlace>). Cada una indica su autor, su licencia y su fuente.
         <Cambios>Cambios en ZANFIT: tamaño reducido, formato WebP y una versión recortada para miniaturas.</Cambios>
       </Bloque>
       <ul className="mt-3 flex flex-col gap-2 text-sm">
