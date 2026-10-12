@@ -3,7 +3,7 @@ import { useExercises } from '../hooks/useExercises'
 import MiniaturaEjercicio from './MiniaturaEjercicio'
 import { EQUIPOS, etiquetaEquipo, etiquetaGrupo, GRUPOS_MUSCULARES } from '../lib/catalogos'
 import { filtrarEjercicios, POR_PAGINA } from '../lib/filtroEjercicios'
-import type { Equipo, GrupoMuscular } from '../types'
+import type { Equipo, Exercise, GrupoMuscular } from '../types'
 
 type Props = {
   titulo?: string
@@ -14,10 +14,20 @@ type Props = {
   /** Elegir uno solo (para reemplazar): al tocarlo se confirma de inmediato. */
   unico?: boolean
   grupoInicial?: GrupoMuscular
+  /** Se muestran arriba (sin búsqueda ni filtros) como "Alternativas parecidas". */
+  sugeridos?: Exercise[]
 }
 
 /** Panel a pantalla completa para elegir uno o varios ejercicios de la biblioteca. Ábrelo con `usePanel`. */
-export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excluir, onAgregar, onCerrar, unico = false, grupoInicial }: Props) {
+export default function SelectorEjercicios({
+  titulo = 'Agregar ejercicios',
+  excluir,
+  onAgregar,
+  onCerrar,
+  unico = false,
+  grupoInicial,
+  sugeridos,
+}: Props) {
   const ejercicios = useExercises()
   const [busqueda, setBusqueda] = useState('')
   const [grupo, setGrupoLocal] = useState<GrupoMuscular | null>(grupoInicial ?? null)
@@ -44,6 +54,53 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
     if (unico) return onAgregar([id])
     setElegidos((actual) => (actual.includes(id) ? actual.filter((x) => x !== id) : [...actual, id]))
   }
+
+  const fila = (e: Exercise, clave = String(e.id)) => {
+    const yaEsta = excluir.includes(e.id!)
+    const elegido = elegidos.includes(e.id!)
+    return (
+      <li key={clave}>
+        <button
+          type="button"
+          disabled={yaEsta}
+          onClick={() => alternar(e.id!)}
+          aria-pressed={elegido}
+          className="flex min-h-16 w-full items-center gap-3 py-3 text-left active:bg-superficie disabled:opacity-40"
+        >
+          <span
+            className={`flex size-8 shrink-0 items-center justify-center rounded-lg border-2 ${
+              elegido ? 'border-lima bg-lima text-fondo' : 'border-borde'
+            } ${unico ? 'hidden' : ''}`}
+            aria-hidden
+          >
+            {elegido && (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m5 12 5 5 9-10" />
+              </svg>
+            )}
+          </span>
+          <MiniaturaEjercicio ejercicio={e} className="h-14 w-20" />
+          <span className="min-w-0 flex-1">
+            <span className="line-clamp-2 text-lg leading-snug font-semibold">{e.nombre}</span>
+            <span className="text-sm text-texto-suave">
+              {yaEsta ? 'Ya está agregado' : `${etiquetaGrupo(e.grupoMuscular)} · ${etiquetaEquipo(e.equipo)}`}
+            </span>
+          </span>
+        </button>
+      </li>
+    )
+  }
+
+  const mostrarSugeridos = !!sugeridos?.length && !busqueda.trim() && equipo === null && grupo === (grupoInicial ?? null)
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-fondo" role="dialog" aria-modal="true" aria-label={titulo}>
@@ -96,50 +153,14 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
       </div>
 
       <ul className="mx-auto w-full max-w-lg flex-1 divide-y divide-borde overflow-y-auto px-4 pb-4">
-        {filtrados.slice(0, limite).map((e) => {
-          const yaEsta = excluir.includes(e.id!)
-          const elegido = elegidos.includes(e.id!)
-          return (
-            <li key={e.id}>
-              <button
-                type="button"
-                disabled={yaEsta}
-                onClick={() => alternar(e.id!)}
-                aria-pressed={elegido}
-                className="flex min-h-16 w-full items-center gap-3 py-3 text-left active:bg-superficie disabled:opacity-40"
-              >
-                <span
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-lg border-2 ${
-                    elegido ? 'border-lima bg-lima text-fondo' : 'border-borde'
-                  } ${unico ? 'hidden' : ''}`}
-                  aria-hidden
-                >
-                  {elegido && (
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="m5 12 5 5 9-10" />
-                    </svg>
-                  )}
-                </span>
-                <MiniaturaEjercicio ejercicio={e} className="h-14 w-20" />
-                <span className="min-w-0 flex-1">
-                  <span className="line-clamp-2 text-lg leading-snug font-semibold">{e.nombre}</span>
-                  <span className="text-sm text-texto-suave">
-                    {yaEsta ? 'Ya está agregado' : `${etiquetaGrupo(e.grupoMuscular)} · ${etiquetaEquipo(e.equipo)}`}
-                  </span>
-                </span>
-              </button>
-            </li>
-          )
-        })}
+        {mostrarSugeridos && (
+          <>
+            <li className="pt-4 pb-2 text-sm font-bold tracking-wide text-lima uppercase">Alternativas parecidas</li>
+            {sugeridos.map((e) => fila(e, `s${e.id}`))}
+            <li className="pt-6 pb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Todos</li>
+          </>
+        )}
+        {filtrados.slice(0, limite).map((e) => fila(e))}
         {filtrados.length > limite && (
           <li className="py-4">
             <button

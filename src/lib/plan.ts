@@ -1,4 +1,5 @@
 import { EJERCICIOS_BASE } from '../db/ejerciciosBase'
+import { mediosDe } from '../db/mediosEjercicios'
 import { PATRONES_COMPUESTOS, type Patron } from '../db/patronesEjercicios'
 import { clasificar, necesitaBarras, necesitaGimnasio } from './clasificacion'
 import { EQUIPAMIENTO_POR_DEFECTO } from './evaluacion'
@@ -355,4 +356,26 @@ export function recomendaciones(perfil: Perfil): string[] {
   if (perfil.objetivo === 'fuerza') r.push('Antes de cada ejercicio principal, haz 2 o 3 series de aproximación con poco peso.')
   if (edad(perfil) >= 50) r.push('Calienta bien antes de empezar y evita aguantar la respiración al hacer fuerza.')
   return r
+}
+
+/**
+ * Alternativas para "Cambiar ejercicio": mismo patrón de movimiento (o, si no está clasificado, mismo músculo
+ * principal), que pueda hacer con su equipo y sin cargar sus lesiones. Primero las del mismo equipo y las básicas.
+ */
+export function alternativas(ejercicio: Exercise, catalogo: Exercise[], perfil: Perfil | null, cantidad = 8): Exercise[] {
+  const cl = clasificar(ejercicio)
+  const principal = mediosDe(ejercicio).musculos.principales[0]
+  return catalogo
+    .filter((e) => {
+      if (e.id === ejercicio.id) return false
+      const otra = clasificar(e)
+      const parecido = cl && otra ? otra.patron === cl.patron : mediosDe(e).musculos.principales[0] === principal && e.grupoMuscular === ejercicio.grupoMuscular
+      if (!parecido) return false
+      if (!perfil) return true
+      return tieneEquipo(perfil, e) && !otra?.riesgos?.some((r) => perfil.lesiones.includes(r))
+    })
+    .map((e) => ({ e, costo: (e.equipo === ejercicio.equipo ? 0 : 1) + (BASICOS.has(e.nombre) ? 0 : 0.5) + (clasificar(e)?.nivel ?? 2) * 0.1 }))
+    .sort((a, b) => a.costo - b.costo || a.e.nombre.localeCompare(b.e.nombre))
+    .slice(0, cantidad)
+    .map(({ e }) => e)
 }

@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom'
 import AvisoSalud from '../../components/AvisoSalud'
+import CuerpoMusculos from '../../components/CuerpoMusculos'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
+import { mediosDe } from '../../db/mediosEjercicios'
 import { eliminarPlan } from '../../db/plan'
 import { iniciarEntreno } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
@@ -22,6 +24,7 @@ import {
 } from '../../lib/evaluacion'
 import { formatearDescanso } from '../../lib/formato'
 import { DESCRIPCION_DIVISION, duracionEstimada, edad, imc, recomendaciones } from '../../lib/plan'
+import { vistaPrincipal } from '../../lib/musculos'
 import type { Perfil } from '../../types'
 
 /** `/plan`: resultado de la evaluación y el plan generado. */
@@ -118,6 +121,13 @@ export default function MiPlan() {
                             {e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)}` : ''} · {formatearDescanso(e.descansoSeg)}
                           </span>
                         </span>
+                        {ejercicio && (
+                          <CuerpoMusculos
+                            musculos={mediosDe(ejercicio).musculos}
+                            vista={vistaPrincipal(mediosDe(ejercicio).musculos)}
+                            className="w-7 shrink-0"
+                          />
+                        )}
                       </Link>
                     </li>
                   )

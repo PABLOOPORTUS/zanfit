@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, obtenerAjustes } from '../db'
 import { agruparPorEjercicio, fechasEntrenadas, historial, progresoEjercicio, recordsPorEjercicio, resumenEntreno } from '../db/progreso'
-import { debeSubir, obtenerEntrenoActivo, ultimasSeries } from '../db/workouts'
+import { completoTodo, debeSubir, obtenerEntrenoActivo, sesionesAnteriores } from '../db/workouts'
 
 /** Entreno en curso: `undefined` mientras carga, `null` si no hay. */
 export function useEntrenoActivo() {
@@ -18,14 +18,18 @@ export function useBloquesEntreno(workoutId: number) {
     return Promise.all(
       bloques.map(async (b) => {
         const objetivo = rutina?.ejercicios.find((e) => e.exerciseId === b.exercise.id)
-        const anteriores = await ultimasSeries(b.exercise.id!, workoutId)
+        const sesiones = await sesionesAnteriores(b.exercise.id!, workoutId)
+        const anteriores = sesiones[0] ?? []
+        const subePeso = debeSubir(sesiones, objetivo)
         return {
           ...b,
           descansoSeg: objetivo?.descansoSeg ?? descansoPorDefectoSeg,
           /** Series de la última vez (para mostrar "Última vez: …"). */
           anteriores,
-          /** La última vez completaste todo: hoy el peso viene subido. */
-          subePeso: debeSubir(anteriores, objetivo),
+          /** Completaste todo en las dos últimas sesiones: hoy el peso viene subido. */
+          subePeso,
+          /** Completaste todo solo la última vez: si hoy también, la próxima sube. */
+          casiSube: !subePeso && completoTodo(anteriores, objetivo),
         }
       }),
     )

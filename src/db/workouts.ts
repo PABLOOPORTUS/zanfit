@@ -10,20 +10,24 @@ export async function obtenerEntrenoActivo(): Promise<Workout | undefined> {
 }
 
 /**
- * Series completadas del último entreno terminado que incluyó el ejercicio, ordenadas por número de serie.
- * Sirven para precargar peso y reps.
+ * Series completadas de las últimas `cantidad` sesiones terminadas que incluyeron el ejercicio (la más reciente
+ * primero), cada una ordenada por número de serie.
  */
-export async function ultimasSeries(exerciseId: number, excluirWorkoutId?: number): Promise<WorkoutSet[]> {
+export async function sesionesAnteriores(exerciseId: number, excluirWorkoutId?: number, cantidad = 2): Promise<WorkoutSet[][]> {
   const sets = (await db.sets.where('exerciseId').equals(exerciseId).toArray()).filter(
     (s) => s.completada && s.workoutId !== excluirWorkoutId,
   )
   if (sets.length === 0) return []
-  const workouts = (await db.workouts.bulkGet([...new Set(sets.map((s) => s.workoutId))])).filter(
-    (w): w is Workout => w?.fechaFin !== undefined,
-  )
-  if (workouts.length === 0) return []
-  const ultimo = workouts.reduce((a, b) => (b.fechaInicio > a.fechaInicio ? b : a))
-  return sets.filter((s) => s.workoutId === ultimo.id).sort((a, b) => a.numeroSerie - b.numeroSerie)
+  const workouts = (await db.workouts.bulkGet([...new Set(sets.map((s) => s.workoutId))]))
+    .filter((w): w is Workout => w?.fechaFin !== undefined)
+    .sort((a, b) => b.fechaInicio - a.fechaInicio)
+    .slice(0, cantidad)
+  return workouts.map((w) => sets.filter((s) => s.workoutId === w.id).sort((a, b) => a.numeroSerie - b.numeroSerie))
+}
+
+/** Series completadas del último entreno terminado que incluyó el ejercicio. Sirven para precargar peso y reps. */
+export async function ultimasSeries(exerciseId: number, excluirWorkoutId?: number): Promise<WorkoutSet[]> {
+  return (await sesionesAnteriores(exerciseId, excluirWorkoutId, 1))[0] ?? []
 }
 
 /** Cuánto subir el peso cuando completaste todo: 2 kg por mancuerna, 2,5 kg en barras y máquinas. */
@@ -33,22 +37,35 @@ export function incrementoPeso(equipo: Equipo): number {
   return 2.5
 }
 
-/** Progresión: si la última vez hiciste al menos las series objetivo y todas llegaron a las reps objetivo, toca subir. */
-export function debeSubir(anteriores: WorkoutSet[], objetivo?: Pick<RoutineExercise, 'seriesObjetivo' | 'repsObjetivo'>): boolean {
-  if (!objetivo || anteriores.length < objetivo.seriesObjetivo) return false
-  return anteriores.every((s) => s.completada && s.reps >= objetivo.repsObjetivo && s.peso > 0)
+type Meta = Pick<RoutineExercise, 'seriesObjetivo' | 'repsObjetivo'>
+
+/** Hiciste al menos las series objetivo y todas llegaron a las reps objetivo (con algo de peso). */
+export function completoTodo(sesion: WorkoutSet[] | undefined, objetivo?: Meta): boolean {
+  if (!objetivo || !sesion || sesion.length < objetivo.seriesObjetivo) return false
+  return sesion.every((s) => s.completada && s.reps >= objetivo.repsObjetivo && s.peso > 0)
+}
+
+/**
+ * Progresión: si completaste todo en las dos últimas sesiones con el mismo peso, toca subir. Con una sola sesión
+ * completa todavía no: así se confirma que el peso ya está dominado.
+ */
+export function debeSubir(sesiones: WorkoutSet[][], objetivo?: Meta): boolean {
+  const [ultima, penultima] = sesiones
+  if (!completoTodo(ultima, objetivo) || !completoTodo(penultima, objetivo)) return false
+  return pesoMaximo(ultima) === pesoMaximo(penultima)
 }
 
 type Objetivo = Pick<RoutineExercise, 'seriesObjetivo' | 'repsObjetivo' | 'pesoSugerido'>
 
 /**
- * Series nuevas (sin completar). Peso y reps salen de la última vez; si completaste todo, el peso sube.
+ * Series nuevas (sin completar). Peso y reps salen de la última vez; si completaste todo dos veces seguidas, el peso sube.
  * Sin historial se usa el peso sugerido por el plan y las reps objetivo.
  */
 async function seriesPrecargadas(workoutId: number, exerciseId: number, objetivo?: Objetivo, cantidadFija?: number): Promise<WorkoutSet[]> {
-  const anteriores = await ultimasSeries(exerciseId, workoutId)
+  const sesiones = await sesionesAnteriores(exerciseId, workoutId)
+  const anteriores = sesiones[0] ?? []
   const ejercicio = await db.exercises.get(exerciseId)
-  const subir = debeSubir(anteriores, objetivo) ? incrementoPeso(ejercicio?.equipo ?? 'otro') : 0
+  const subir = debeSubir(sesiones, objetivo) ? incrementoPeso(ejercicio?.equipo ?? 'otro') : 0
   const cantidad = cantidadFija ?? objetivo?.seriesObjetivo ?? (anteriores.length || SERIES_POR_DEFECTO)
   return Array.from({ length: cantidad }, (_, i) => {
     // Si hoy haces más series que la última vez, se repite la última.

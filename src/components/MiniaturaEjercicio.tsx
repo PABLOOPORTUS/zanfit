@@ -1,5 +1,6 @@
 import CuerpoMusculos from './CuerpoMusculos'
 import { mediosDe } from '../db/mediosEjercicios'
+import { vistaPrincipal } from '../lib/musculos'
 import { useMediosPropios, useUrlBlob } from '../hooks/useMedios'
 import type { Exercise } from '../types'
 
@@ -33,7 +34,7 @@ export default function MiniaturaEjercicio({ ejercicio, className = 'size-16' }:
     )
   }
 
-  const vista = musculos.principales.some((m) => ['dorsales', 'espalda-media', 'lumbares', 'trapecios', 'gluteos', 'isquiotibiales', 'triceps'].includes(m)) ? 'espalda' : 'frente'
+  const vista = vistaPrincipal(musculos)
   return (
     <span className={`${marco} p-1`} aria-hidden>
       <CuerpoMusculos musculos={musculos} vista={vista} className="mx-auto h-full w-auto [&_svg]:h-full [&_svg]:w-auto" />

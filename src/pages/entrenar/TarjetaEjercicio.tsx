@@ -6,6 +6,9 @@ import { mediosDe } from '../../db/mediosEjercicios'
 import { nombresMusculos } from '../../lib/musculos'
 import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie, reemplazarEjercicio } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
+import { useExercises } from '../../hooks/useExercises'
+import { usePerfil } from '../../hooks/usePlan'
+import { alternativas } from '../../lib/plan'
 import { useDescanso } from '../../hooks/useDescanso'
 import { usePanel } from '../../hooks/usePanel'
 import { formatearDescanso, leerNumero } from '../../lib/formato'
@@ -18,12 +21,13 @@ type Props = {
   descansoSeg: number
   anteriores: WorkoutSet[]
   subePeso: boolean
+  casiSube?: boolean
   /** Ejercicios que ya están en el entreno (no se ofrecen al reemplazar). */
   idsEnEntreno: number[]
 }
 
 /** Un ejercicio del entreno en curso: filas peso | reps | check, y botones para agregar o quitar series. */
-export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSeg, anteriores, subePeso, idsEnEntreno }: Props) {
+export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSeg, anteriores, subePeso, casiSube, idsEnEntreno }: Props) {
   const [confirmandoQuitar, setConfirmandoQuitar] = useState(false)
   const u = useUnidad()
   const { unidad } = u
@@ -47,7 +51,17 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           aria-label={`Cambiar ${exercise.nombre} por otro ejercicio`}
           className="flex size-12 shrink-0 items-center justify-center rounded-xl text-texto-suave active:bg-borde"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
             <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
           </svg>
         </button>
@@ -57,7 +71,17 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           aria-label={`Quitar ${exercise.nombre}`}
           className="flex size-12 shrink-0 items-center justify-center rounded-xl text-texto-suave active:bg-borde"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
             <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
           </svg>
         </button>
@@ -74,7 +98,17 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           <span className="min-w-0 text-sm text-white/80">Trabaja: {principales}</span>
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-lima px-3 py-1.5 text-sm font-bold text-fondo">
             Ver cómo se hace
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
               <path d="m9 6 6 6-6 6" />
             </svg>
           </span>
@@ -86,18 +120,17 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
       {anteriores.length > 0 && (
         <p className="px-4 pb-2 text-sm text-texto-suave">
           Última vez: {u.peso(Math.max(...anteriores.map((s) => s.peso)))} × {anteriores.map((s) => s.reps).join(' · ')}
-          {subePeso && <span className="mt-1 block font-semibold text-lima">↑ Completaste todo: hoy sube el peso</span>}
+          {subePeso && <span className="mt-1 block font-semibold text-lima">↑ Completaste todo dos veces seguidas: hoy sube el peso</span>}
+          {casiSube && <span className="mt-1 block">Completaste todo la última vez. Si hoy también, la próxima sube el peso.</span>}
         </p>
       )}
 
       {selector.abierto && (
-        <SelectorEjercicios
-          titulo="Cambiar ejercicio"
-          unico
-          grupoInicial={exercise.grupoMuscular}
-          excluir={idsEnEntreno}
+        <CambiarEjercicio
+          exercise={exercise}
+          idsEnEntreno={idsEnEntreno}
           onCerrar={selector.cerrar}
-          onAgregar={async ([nuevo]) => {
+          onElegir={async (nuevo) => {
             await reemplazarEjercicio(workoutId, exercise.id!, nuevo)
             selector.cerrar()
           }}
@@ -108,10 +141,18 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         <div className="mx-4 mb-2 rounded-xl border border-peligro/50 bg-peligro/10 p-3">
           <p className="font-semibold">¿Quitar este ejercicio del entreno?</p>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <button type="button" onClick={() => setConfirmandoQuitar(false)} className="h-12 rounded-xl border border-borde bg-superficie font-semibold">
+            <button
+              type="button"
+              onClick={() => setConfirmandoQuitar(false)}
+              className="h-12 rounded-xl border border-borde bg-superficie font-semibold"
+            >
               Cancelar
             </button>
-            <button type="button" onClick={() => quitarEjercicio(workoutId, exercise.id!)} className="h-12 rounded-xl bg-peligro font-bold text-fondo">
+            <button
+              type="button"
+              onClick={() => quitarEjercicio(workoutId, exercise.id!)}
+              className="h-12 rounded-xl bg-peligro font-bold text-fondo"
+            >
               Sí, quitar
             </button>
           </div>
@@ -139,7 +180,11 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         >
           − Quitar serie
         </button>
-        <button type="button" onClick={() => agregarSerie(workoutId, exercise.id!)} className="h-12 rounded-xl border border-borde font-semibold active:bg-borde">
+        <button
+          type="button"
+          onClick={() => agregarSerie(workoutId, exercise.id!)}
+          className="h-12 rounded-xl border border-borde font-semibold active:bg-borde"
+        >
           + Agregar serie
         </button>
       </div>
@@ -209,10 +254,40 @@ function FilaSerie({ serie, descansoSeg }: { serie: WorkoutSet; descansoSeg: num
           serie.completada ? 'border-lima bg-lima text-fondo' : 'border-borde text-texto-suave active:bg-borde'
         }`}
       >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
           <path d="m5 12 5 5 9-10" />
         </svg>
       </button>
     </li>
+  )
+}
+
+type PropsCambiar = { exercise: Exercise; idsEnEntreno: number[]; onCerrar: () => void; onElegir: (id: number) => void }
+
+/** Selector para reemplazar un ejercicio, con alternativas parecidas arriba (mismo movimiento, su equipo, sin sus lesiones). */
+function CambiarEjercicio({ exercise, idsEnEntreno, onCerrar, onElegir }: PropsCambiar) {
+  const ejercicios = useExercises()
+  const perfil = usePerfil()
+  const sugeridos = ejercicios && perfil !== undefined ? alternativas(exercise, ejercicios, perfil).filter((e) => !idsEnEntreno.includes(e.id!)) : []
+  return (
+    <SelectorEjercicios
+      titulo="Cambiar ejercicio"
+      unico
+      grupoInicial={exercise.grupoMuscular}
+      sugeridos={sugeridos}
+      excluir={idsEnEntreno}
+      onCerrar={onCerrar}
+      onAgregar={([nuevo]) => onElegir(nuevo)}
+    />
   )
 }

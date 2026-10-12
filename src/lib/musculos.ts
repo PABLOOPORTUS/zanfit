@@ -29,6 +29,10 @@ export interface Musculos {
   secundarios: Musculo[]
 }
 
+/** De qué lado se ven mejor los músculos principales (para una silueta sola). */
+export const vistaPrincipal = (musculos: Musculos): 'frente' | 'espalda' =>
+  musculos.principales.some((m) => ['dorsales', 'espalda-media', 'lumbares', 'trapecios', 'gluteos', 'isquiotibiales', 'triceps'].includes(m)) ? 'espalda' : 'frente'
+
 export const nombresMusculos = (lista: Musculo[]) => lista.map((m) => MUSCULOS[m].nombre).join(', ')
 
 /** Para ejercicios propios: los músculos típicos de su grupo. */

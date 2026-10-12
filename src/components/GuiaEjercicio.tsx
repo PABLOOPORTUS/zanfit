@@ -1,9 +1,9 @@
 import { mediosDe } from '../db/mediosEjercicios'
 import { etiquetaEquipo, etiquetaGrupo } from '../lib/catalogos'
 import type { Exercise } from '../types'
-import DiagramaMusculos from './DiagramaMusculos'
 import FotoMaquina from './FotoMaquina'
 import MediosPropios from './MediosPropios'
+import PestanasEjercicio from './PestanasEjercicio'
 
 /** Guía a pantalla completa de un ejercicio (fotos, pasos y músculos). Ábrela con `usePanel` para que atrás la cierre. */
 export default function GuiaEjercicio({ ejercicio, onCerrar }: { ejercicio: Exercise; onCerrar: () => void }) {
@@ -29,10 +29,7 @@ export default function GuiaEjercicio({ ejercicio, onCerrar }: { ejercicio: Exer
           </p>
           <MediosPropios ejercicio={ejercicio} />
           {medios.ficha && <FotoMaquina foto={medios.ficha} nombre={ejercicio.nombre} />}
-          <div className="rounded-2xl border border-borde bg-superficie p-4 text-lg leading-relaxed">
-            {ejercicio.instrucciones ?? <span className="text-texto-suave">Este ejercicio no tiene instrucciones.</span>}
-          </div>
-          <DiagramaMusculos musculos={medios.musculos} />
+          <PestanasEjercicio ejercicio={ejercicio} />
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
-import DiagramaMusculos from '../../components/DiagramaMusculos'
 import FotoMaquina from '../../components/FotoMaquina'
 import MediosPropios from '../../components/MediosPropios'
+import PestanasEjercicio, { type Pestana } from '../../components/PestanasEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { mediosDe } from '../../db/mediosEjercicios'
 import { eliminarEjercicio } from '../../db/exercises'
@@ -17,6 +17,10 @@ import EjercicioNoEncontrado from './EjercicioNoEncontrado'
 export default function DetalleEjercicio() {
   const id = Number(useParams().id)
   const ejercicio = useExercise(id)
+  // La pestaña va en la URL (?pestana=) para que se mantenga al volver desde el progreso.
+  const [params, setParams] = useSearchParams()
+  const pestana = (['instrucciones', 'musculos', 'equipo'] as const).find((p) => p === params.get('pestana')) ?? 'instrucciones'
+  const setPestana = (p: Pestana) => setParams(p === 'instrucciones' ? {} : { pestana: p }, { replace: true })
 
   if (ejercicio === undefined) return null
   if (ejercicio === null) return <EjercicioNoEncontrado />
@@ -44,17 +48,9 @@ export default function DetalleEjercicio() {
       <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">En tu gimnasio</h2>
       <MediosPropios ejercicio={ejercicio} />
 
-      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Cómo se hace</h2>
-      <div className="rounded-2xl border border-borde bg-superficie p-4 text-lg leading-relaxed">
-        {ejercicio.instrucciones ?? (
-          <span className="text-texto-suave">
-            Sin instrucciones. {ejercicio.propio && 'Puedes agregarlas editando el ejercicio.'}
-          </span>
-        )}
+      <div className="mt-8">
+        <PestanasEjercicio ejercicio={ejercicio} pestana={pestana} onCambiar={setPestana} />
       </div>
-
-      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Músculos</h2>
-      <DiagramaMusculos musculos={medios.musculos} />
 
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tu registro</h2>
       <Registro id={id} />
