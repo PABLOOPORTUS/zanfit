@@ -1,13 +1,12 @@
 import { useRef, useState, type ChangeEvent } from 'react'
+import BannerPerfil from '../../components/BannerPerfil'
 import { Link } from 'react-router-dom'
 import SelectorOpciones from '../../components/SelectorOpciones'
 import Stepper from '../../components/Stepper'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { guardarAjustes } from '../../db'
 import { crearRespaldo, leerRespaldo, nombreArchivoRespaldo, restaurarRespaldo, type Respaldo } from '../../db/respaldo'
-import Avatar from '../../components/Avatar'
 import { exportarMedios, importarMedios } from '../../db/medios'
-import { procesarFotoPerfil } from '../../lib/medios'
 import { compartirArchivo, fechaArchivo } from '../../lib/compartir'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db'
@@ -79,7 +78,10 @@ export default function Ajustes() {
     setTrabajandoMedios(true)
     try {
       const { agregados, omitidos } = await importarMedios(await archivo.text())
-      setMensajeMedios({ tipo: 'ok', texto: `Se agregaron ${agregados} ${agregados === 1 ? 'archivo' : 'archivos'}${omitidos ? ` (${omitidos} ya estaban o no corresponden a tus ejercicios)` : ''}.` })
+      setMensajeMedios({
+        tipo: 'ok',
+        texto: `Se agregaron ${agregados} ${agregados === 1 ? 'archivo' : 'archivos'}${omitidos ? ` (${omitidos} ya estaban o no corresponden a tus ejercicios)` : ''}.`,
+      })
     } catch (error) {
       setMensajeMedios({ tipo: 'error', texto: (error as Error).message })
     } finally {
@@ -120,7 +122,13 @@ export default function Ajustes() {
 
       <SeccionCuenta />
 
-      <SelectorOpciones leyenda="Unidad de peso" opciones={UNIDADES} valor={ajustes.unidad} onChange={(unidad) => guardarAjustes({ unidad })} columnas={2} />
+      <SelectorOpciones
+        leyenda="Unidad de peso"
+        opciones={UNIDADES}
+        valor={ajustes.unidad}
+        onChange={(unidad) => guardarAjustes({ unidad })}
+        columnas={2}
+      />
 
       <div>
         <Stepper
@@ -147,7 +155,9 @@ export default function Ajustes() {
           Tus datos se guardan solo en este teléfono. Si borras la app o cambias de teléfono, se pierden: exporta un respaldo de vez en cuando y
           guárdalo en tu nube o envíatelo.
         </p>
-        <p className="mt-2 text-sm text-texto-suave">{ultimoRespaldo ? `Último respaldo: ${formatearFecha(ultimoRespaldo)}` : 'Todavía no has exportado un respaldo.'}</p>
+        <p className="mt-2 text-sm text-texto-suave">
+          {ultimoRespaldo ? `Último respaldo: ${formatearFecha(ultimoRespaldo)}` : 'Todavía no has exportado un respaldo.'}
+        </p>
 
         <div className="mt-4 flex flex-col gap-3">
           <button type="button" onClick={exportar} className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro">
@@ -160,7 +170,14 @@ export default function Ajustes() {
           >
             Importar respaldo
           </button>
-          <input ref={inputArchivo} type="file" accept="application/json,.json" onChange={elegirArchivo} className="hidden" aria-label="Archivo de respaldo" />
+          <input
+            ref={inputArchivo}
+            type="file"
+            accept="application/json,.json"
+            onChange={elegirArchivo}
+            className="hidden"
+            aria-label="Archivo de respaldo"
+          />
         </div>
 
         {mensaje && (
@@ -193,8 +210,8 @@ export default function Ajustes() {
       <div>
         <h2 className="mb-2 font-semibold">Fotos y videos de tu gimnasio</h2>
         <p className="text-texto-suave">
-          Tienes {cantidadMedios ?? 0} {cantidadMedios === 1 ? 'archivo' : 'archivos'}. No entran en el respaldo general: compártelos aparte con quien entrena
-          contigo. Al importarlos se suman a los suyos, sin borrar nada.
+          Tienes {cantidadMedios ?? 0} {cantidadMedios === 1 ? 'archivo' : 'archivos'}. No entran en el respaldo general: compártelos aparte con quien
+          entrena contigo. Al importarlos se suman a los suyos, sin borrar nada.
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3">
           <button
@@ -214,31 +231,83 @@ export default function Ajustes() {
             Importar
           </button>
         </div>
-        <input ref={inputMedios} type="file" accept="application/json,.json" onChange={elegirMedios} className="hidden" aria-label="Archivo de fotos y videos" />
+        <input
+          ref={inputMedios}
+          type="file"
+          accept="application/json,.json"
+          onChange={elegirMedios}
+          className="hidden"
+          aria-label="Archivo de fotos y videos"
+        />
         {mensajeMedios && (
-          <p role={mensajeMedios.tipo === 'error' ? 'alert' : 'status'} className={`mt-3 ${mensajeMedios.tipo === 'error' ? 'text-peligro' : 'text-lima'}`}>
+          <p
+            role={mensajeMedios.tipo === 'error' ? 'alert' : 'status'}
+            className={`mt-3 ${mensajeMedios.tipo === 'error' ? 'text-peligro' : 'text-lima'}`}
+          >
             {mensajeMedios.texto}
           </p>
         )}
       </div>
 
-      <Link to="/plan" className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde">
+      <Link
+        to="/plan"
+        className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde"
+      >
         Mi evaluación y plan
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-texto-suave" aria-hidden>
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-texto-suave"
+          aria-hidden
+        >
           <path d="m9 6 6 6-6 6" />
         </svg>
       </Link>
 
-      <Link to="/ajustes/privacidad" className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde">
+      <Link
+        to="/ajustes/privacidad"
+        className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde"
+      >
         Privacidad
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-texto-suave" aria-hidden>
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-texto-suave"
+          aria-hidden
+        >
           <path d="m9 6 6 6-6 6" />
         </svg>
       </Link>
 
-      <Link to="/ajustes/creditos" className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde">
+      <Link
+        to="/ajustes/creditos"
+        className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde"
+      >
         Créditos y licencias
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-texto-suave" aria-hidden>
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-texto-suave"
+          aria-hidden
+        >
           <path d="m9 6 6 6-6 6" />
         </svg>
       </Link>
@@ -268,20 +337,22 @@ function SeccionCuenta() {
   const { usuario, estado, ultimaSync } = cuenta
   return (
     <div className="rounded-2xl border border-borde bg-superficie p-4">
-      <div className="flex items-center gap-3">
-        <FotoPerfil />
-        <div className="min-w-0">
-          <p className="truncate font-semibold">{usuario.nombre}</p>
-          <p className="truncate text-sm text-texto-suave">{usuario.correo}</p>
-        </div>
-      </div>
-      <p className={`mt-3 text-sm ${estado === 'error' ? 'text-peligro' : estado === 'sincronizado' ? 'text-lima' : 'text-texto-suave'}`} role="status">
+      <BannerPerfil editable detalle={usuario.correo} className="h-56" />
+      <p
+        className={`mt-3 text-sm ${estado === 'error' ? 'text-peligro' : estado === 'sincronizado' ? 'text-lima' : 'text-texto-suave'}`}
+        role="status"
+      >
         {TEXTO_ESTADO[estado]}
         {estado === 'error' && cuenta.mensajeError ? `: ${cuenta.mensajeError}` : ''}
         {estado === 'sincronizado' && ultimaSync ? ` · ${formatearHoraCorta(ultimaSync)}` : ''}
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <button type="button" onClick={cuenta.sincronizarAhora} disabled={estado === 'sincronizando'} className="h-14 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50">
+        <button
+          type="button"
+          onClick={cuenta.sincronizarAhora}
+          disabled={estado === 'sincronizando'}
+          className="h-14 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50"
+        >
           Sincronizar
         </button>
         <button
@@ -296,55 +367,13 @@ function SeccionCuenta() {
           Cerrar sesión
         </button>
       </div>
-      <p className="mt-3 text-sm text-texto-suave">Para usar la app con otra persona en este teléfono, cierra sesión y que ella ingrese con su cuenta.</p>
+      <p className="mt-3 text-sm text-texto-suave">
+        Para usar la app con otra persona en este teléfono, cierra sesión y que ella ingrese con su cuenta.
+      </p>
     </div>
   )
 }
 
 function formatearHoraCorta(t: number) {
   return new Intl.DateTimeFormat('es-CL', { hour: '2-digit', minute: '2-digit' }).format(t)
-}
-
-/** Foto de perfil: tocarla abre la cámara o la galería. Se guarda recortada (256 px) junto a los ajustes y se sincroniza. */
-function FotoPerfil() {
-  const { fotoPerfil } = useAjustes()
-  const input = useRef<HTMLInputElement>(null)
-  const [error, setError] = useState<string | null>(null)
-  return (
-    <div className="flex shrink-0 flex-col items-center">
-      <button type="button" onClick={() => input.current?.click()} aria-label={fotoPerfil ? 'Cambiar foto de perfil' : 'Agregar foto de perfil'} className="relative rounded-full active:opacity-80">
-        <Avatar className="size-16 text-2xl" />
-        <span className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-superficie bg-lima text-fondo" aria-hidden>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-            <circle cx="12" cy="13" r="3.5" />
-          </svg>
-        </span>
-      </button>
-      {fotoPerfil && (
-        <button type="button" onClick={() => guardarAjustes({ fotoPerfil: undefined })} className="mt-1 h-11 px-2 text-xs text-texto-suave underline underline-offset-4">
-          Quitar
-        </button>
-      )}
-      {error && <p className="mt-1 text-xs text-peligro">{error}</p>}
-      <input
-        ref={input}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        aria-label="Elegir foto de perfil"
-        onChange={async (e) => {
-          const archivo = e.target.files?.[0]
-          e.target.value = ''
-          if (!archivo) return
-          try {
-            setError(null)
-            await guardarAjustes({ fotoPerfil: await procesarFotoPerfil(archivo) })
-          } catch (err) {
-            setError((err as Error).message || 'No se pudo usar esa foto.')
-          }
-        }}
-      />
-    </div>
-  )
 }

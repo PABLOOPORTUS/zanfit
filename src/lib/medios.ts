@@ -112,8 +112,10 @@ export async function procesarFotoPerfil(archivo: File): Promise<string> {
   const img = await createImageBitmap(archivo)
   const lado = Math.min(img.width, img.height)
   const c = document.createElement('canvas')
-  c.width = c.height = 256
-  c.getContext('2d')!.drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 256, 256)
+  // 720 px: también se muestra grande, como banner (~60–90 kB en JPEG).
+  const tam = Math.min(720, lado)
+  c.width = c.height = tam
+  c.getContext('2d')!.drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, tam, tam)
   img.close()
-  return c.toDataURL('image/jpeg', 0.85)
+  return c.toDataURL('image/jpeg', 0.8)
 }

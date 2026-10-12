@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import BannerPerfil from '../../components/BannerPerfil'
 import MetaSemanal from '../../components/MetaSemanal'
 import TarjetaNivel from '../../components/TarjetaNivel'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
@@ -26,12 +27,12 @@ export default function ElegirEntreno() {
 
   return (
     <section>
-      <h1 className="animate-entrar font-marca text-3xl font-bold tracking-tight">{usuario ? `Hola, ${usuario.nombre}` : 'Entrenar'}</h1>
-      {ultimo && (
-        <p className="mt-1 text-texto-suave">
-          Último entreno: {ultimo.nombre}, {formatearFecha(ultimo.fechaInicio)}
-        </p>
-      )}
+      <h1 className="sr-only">{usuario ? `Hola, ${usuario.nombre}` : 'Entrenar'}</h1>
+      <div className="animate-entrar">
+        <BannerPerfil
+          detalle={ultimo ? `Último entreno: ${ultimo.nombre.replace(/^Plan · /, '')}, ${formatearFecha(ultimo.fechaInicio)}` : '¡A entrenar!'}
+        />
+      </div>
 
       <div className="mt-4 animate-entrar [animation-delay:80ms]">
         <TarjetaNivel />

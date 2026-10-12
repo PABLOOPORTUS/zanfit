@@ -85,7 +85,12 @@ export default function Cuenta() {
         <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">¡Bienvenido a tu cuenta!</h1>
         <p className="mt-2 text-texto-suave">En este teléfono ya tienes entrenos guardados sin cuenta. ¿Qué hacemos con ellos?</p>
         <div className="mt-6 flex flex-col gap-3">
-          <button type="button" disabled={enviando} onClick={() => elegir('subir')} className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60">
+          <button
+            type="button"
+            disabled={enviando}
+            onClick={() => elegir('subir')}
+            className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+          >
             Guardarlos en mi cuenta
           </button>
           <button
@@ -97,24 +102,29 @@ export default function Cuenta() {
             Empezar de cero
           </button>
         </div>
-        <p className="mt-3 text-sm text-texto-suave">Si eliges empezar de cero, esos entrenos no se borran del teléfono, pero no quedan en tu cuenta.</p>
+        <p className="mt-3 text-sm text-texto-suave">
+          Si eliges empezar de cero, esos entrenos no se borran del teléfono, pero no quedan en tu cuenta.
+        </p>
       </Pantalla>
     )
   }
 
   return (
-    <Pantalla>
+    // Crear cuenta tiene más campos: se compacta para que quepa en la pantalla igual que Ingresar.
+    <Pantalla compacto={registro}>
       <h1 className="font-marca text-3xl font-bold tracking-tight">{registro ? 'Crea tu cuenta' : 'Ingresa a tu cuenta'}</h1>
       <p className="mt-2 text-texto-suave">
         {registro
-          ? 'Tu progreso, tus récords y tus logros quedan guardados en tu cuenta: los recuperas en cualquier teléfono.'
+          ? 'Tus entrenos y logros quedan guardados en tu cuenta.'
           : 'Con tu correo y tu PIN de 6 números entras a tu progreso desde cualquier teléfono.'}
       </p>
       {typeof navigator !== 'undefined' && !navigator.onLine && (
-        <p className="mt-3 rounded-xl border border-peligro/50 bg-peligro/10 p-3 text-sm">Necesitas conexión a internet para ingresar. Después la app funciona sin señal.</p>
+        <p className="mt-3 rounded-xl border border-peligro/50 bg-peligro/10 p-3 text-sm">
+          Necesitas conexión a internet para ingresar. Después la app funciona sin señal.
+        </p>
       )}
 
-      <div className="mt-6 grid grid-cols-2 gap-1 rounded-2xl border border-borde bg-superficie p-1" role="tablist">
+      <div className={`${registro ? 'mt-4' : 'mt-6'} grid grid-cols-2 gap-1 rounded-2xl border border-borde bg-superficie p-1`} role="tablist">
         {[
           { valor: false, texto: 'Ingresar' },
           { valor: true, texto: 'Crear cuenta' },
@@ -135,10 +145,17 @@ export default function Cuenta() {
         ))}
       </div>
 
-      <form onSubmit={enviar} noValidate className="mt-6 flex flex-col gap-4">
+      <form onSubmit={enviar} noValidate className={`flex flex-col ${registro ? 'mt-4 gap-3' : 'mt-6 gap-4'}`}>
         {registro && (
           <Campo etiqueta="Tu nombre">
-            <input value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="given-name" autoCapitalize="words" className={claseInput} placeholder="Ej: Pablo" />
+            <input
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              autoComplete="given-name"
+              autoCapitalize="words"
+              className={claseInput}
+              placeholder="Ej: Pablo"
+            />
           </Campo>
         )}
         <Campo etiqueta="Correo">
@@ -153,12 +170,18 @@ export default function Cuenta() {
             placeholder="tu@correo.cl"
           />
         </Campo>
-        <Campo etiqueta={registro ? 'Elige un PIN de 6 números' : 'PIN de 6 números'}>
-          <InputPin valor={pin} onChange={setPin} ver={verPin} nuevo={registro} />
-        </Campo>
-        {registro && (
-          <Campo etiqueta="Repite el PIN">
-            <InputPin valor={pin2} onChange={setPin2} ver={verPin} nuevo />
+        {registro ? (
+          <div className="grid grid-cols-2 gap-3">
+            <Campo etiqueta="PIN (6 números)">
+              <InputPin valor={pin} onChange={setPin} ver={verPin} nuevo angosto />
+            </Campo>
+            <Campo etiqueta="Repite el PIN">
+              <InputPin valor={pin2} onChange={setPin2} ver={verPin} nuevo angosto />
+            </Campo>
+          </div>
+        ) : (
+          <Campo etiqueta="PIN de 6 números">
+            <InputPin valor={pin} onChange={setPin} ver={verPin} nuevo={false} />
           </Campo>
         )}
         <label className="flex h-12 items-center gap-3 text-texto-suave">
@@ -177,23 +200,31 @@ export default function Cuenta() {
           </p>
         )}
 
-        <button type="submit" disabled={enviando} className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={enviando}
+          className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+        >
           {enviando ? 'Un momento…' : registro ? 'Crear cuenta' : 'Ingresar'}
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-texto-suave">Cada persona que use este teléfono puede tener su propia cuenta: cada una ve solo su progreso.</p>
+      {!registro && (
+        <p className="mt-6 text-sm text-texto-suave">
+          Cada persona que use este teléfono puede tener su propia cuenta: cada una ve solo su progreso.
+        </p>
+      )}
     </Pantalla>
   )
 }
 
 /** Pantalla de acceso a pantalla completa (sin barra inferior), con la marca grande. */
-function Pantalla({ children }: { children: ReactNode }) {
+function Pantalla({ children, compacto = false }: { children: ReactNode; compacto?: boolean }) {
   return (
     <main className="pt-safe pb-safe relative mx-auto min-h-dvh max-w-lg px-4">
       <FondoAcceso />
-      <div className="pt-10 pb-8 text-center">
-        <Marca className="text-5xl drop-shadow-lg" />
+      <div className={`text-center ${compacto ? 'pt-6 pb-4' : 'pt-10 pb-8'}`}>
+        <Marca className={`${compacto ? 'text-4xl' : 'text-5xl'} drop-shadow-lg`} />
         <FraseMotivadora />
       </div>
       <section className="pb-10">{children}</section>
@@ -213,7 +244,20 @@ function Campo({ etiqueta, children }: { etiqueta: string; children: ReactNode }
   )
 }
 
-function InputPin({ valor, onChange, ver, nuevo }: { valor: string; onChange: (v: string) => void; ver: boolean; nuevo: boolean }) {
+/** `angosto`: dos PIN lado a lado (al crear la cuenta), con menos espacio entre los dígitos para que quepan. */
+function InputPin({
+  valor,
+  onChange,
+  ver,
+  nuevo,
+  angosto = false,
+}: {
+  valor: string
+  onChange: (v: string) => void
+  ver: boolean
+  nuevo: boolean
+  angosto?: boolean
+}) {
   return (
     <input
       type={ver ? 'text' : 'password'}
@@ -223,7 +267,7 @@ function InputPin({ valor, onChange, ver, nuevo }: { valor: string; onChange: (v
       autoComplete={nuevo ? 'new-password' : 'current-password'}
       value={valor}
       onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
-      className={`${claseInput} font-marca text-2xl font-bold tracking-[0.5em]`}
+      className={`${claseInput} font-marca font-bold ${angosto ? 'px-3 text-xl tracking-[0.2em]' : 'text-2xl tracking-[0.5em]'}`}
       placeholder="••••••"
     />
   )
