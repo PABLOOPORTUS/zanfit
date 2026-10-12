@@ -1,16 +1,20 @@
 import type { ResumenEntreno } from '../db/progreso'
 import { useUnidad } from '../hooks/useAjustes'
+import { usePerfil } from '../hooks/usePlan'
+import { caloriasDeResumen } from '../lib/calorias'
 import { formatearDuracion } from '../lib/formato'
 
-/** Duración, volumen, series y récords nuevos de un entreno. Se usa en el resumen al finalizar y en el historial. */
+/** Duración, volumen, series, calorías y récords nuevos de un entreno. Se usa en el resumen al finalizar y en el historial. */
 export default function DatosEntreno({ resumen }: { resumen: ResumenEntreno }) {
   const u = useUnidad()
+  const perfil = usePerfil()
   return (
     <>
-      <dl className="grid grid-cols-3 gap-2">
+      <dl className="grid grid-cols-2 gap-2">
         <Dato titulo="Duración" valor={formatearDuracion(resumen.duracionMs)} />
         <Dato titulo="Volumen" valor={u.volumen(resumen.volumen)} />
         <Dato titulo="Series" valor={String(resumen.series)} />
+        <Dato titulo={perfil?.pesoKg ? 'Calorías (aprox.)' : 'Calorías (aprox., 70 kg)'} valor={`~${caloriasDeResumen(resumen, perfil?.pesoKg)} kcal`} />
       </dl>
 
       {resumen.records.length > 0 && (

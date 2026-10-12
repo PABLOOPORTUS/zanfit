@@ -6,9 +6,11 @@ import { duplicarRutina, eliminarRutina } from '../../db/routines'
 import { iniciarEntreno } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useExercises } from '../../hooks/useExercises'
+import { usePerfil } from '../../hooks/usePlan'
 import { useRoutine } from '../../hooks/useRoutines'
 import { useEntrenoActivo } from '../../hooks/useWorkouts'
 import { formatearDescanso } from '../../lib/formato'
+import { caloriasRutina, PESO_POR_DEFECTO } from '../../lib/calorias'
 import { duracionEstimada } from '../../lib/plan'
 import type { Exercise } from '../../types'
 import RutinaNoEncontrada from './RutinaNoEncontrada'
@@ -20,6 +22,7 @@ export default function DetalleRutina() {
   const ejercicios = useExercises()
   const activo = useEntrenoActivo()
   const u = useUnidad()
+  const perfil = usePerfil()
 
   if (rutina === undefined || ejercicios === undefined || activo === undefined) return null
   if (rutina === null) return <RutinaNoEncontrada />
@@ -41,7 +44,8 @@ export default function DetalleRutina() {
       <h1 className="mt-2 font-marca text-4xl font-bold tracking-tight">{rutina.nombre}</h1>
       {rutina.foco && (
         <p className="mt-1 text-texto-suave">
-          {rutina.foco} · ~{duracionEstimada(rutina)} min
+          {rutina.foco} · ~{duracionEstimada(rutina)} min · ~
+          {caloriasRutina(rutina, duracionEstimada(rutina), porId, perfil?.pesoKg ?? PESO_POR_DEFECTO)} kcal
         </p>
       )}
       {rutina.nota && <p className="mt-3 rounded-2xl border border-lima/40 bg-lima/10 p-4 leading-snug">{rutina.nota}</p>}

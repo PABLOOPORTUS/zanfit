@@ -118,6 +118,13 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
 
       {guia.abierto && <GuiaEjercicio ejercicio={exercise} onCerrar={guia.cerrar} />}
 
+      {sets.length > 0 && completadas === sets.length && (
+        <div className="mx-4 mb-3 flex animate-aparecer items-center gap-3 rounded-xl border border-lima/50 bg-lima/10 px-3 py-2">
+          <img src="/medios/animales/musculo.webp" alt="" className="size-10" />
+          <p className="font-semibold">¡Ejercicio completo!</p>
+        </div>
+      )}
+
       {nota && (
         <p className="px-4 pb-2 text-sm leading-snug">
           <span className="font-semibold text-lima">Clave: </span>
@@ -259,7 +266,7 @@ function FilaSerie({ serie, descansoSeg }: { serie: WorkoutSet; descansoSeg: num
         aria-pressed={serie.completada}
         aria-label={`${serie.completada ? 'Desmarcar' : 'Marcar'} serie ${serie.numeroSerie}`}
         className={`flex size-14 items-center justify-center rounded-xl border-2 transition-colors ${
-          serie.completada ? 'border-lima bg-lima text-fondo' : 'border-borde text-texto-suave active:bg-borde'
+          serie.completada ? 'animate-pop border-lima bg-lima text-fondo' : 'border-borde text-texto-suave active:bg-borde'
         }`}
       >
         <svg

@@ -2,7 +2,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useFechasEntrenadas, useHistorial, useRecordsPorEjercicio } from '../../hooks/useWorkouts'
 import Medalla from '../../components/Medalla'
 import { useUnidad } from '../../hooks/useAjustes'
-import { useLogros } from '../../hooks/useLogros'
+import { useJuego, useLogros } from '../../hooks/useLogros'
+import { NIVELES } from '../../lib/juego'
 import { formatearDuracion, formatearFecha } from '../../lib/formato'
 import CalendarioEntrenos from './CalendarioEntrenos'
 
@@ -125,16 +126,27 @@ function Logros() {
   const ganados = logros.filter((l) => l.desbloqueado)
   const siguiente = logros.filter((l) => !l.desbloqueado).sort((a, b) => b.progreso / b.meta - a.progreso / a.meta)[0]
   const miles = new Intl.NumberFormat('es-CL')
-  const n = (l: (typeof logros)[number]) => (l.categoria === 'volumen' ? `${miles.format(Math.round(l.progreso / 1000))}/${miles.format(l.meta / 1000)} t` : `${l.progreso}/${l.meta}`)
+  const n = (l: (typeof logros)[number]) =>
+    l.categoria === 'volumen' ? `${miles.format(Math.round(l.progreso / 1000))}/${miles.format(l.meta / 1000)} t` : `${l.progreso}/${l.meta}`
   return (
     <div>
+      <Niveles />
+      <h2 className="mt-6 mb-2 px-1 text-sm font-bold tracking-wide text-texto-suave uppercase">Medallas</h2>
       <p className="px-1 text-texto-suave">
         Tienes <span className="font-semibold text-texto">{ganados.length}</span> de {logros.length} logros.
-        {siguiente && <> El próximo: <span className="font-semibold text-lima">{siguiente.titulo}</span> ({n(siguiente)}).</>}
+        {siguiente && (
+          <>
+            {' '}
+            El próximo: <span className="font-semibold text-lima">{siguiente.titulo}</span> ({n(siguiente)}).
+          </>
+        )}
       </p>
       <ul className="mt-3 flex flex-col gap-2">
         {[...ganados.sort((a, b) => b.desbloqueado!.fecha - a.desbloqueado!.fecha), ...logros.filter((l) => !l.desbloqueado)].map((l) => (
-          <li key={l.id} className={`flex items-center gap-3 rounded-2xl border p-3 ${l.desbloqueado ? 'border-lima/40 bg-superficie' : 'border-borde bg-superficie'}`}>
+          <li
+            key={l.id}
+            className={`flex items-center gap-3 rounded-2xl border p-3 ${l.desbloqueado ? 'border-lima/40 bg-superficie' : 'border-borde bg-superficie'}`}
+          >
             <Medalla categoria={l.categoria} ganada={!!l.desbloqueado} />
             <div className="min-w-0 flex-1">
               <p className={`font-semibold ${l.desbloqueado ? '' : 'text-texto-suave'}`}>{l.titulo}</p>
@@ -157,13 +169,60 @@ function Logros() {
   )
 }
 
+/** Los 8 niveles (animales): el actual animado, los ganados en color y los que faltan en gris con sus puntos. */
+function Niveles() {
+  const juego = useJuego()
+  if (!juego) return null
+  return (
+    <div>
+      <h2 className="mb-2 px-1 text-sm font-bold tracking-wide text-texto-suave uppercase">Niveles</h2>
+      <p className="px-1 text-texto-suave">
+        Tienes <span className="font-semibold text-lima">{juego.puntos.toLocaleString('es-CL')} puntos</span>. Ganas puntos al terminar entrenos,
+        completar series y días del plan, y romper récords.
+      </p>
+      <ul className="mt-3 grid grid-cols-4 gap-2">
+        {NIVELES.map((n, i) => {
+          const actual = n.numero === juego.nivel.numero
+          const ganado = juego.puntos >= n.desde
+          return (
+            <li
+              key={n.numero}
+              className={`animate-entrar rounded-2xl border p-2 text-center ${actual ? 'border-lima bg-lima/10' : 'border-borde bg-superficie'}`}
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <img
+                src={`/medios/animales/${n.archivo}${actual ? '' : '-quieto'}.webp`}
+                alt=""
+                className={`mx-auto size-14 ${actual ? 'animate-flotar' : ''} ${ganado ? '' : 'opacity-30 grayscale'}`}
+              />
+              <p className={`mt-1 text-xs leading-tight font-semibold ${ganado ? '' : 'text-texto-suave'}`}>{n.animal}</p>
+              <p className="text-[11px] text-texto-suave tabular-nums">{ganado ? `Nivel ${n.numero}` : `${n.desde.toLocaleString('es-CL')} pts`}</p>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
 function Vacio({ children }: { children: string }) {
   return <p className="rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">{children}</p>
 }
 
 function Chevron() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-texto-suave" aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0 text-texto-suave"
+      aria-hidden
+    >
       <path d="m9 6 6 6-6 6" />
     </svg>
   )

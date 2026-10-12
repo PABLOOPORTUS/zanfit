@@ -66,12 +66,12 @@ export default function BottomNav() {
             <NavLink
               to={tab.to}
               className={({ isActive }) =>
-                `flex h-18 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors active:scale-95 ${
+                `group flex h-18 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors active:scale-95 ${
                   isActive ? 'text-lima' : 'text-texto-suave'
                 }`
               }
             >
-              <span className="relative">
+              <span className="relative group-aria-[current=page]:animate-pop">
                 {tab.icon}
                 {tab.to === '/entrenar' && enCurso && (
                   <span className="absolute -top-0.5 -right-1.5 size-2.5 rounded-full bg-lima ring-2 ring-superficie" aria-label="Entreno en curso" />

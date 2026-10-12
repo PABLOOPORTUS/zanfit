@@ -1,9 +1,10 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import Avatar from './Avatar'
 import Marca from './Marca'
 
 export default function Layout() {
+  const { pathname } = useLocation()
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col">
       <header className="pt-safe sticky top-0 z-10 border-b border-borde bg-fondo/90 backdrop-blur">
@@ -15,7 +16,10 @@ export default function Layout() {
         </div>
       </header>
       <main className="flex-1 px-4 pt-4 pb-28">
-        <Outlet />
+        {/* La clave fuerza a repetir la animación de entrada en cada pantalla. */}
+        <div key={pathname} className="animate-entrar">
+          <Outlet />
+        </div>
       </main>
       <BottomNav />
     </div>

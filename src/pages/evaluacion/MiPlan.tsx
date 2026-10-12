@@ -23,6 +23,7 @@ import {
   ZONAS,
   type Paso,
 } from '../../lib/evaluacion'
+import { caloriasRutina } from '../../lib/calorias'
 import { MENSAJE_SIN_IA } from '../../lib/clienteIa'
 import { formatearDescanso } from '../../lib/formato'
 import { DESCRIPCION_DIVISION, duracionEstimada, edad, imc, recomendaciones } from '../../lib/plan'
@@ -105,7 +106,8 @@ export default function MiPlan() {
                   <p className="font-marca text-xl leading-tight font-bold">{r.nombre.replace(/^Plan · /, '')}</p>
                   {r.foco && <p className="text-texto-suave">{r.foco}</p>}
                   <p className="text-sm text-texto-suave">
-                    {r.ejercicios.length} ejercicios · ~{duracionEstimada(r)} min · toca para ver o editar
+                    {r.ejercicios.length} ejercicios · ~{duracionEstimada(r)} min · ~{caloriasRutina(r, duracionEstimada(r), porId, perfil.pesoKg)}{' '}
+                    kcal
                   </p>
                 </Link>
                 {toca && <span className="shrink-0 rounded-full bg-lima px-2 py-0.5 text-xs font-bold text-fondo">Hoy</span>}

@@ -11,6 +11,7 @@
   --color-texto: #f5f5f5;
   --color-texto-suave: #a3a3a3;
   --color-peligro: #ff5c5c;
+  --color-amarillo: #ffd23f;
 
   --font-sans: 'Inter Variable', system-ui, sans-serif;
   --font-marca: 'Space Grotesk Variable', 'Inter Variable', system-ui, sans-serif;
@@ -93,5 +94,106 @@
   animation: subir-frase 0.7s ease-out both;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
+  }
+}
+
+/* --- Movimiento dentro de la app ----------------------------------------------------------------------------------
+   Todo respeta prefers-reduced-motion. Ojo: las animaciones de pantalla usan fill-mode "backwards" (sin "forwards"):
+   un transform que se queda puesto convierte al contenedor en referencia de los elementos `fixed` (paneles, botón
+   flotante) y los descoloca. */
+
+/* Entrada de pantallas y tarjetas (con animation-delay para escalonar listas). */
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@utility animate-entrar {
+  animation: entrar 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* "Pop" al marcar una serie o ganar algo. */
+@keyframes pop {
+  40% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@utility animate-pop {
+  animation: pop 0.35s ease-out;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Flotar suave (el animal del nivel, celebraciones). */
+@keyframes flotar {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@utility animate-flotar {
+  animation: flotar 2.4s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Confeti que cae (ver <Confeti>). */
+@keyframes caer {
+  from {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(var(--deriva, 0px), 105vh, 0) rotate(var(--giro, 540deg));
+    opacity: 0.9;
+  }
+}
+@utility animate-caer {
+  animation: caer var(--duracion, 2.8s) cubic-bezier(0.25, 0.6, 0.4, 1) var(--retraso, 0s) both;
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
+}
+
+/* Brillo que cruza una barra o tarjeta ganada. */
+@keyframes brillo {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+@utility animate-brillo {
+  animation: brillo 2.2s ease-in-out 0.8s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Respuesta al tocar: botones y enlaces se achican un poco (sensación de "apretar"). */
+@layer base {
+  button:not(:disabled),
+  a {
+    transition-property: transform, background-color, color, border-color, opacity;
+    transition-duration: 120ms;
+  }
+  button:not(:disabled):active,
+  a:active {
+    transform: scale(0.97);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button:not(:disabled):active,
+    a:active {
+      transform: none;
+    }
   }
 }

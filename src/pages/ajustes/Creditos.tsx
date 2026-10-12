@@ -16,6 +16,12 @@ export default function Creditos() {
         <Cambios>Cambios en ZANFIT: tamaño reducido, formato WebP y una versión recortada para miniaturas.</Cambios>
       </Bloque>
 
+      <Bloque titulo="Animales y emojis animados">
+        Animales de los niveles, fuego y brazo: <Enlace href="https://googlefonts.github.io/noto-emoji-animation/">Noto Emoji Animation</Enlace> de
+        Google, licencia <Enlace href="https://creativecommons.org/licenses/by/4.0/deed.es">CC BY 4.0</Enlace>.
+        <Cambios>Cambios en ZANFIT: versiones quietas de 160 px para las listas.</Cambios>
+      </Bloque>
+
       <Bloque titulo="Mapa muscular">
         Silueta de <Enlace href="https://github.com/GV79/react-body-highlighter">react-body-highlighter</Enlace>, licencia MIT.
         <Cambios>Cambios en ZANFIT: colores adaptados al modo oscuro.</Cambios>
