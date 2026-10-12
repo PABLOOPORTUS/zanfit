@@ -1,0 +1,192 @@
+import { cliente } from './clienteNube'
+import { generarCodigo } from './codigos'
+
+/**
+ * Acceso pagado (ver supabase/acceso.sql y api/registro.ts). Cada cuenta está en prueba (hasta una fecha), activa
+ * (pagó) o bloqueada. La app lo consulta al abrir y lo guarda en localStorage para funcionar sin internet; la nube
+ * además rechaza guardar datos de cuentas sin acceso (RLS), así que saltarse la app no sirve de mucho.
+ */
+
+export type EstadoCuenta = 'prueba' | 'activa' | 'bloqueada' | 'sin-cuenta'
+
+export interface Acceso {
+  estado: EstadoCuenta
+  /** Fin de la prueba (ms). */
+  pruebaHasta: number | null
+  admin: boolean
+  /** Cuándo se revisó con la nube (ms). */
+  revisado: number
+}
+
+export interface DatosVenta {
+  precio: string
+  datos_transferencia: string
+  contacto: string
+  dias_prueba: number
+}
+
+export interface Cuenta {
+  user_id: string
+  nombre: string
+  correo: string
+  estado: 'prueba' | 'activa' | 'bloqueada'
+  prueba_hasta: string | null
+  codigo: string | null
+  nota: string
+  creada_en: string
+  activada_en: string | null
+}
+
+export interface Codigo {
+  codigo: string
+  tipo: 'prueba' | 'compra'
+  dias: number
+  nota: string
+  creado_en: string
+  usado_por: string | null
+  usado_en: string | null
+}
+
+const clave = (uid: string) => `zanfit:acceso:${uid}`
+
+export function accesoGuardado(uid: string): Acceso | null {
+  try {
+    return JSON.parse(localStorage.getItem(clave(uid)) ?? 'null') as Acceso | null
+  } catch {
+    return null
+  }
+}
+
+function guardar(uid: string, acceso: Acceso) {
+  try {
+    localStorage.setItem(clave(uid), JSON.stringify(acceso))
+  } catch {
+    // Sin localStorage se vuelve a consultar cada vez.
+  }
+}
+
+/** ¿Puede usar la app? Cuenta activa o prueba vigente. */
+export const puedeUsar = (a: Pick<Acceso, 'estado' | 'pruebaHasta'>, ahora = Date.now()) =>
+  a.estado === 'activa' || (a.estado === 'prueba' && (a.pruebaHasta ?? 0) > ahora)
+
+export const diasRestantes = (pruebaHasta: number | null, ahora = Date.now()) => Math.max(0, Math.ceil(((pruebaHasta ?? 0) - ahora) / 86_400_000))
+
+/** Las tablas todavía no existen en Supabase (antes de correr supabase/acceso.sql): no se bloquea a nadie. */
+const sinTablas = (error: { code?: string; message?: string } | null) =>
+  !!error && (error.code === '42P01' || error.code === 'PGRST205' || /does not exist|could not find the table/i.test(error.message ?? ''))
+
+/**
+ * Consulta el acceso en la nube y lo guarda. Sin conexión (o si falla) devuelve el último guardado; si nunca se
+ * consultó, `null` (la app deja pasar y vuelve a intentar: no se bloquea a alguien por falta de señal).
+ */
+export async function revisarAcceso(uid: string): Promise<Acceso | null> {
+  try {
+    const sb = await cliente()
+    const [cuenta, admin] = await Promise.all([
+      sb.from('cuentas').select('estado, prueba_hasta').eq('user_id', uid).maybeSingle(),
+      sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle(),
+    ])
+    if (sinTablas(cuenta.error)) {
+      const acceso: Acceso = { estado: 'activa', pruebaHasta: null, admin: false, revisado: Date.now() }
+      guardar(uid, acceso)
+      return acceso
+    }
+    if (cuenta.error) return accesoGuardado(uid)
+    const fila = cuenta.data as { estado: Acceso['estado']; prueba_hasta: string | null } | null
+    const acceso: Acceso = {
+      estado: fila?.estado ?? 'sin-cuenta',
+      pruebaHasta: fila?.prueba_hasta ? new Date(fila.prueba_hasta).getTime() : null,
+      admin: !!admin.data,
+      revisado: Date.now(),
+    }
+    guardar(uid, acceso)
+    return acceso
+  } catch {
+    return accesoGuardado(uid)
+  }
+}
+
+export async function datosVenta(): Promise<DatosVenta | null> {
+  try {
+    const { data } = await (
+      await cliente()
+    )
+      .from('ajustes_venta')
+      .select('precio, datos_transferencia, contacto, dias_prueba')
+      .eq('id', 1)
+      .maybeSingle()
+    return (data as DatosVenta | null) ?? null
+  } catch {
+    return null
+  }
+}
+
+const MENSAJES_REGISTRO: Record<string, string> = {
+  'codigo-invalido': 'Ese código no existe. Revisa que esté bien escrito (por ejemplo, ZF-7K4M-Q2PX).',
+  'codigo-usado': 'Ese código ya se usó. Cada código sirve para una sola cuenta.',
+  'correo-existe': 'Ese correo ya tiene una cuenta. Ingresa con tu PIN.',
+  'datos-invalidos': 'Revisa tus datos: nombre, correo y un PIN de 6 números.',
+  'sin-configurar': 'El registro todavía no está habilitado. Pídele ayuda a quien te dio el código.',
+}
+
+/** Crea la cuenta en `api/registro`. Lanza un Error con un mensaje para el usuario si no se pudo. */
+export async function registrarConCodigo(nombre: string, correo: string, pin: string, codigo: string): Promise<void> {
+  let r: Response
+  try {
+    r = await fetch('/api/registro', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ nombre: nombre.trim(), correo: correo.trim(), pin, codigo }),
+    })
+  } catch {
+    throw new Error('No hay conexión. Revisa tu internet e intenta de nuevo.')
+  }
+  if (r.ok) return
+  const { error } = ((await r.json().catch(() => ({}))) ?? {}) as { error?: string }
+  throw new Error(MENSAJES_REGISTRO[error ?? ''] ?? 'No pudimos crear la cuenta. Intenta de nuevo en un momento.')
+}
+
+// --- Administración (las reglas de Supabase solo dejan hacer esto a un admin) ---------------------------------------
+
+async function tabla(nombre: string) {
+  return (await cliente()).from(nombre)
+}
+
+function revisar<T>({ data, error }: { data: T | null; error: { message: string } | null }): T {
+  if (error) throw new Error(error.message)
+  return data as T
+}
+
+export async function listarCuentas(): Promise<Cuenta[]> {
+  return revisar(await (await tabla('cuentas')).select('*').order('creada_en', { ascending: false }))
+}
+
+export async function listarCodigos(): Promise<Codigo[]> {
+  return revisar(await (await tabla('codigos')).select('*').order('creado_en', { ascending: false }))
+}
+
+export async function crearCodigo(tipo: Codigo['tipo'], dias: number, nota: string): Promise<string> {
+  // Con 31^8 combinaciones es casi imposible que se repita; si pasa, se intenta con otro.
+  for (let intento = 0; intento < 3; intento++) {
+    const codigo = generarCodigo()
+    const { error } = await (await tabla('codigos')).insert({ codigo, tipo, dias, nota })
+    if (!error) return codigo
+    if (error.code !== '23505') throw new Error(error.message)
+  }
+  throw new Error('No se pudo crear el código. Intenta de nuevo.')
+}
+
+export async function borrarCodigo(codigo: string): Promise<void> {
+  revisar(await (await tabla('codigos')).delete().eq('codigo', codigo).is('usado_por', null))
+}
+
+export async function actualizarCuenta(
+  uid: string,
+  cambios: Partial<Pick<Cuenta, 'estado' | 'prueba_hasta' | 'nota' | 'activada_en'>>,
+): Promise<void> {
+  revisar(await (await tabla('cuentas')).update(cambios).eq('user_id', uid))
+}
+
+export async function guardarDatosVenta(datos: DatosVenta): Promise<void> {
+  revisar(await (await tabla('ajustes_venta')).update(datos).eq('id', 1))
+}

@@ -5,7 +5,9 @@ import TarjetaNivel from '../../components/TarjetaNivel'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import { iniciarEntreno } from '../../db/workouts'
 import { useExercises } from '../../hooks/useExercises'
+import { useAcceso } from '../../hooks/useAcceso'
 import { useCuenta } from '../../hooks/useCuenta'
+import { diasRestantes } from '../../lib/acceso'
 import { usePerfil, usePlan } from '../../hooks/usePlan'
 import { useRoutines } from '../../hooks/useRoutines'
 import { useUltimoEntreno } from '../../hooks/useWorkouts'
@@ -20,6 +22,7 @@ export default function ElegirEntreno() {
   const datosPlan = usePlan()
   const ejercicios = useExercises()
   const { usuario } = useCuenta()
+  const acceso = useAcceso()
   if (rutinas === undefined || ultimo === undefined || perfil === undefined || datosPlan === undefined || ejercicios === undefined) return null
   const porId = new Map(ejercicios.map((e) => [e.id!, e]))
   const hoy = datosPlan?.rutinas.find((r) => r.id === datosPlan.siguienteId)
@@ -33,6 +36,13 @@ export default function ElegirEntreno() {
           detalle={ultimo ? `Último entreno: ${ultimo.nombre.replace(/^Plan · /, '')}, ${formatearFecha(ultimo.fechaInicio)}` : '¡A entrenar!'}
         />
       </div>
+
+      {acceso?.estado === 'prueba' && (
+        <p className="mt-3 rounded-xl border border-lima/50 bg-lima/10 px-4 py-2 text-sm">
+          <span className="font-semibold text-lima">Prueba gratis:</span> te{' '}
+          {diasRestantes(acceso.pruebaHasta) === 1 ? 'queda 1 día' : `quedan ${diasRestantes(acceso.pruebaHasta)} días`}.
+        </p>
+      )}
 
       <div className="mt-4 animate-entrar [animation-delay:80ms]">
         <TarjetaNivel />

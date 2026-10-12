@@ -11,7 +11,7 @@ export default function Privacidad() {
       <p className="mt-2 text-texto-suave">Qué datos usa ZANFIT, dónde se guardan y con quién se comparten.</p>
 
       <Bloque titulo="Qué guardamos">
-        Tu cuenta (correo, nombre y PIN cifrado), tu evaluación (sexo, edad, peso, altura, objetivo, experiencia, lugar, equipo, lesiones y
+        Tu cuenta (correo, nombre, PIN cifrado y el estado de tu acceso: prueba o activa), tu evaluación (sexo, edad, peso, altura, objetivo, experiencia, lugar, equipo, lesiones y
         respuestas de salud), tus rutinas, tus entrenos y tus ajustes. Las fotos y videos que grabes de tu gimnasio se guardan solo en tu teléfono.
       </Bloque>
 

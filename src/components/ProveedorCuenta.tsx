@@ -3,6 +3,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type React
 import { CuentaContext, type CuentaApi, type EstadoSync, type Usuario } from '../contexts/CuentaContext'
 import { BASE_INVITADO, db, nombreBase, ultimoCambio, usarBase } from '../db'
 import { copiarInvitadoAUsuario, ErrorNube, hayDatosDeInvitado, hayDatosEnLaNube, sincronizar, subir } from '../db/nube'
+import { registrarConCodigo } from '../lib/acceso'
 import { cliente, mensajeErrorNube, usuarioGuardado } from '../lib/clienteNube'
 
 const ESPERA_SUBIDA_MS = 4000
@@ -130,11 +131,11 @@ export default function ProveedorCuenta({ children }: { children: ReactNode }) {
         if (error || !data.user) throw new Error(await mensajeErrorNube(error))
         return trasAutenticar(data.user)
       },
-      registrar: async (nombre, correo, pin) => {
-        const { data, error } = await (await cliente()).auth.signUp({ email: correo.trim(), password: pin, options: { data: { nombre: nombre.trim() } } })
+      registrar: async (nombre, correo, pin, codigo) => {
+        // El registro público está cerrado en Supabase: la cuenta la crea el servidor, solo con un código válido.
+        await registrarConCodigo(nombre, correo, pin, codigo)
+        const { data, error } = await (await cliente()).auth.signInWithPassword({ email: correo.trim(), password: pin })
         if (error || !data.user) throw new Error(await mensajeErrorNube(error))
-        // Si el proyecto exige confirmar el correo, no hay sesión hasta que la persona confirme.
-        if (!data.session) return 'confirmar-correo'
         return trasAutenticar(data.user)
       },
       elegirDatos: async (opcion) => {

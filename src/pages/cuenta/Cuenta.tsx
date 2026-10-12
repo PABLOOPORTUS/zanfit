@@ -1,3 +1,4 @@
+import { esCodigoValido, normalizarCodigo } from '../../lib/codigos'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import FondoAcceso from '../../components/FondoAcceso'
@@ -26,12 +27,16 @@ function guardarIntentos(v: { cantidad: number; desde: number } | null) {
   }
 }
 
-/** `/cuenta?modo=ingresar|registro`: ingresar o crear cuenta con correo y PIN de 6 números. */
+/**
+ * `/cuenta?modo=ingresar|registro`: ingresar o crear cuenta con correo y PIN de 6 números. Crear cuenta exige un código
+ * de acceso (de prueba o de compra), que puede venir en el link: `/cuenta?modo=registro&codigo=ZF-XXXX-XXXX`.
+ */
 export default function Cuenta() {
   const cuenta = useCuenta()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const registro = params.get('modo') === 'registro'
+  const [codigo, setCodigo] = useState(() => params.get('codigo') ?? '')
   const [nombre, setNombre] = useState('')
   const [correo, setCorreo] = useState('')
   const [pin, setPin] = useState('')
@@ -52,13 +57,14 @@ export default function Cuenta() {
     const intentos = leerIntentos()
     if (intentos.cantidad >= INTENTOS_MAXIMOS && Date.now() - intentos.desde < BLOQUEO_MS)
       return setError('Demasiados intentos. Espera un minuto y vuelve a intentar.')
+    if (registro && !esCodigoValido(normalizarCodigo(codigo))) return setError('Escribe tu código de acceso (por ejemplo, ZF-7K4M-Q2PX).')
     if (registro && !nombre.trim()) return setError('Escribe tu nombre.')
     if (!/^\S+@\S+\.\S+$/.test(correo.trim())) return setError('Revisa el correo: no parece válido.')
     if (!/^\d{6}$/.test(pin)) return setError('El PIN debe tener exactamente 6 números.')
     if (registro && pin !== pin2) return setError('Los dos PIN no coinciden.')
     setEnviando(true)
     try {
-      const resultado = registro ? await cuenta.registrar(nombre, correo, pin) : await cuenta.ingresar(correo, pin)
+      const resultado = registro ? await cuenta.registrar(nombre, correo, pin, normalizarCodigo(codigo)) : await cuenta.ingresar(correo, pin)
       guardarIntentos(null)
       if (resultado === 'confirmar-correo') setAviso('Te enviamos un correo para confirmar la cuenta. Ábrelo y después ingresa aquí con tu PIN.')
       else if (resultado === 'elegir') setEligiendo(true)
@@ -115,7 +121,7 @@ export default function Cuenta() {
       <h1 className="font-marca text-3xl font-bold tracking-tight">{registro ? 'Crea tu cuenta' : 'Ingresa a tu cuenta'}</h1>
       <p className="mt-2 text-texto-suave">
         {registro
-          ? 'Tus entrenos y logros quedan guardados en tu cuenta.'
+          ? 'Necesitas el código que te entregamos al comprar o para probar ZANFIT.'
           : 'Con tu correo y tu PIN de 6 números entras a tu progreso desde cualquier teléfono.'}
       </p>
       {typeof navigator !== 'undefined' && !navigator.onLine && (
@@ -146,6 +152,19 @@ export default function Cuenta() {
       </div>
 
       <form onSubmit={enviar} noValidate className={`flex flex-col ${registro ? 'mt-4 gap-3' : 'mt-6 gap-4'}`}>
+        {registro && (
+          <Campo etiqueta="Código de acceso">
+            <input
+              value={codigo}
+              onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+              autoCapitalize="characters"
+              autoComplete="off"
+              spellCheck={false}
+              className={`${claseInput} font-marca font-bold tracking-wider`}
+              placeholder="ZF-XXXX-XXXX"
+            />
+          </Campo>
+        )}
         {registro && (
           <Campo etiqueta="Tu nombre">
             <input

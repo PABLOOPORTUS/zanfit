@@ -9,6 +9,7 @@ import Cuenta from './pages/cuenta/Cuenta'
 import ProveedorDescanso from './components/ProveedorDescanso'
 import Ajustes from './pages/ajustes/Ajustes'
 import Creditos from './pages/ajustes/Creditos'
+import Administracion from './pages/ajustes/Administracion'
 import Privacidad from './pages/ajustes/Privacidad'
 import Evaluacion from './pages/evaluacion/Evaluacion'
 import MiPlan from './pages/evaluacion/MiPlan'
@@ -67,6 +68,7 @@ export default function App() {
               <Route path="/ajustes" element={<Ajustes />} />
               <Route path="/ajustes/creditos" element={<Creditos />} />
               <Route path="/ajustes/privacidad" element={<Privacidad />} />
+              <Route path="/admin" element={<Administracion />} />
               <Route path="/evaluacion" element={<Evaluacion />} />
               <Route path="/plan" element={<MiPlan />} />
               <Route path="*" element={<Navigate to="/entrenar" replace />} />

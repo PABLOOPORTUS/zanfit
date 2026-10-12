@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import BannerPerfil from '../../components/BannerPerfil'
+import { useAcceso } from '../../hooks/useAcceso'
 import { Link } from 'react-router-dom'
 import SelectorOpciones from '../../components/SelectorOpciones'
 import Stepper from '../../components/Stepper'
@@ -33,6 +34,7 @@ function leerUltimoRespaldo(): number | null {
 /** `/ajustes`: unidad, descanso por defecto y respaldo de datos. */
 export default function Ajustes() {
   const ajustes = useAjustes()
+  const acceso = useAcceso()
   const descanso = useDescanso()
   // Estado local para no perder toques rápidos mientras se guarda en la base.
   const [descansoSeg, setDescansoSeg] = useState(ajustes.descansoPorDefectoSeg)
@@ -269,6 +271,29 @@ export default function Ajustes() {
           <path d="m9 6 6 6-6 6" />
         </svg>
       </Link>
+
+      {acceso?.admin && (
+        <Link
+          to="/admin"
+          className="flex h-14 items-center justify-between rounded-2xl border border-lima/60 bg-superficie px-4 font-semibold active:bg-borde"
+        >
+          Administración (códigos y cuentas)
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-texto-suave"
+            aria-hidden
+          >
+            <path d="m9 6 6 6-6 6" />
+          </svg>
+        </Link>
+      )}
 
       <Link
         to="/ajustes/privacidad"

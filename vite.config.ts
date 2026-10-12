@@ -4,19 +4,21 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 /**
- * En `npm run dev` no corren las funciones de Vercel: este plugin atiende `/api/plan-ia` con el mismo código
+ * En `npm run dev` no corren las funciones de Vercel: este plugin atiende `/api/<nombre>` con el mismo código
  * (api/plan-ia.ts). La clave sale de `.env` (GEMINI_API_KEY=…, ignorado por git) o del entorno.
  */
 function apiLocal(): Plugin {
   return {
     name: 'zanfit-api-local',
     configureServer(server) {
-      server.middlewares.use('/api/plan-ia', async (req, res) => {
+      server.middlewares.use('/api', async (req, res, siguiente) => {
+        const nombre = /^\/([a-z0-9-]+)/.exec(req.url ?? '')?.[1]
+        if (!nombre) return siguiente()
         const partes: Buffer[] = []
         for await (const parte of req) partes.push(parte as Buffer)
-        const modulo = (await server.ssrLoadModule('/api/plan-ia.ts')) as { POST: (r: Request) => Promise<Response> }
+        const modulo = (await server.ssrLoadModule(`/api/${nombre}.ts`)) as { POST: (r: Request) => Promise<Response> }
         const respuesta = await modulo.POST(
-          new Request('http://localhost/api/plan-ia', {
+          new Request(`http://localhost/api/${nombre}`, {
             method: req.method,
             headers: Object.entries(req.headers).flatMap(([k, v]) => (typeof v === 'string' ? [[k, v] as [string, string]] : [])),
             body: req.method === 'POST' ? Buffer.concat(partes) : undefined,
@@ -34,7 +36,7 @@ export default defineConfig(({ mode }) => {
   // Variables sin prefijo VITE_ (como GEMINI_API_KEY) quedan solo en el servidor de desarrollo, nunca en el bundle.
   const env = loadEnv(mode, process.cwd(), '')
   // (Ojo: asignar `undefined` a process.env lo guarda como el texto "undefined".)
-  for (const nombre of ['GEMINI_API_KEY', 'GEMINI_MODEL']) if (env[nombre] && !process.env[nombre]) process.env[nombre] = env[nombre]
+  for (const nombre of ['GEMINI_API_KEY', 'GEMINI_MODEL', 'SUPABASE_SERVICE_ROLE_KEY']) if (env[nombre] && !process.env[nombre]) process.env[nombre] = env[nombre]
   return {
     plugins: [
       apiLocal(),
