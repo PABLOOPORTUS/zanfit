@@ -17,7 +17,7 @@ export const MENSAJE_SIN_IA: Record<MotivoSinIa, string> = {
  * Pide a `api/plan-ia` que elija y ordene los ejercicios. Nunca lanza: si algo falla devuelve el motivo y la app se
  * queda con el plan por reglas. La respuesta se vuelve a validar aquí.
  */
-export async function pedirPlanIa(pedido: PedidoIa, espera = 25_000): Promise<ResultadoIa> {
+export async function pedirPlanIa(pedido: PedidoIa, espera = 50_000): Promise<ResultadoIa> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) return { ok: false, motivo: 'sin-conexion' }
   if (!usuarioGuardado()) return { ok: false, motivo: 'sin-sesion' }
   try {
@@ -33,7 +33,11 @@ export async function pedirPlanIa(pedido: PedidoIa, espera = 25_000): Promise<Re
     if (r.status === 401) return { ok: false, motivo: 'sin-sesion' }
     if (r.status === 429) return { ok: false, motivo: 'limite' }
     if (r.status === 422) return { ok: false, motivo: 'invalida' }
-    if (!r.ok) return { ok: false, motivo: r.status === 503 || r.status === 404 ? 'no-disponible' : 'error' }
+    if (r.status === 503) {
+      const { error } = ((await r.json().catch(() => ({}))) ?? {}) as { error?: string }
+      return { ok: false, motivo: error === 'sin-modelo-disponible' ? 'limite' : 'no-disponible' }
+    }
+    if (!r.ok) return { ok: false, motivo: r.status === 404 ? 'no-disponible' : 'error' }
     const validacion = validarRespuesta(pedido, { days: ((await r.json()) as { dias?: unknown }).dias })
     return validacion.ok ? { ok: true, dias: validacion.dias } : { ok: false, motivo: 'invalida' }
   } catch (e) {

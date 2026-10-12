@@ -107,7 +107,8 @@ describe('api/plan-ia (Gemini simulado)', () => {
     const cola = [...respuestas]
     return vi.fn(async (url: string) => {
       if (url.includes('/auth/v1/user')) return new Response('{}', { status: 200 })
-      const r = cola.shift()!
+      // Si se acaban, se repite la última (por ejemplo, 429 en todos los modelos).
+      const r = cola.length > 1 ? cola.shift()! : cola[0]
       const cuerpo = r.json === undefined ? '{}' : JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(r.json) }] } }] })
       return new Response(cuerpo, { status: r.status })
     })
@@ -157,5 +158,33 @@ describe('api/plan-ia (Gemini simulado)', () => {
     process.env.GEMINI_API_KEY = 'x'
     vi.stubGlobal('fetch', gemini([]))
     expect((await llamada({ hola: 1 } as unknown as PedidoIa)).status).toBe(400)
+  })
+})
+
+describe('api/plan-ia: varios modelos', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    delete process.env.GEMINI_API_KEY
+  })
+  it('si el primer modelo está saturado (503) o no existe (404), prueba el siguiente', async () => {
+    process.env.GEMINI_API_KEY = 'x'
+    const modelos: string[] = []
+    vi.stubGlobal('fetch', async (url: string) => {
+      if (url.includes('/auth/v1/user')) return new Response('{}')
+      const modelo = /models\/([^:]+):/.exec(url)![1]
+      modelos.push(modelo)
+      if (modelos.length === 1) return new Response('{}', { status: 503 })
+      if (modelos.length === 2) return new Response('', { status: 404 })
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(respuestaValida()) }] } }] }))
+    })
+    const r = await POST(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer a' }, body: JSON.stringify(pedido) }))
+    expect(r.status).toBe(200)
+    expect(new Set(modelos).size).toBe(3)
+  })
+  it('si ningún modelo está disponible responde 503', async () => {
+    process.env.GEMINI_API_KEY = 'x'
+    vi.stubGlobal('fetch', async (url: string) => (url.includes('/auth/v1/user') ? new Response('{}') : new Response('', { status: 503 })))
+    const r = await POST(new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer a' }, body: JSON.stringify(pedido) }))
+    expect(r.status).toBe(503)
   })
 })
