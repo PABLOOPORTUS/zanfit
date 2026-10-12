@@ -12,8 +12,8 @@
  * - Modelos: GEMINI_MODEL acepta una lista separada por comas. Si uno está saturado (503), no existe para esta clave
  *   (404) o falla (500), se prueba el siguiente.
  */
-import { CLAVE_ANON, URL as URL_SUPABASE } from '../src/lib/configNube'
-import { construirPrompt, ESQUEMA_RESPUESTA, validarRespuesta, type PedidoIa } from '../src/lib/planIa'
+import { CLAVE_ANON, URL as URL_SUPABASE } from '../src/lib/configNube.js'
+import { construirPrompt, ESQUEMA_RESPUESTA, validarRespuesta, type PedidoIa } from '../src/lib/planIa.js'
 
 // Los lite primero: en las pruebas de octubre de 2026 eran los más disponibles en el plan gratuito (los Flash normales
 // solían responder 503 por demanda) y contestan en ~4 s. Ver CLAUDE.md.
