@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useExercises } from '../hooks/useExercises'
 import MiniaturaEjercicio from './MiniaturaEjercicio'
-import { etiquetaEquipo, etiquetaGrupo, GRUPOS_MUSCULARES } from '../lib/catalogos'
-import { normalizar } from '../lib/texto'
-import type { GrupoMuscular } from '../types'
+import { EQUIPOS, etiquetaEquipo, etiquetaGrupo, GRUPOS_MUSCULARES } from '../lib/catalogos'
+import { filtrarEjercicios, POR_PAGINA } from '../lib/filtroEjercicios'
+import type { Equipo, GrupoMuscular } from '../types'
 
 type Props = {
   titulo?: string
@@ -20,17 +20,25 @@ type Props = {
 export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excluir, onAgregar, onCerrar, unico = false, grupoInicial }: Props) {
   const ejercicios = useExercises()
   const [busqueda, setBusqueda] = useState('')
-  const [grupo, setGrupo] = useState<GrupoMuscular | null>(grupoInicial ?? null)
+  const [grupo, setGrupoLocal] = useState<GrupoMuscular | null>(grupoInicial ?? null)
+  const [equipo, setEquipoLocal] = useState<Equipo | null>(null)
+  const [limite, setLimite] = useState(POR_PAGINA)
   const [elegidos, setElegidos] = useState<number[]>([])
+  // Al cambiar un filtro se vuelve a la primera página.
+  function setGrupo(g: GrupoMuscular | null) {
+    setGrupoLocal(g)
+    setLimite(POR_PAGINA)
+  }
+  function setEquipo(e: Equipo | null) {
+    setEquipoLocal(e)
+    setLimite(POR_PAGINA)
+  }
+  function buscar(texto: string) {
+    setBusqueda(texto)
+    setLimite(POR_PAGINA)
+  }
 
-  const filtrados = useMemo(() => {
-    const palabras = normalizar(busqueda).split(/\s+/).filter(Boolean)
-    return (ejercicios ?? []).filter((e) => {
-      if (grupo !== null && e.grupoMuscular !== grupo) return false
-      const texto = normalizar(`${e.nombre} ${etiquetaGrupo(e.grupoMuscular)} ${etiquetaEquipo(e.equipo)}`)
-      return palabras.every((p) => texto.includes(p))
-    })
-  }, [ejercicios, busqueda, grupo])
+  const filtrados = useMemo(() => filtrarEjercicios(ejercicios ?? [], { busqueda, grupo, equipo, tipo: null }), [ejercicios, busqueda, grupo, equipo])
 
   const alternar = (id: number) => {
     if (unico) return onAgregar([id])
@@ -49,7 +57,7 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
         <input
           type="search"
           value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
+          onChange={(e) => buscar(e.target.value)}
           placeholder="Buscar ejercicio"
           aria-label="Buscar ejercicio"
           enterKeyHint="search"
@@ -70,10 +78,25 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
             </button>
           ))}
         </div>
+        <div className="sin-scrollbar -mx-4 mt-2 flex gap-2 overflow-x-auto px-4">
+          {[{ valor: null, etiqueta: 'Todo equipo' }, ...EQUIPOS].map((q) => (
+            <button
+              key={q.etiqueta}
+              type="button"
+              onClick={() => setEquipo(q.valor)}
+              aria-pressed={equipo === q.valor}
+              className={`h-11 shrink-0 rounded-full border px-4 font-semibold ${
+                equipo === q.valor ? 'border-lima bg-lima text-fondo' : 'border-borde bg-superficie active:bg-borde'
+              }`}
+            >
+              {q.etiqueta}
+            </button>
+          ))}
+        </div>
       </div>
 
       <ul className="mx-auto w-full max-w-lg flex-1 divide-y divide-borde overflow-y-auto px-4 pb-4">
-        {filtrados.map((e) => {
+        {filtrados.slice(0, limite).map((e) => {
           const yaEsta = excluir.includes(e.id!)
           const elegido = elegidos.includes(e.id!)
           return (
@@ -92,7 +115,16 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
                   aria-hidden
                 >
                   {elegido && (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="m5 12 5 5 9-10" />
                     </svg>
                   )}
@@ -108,6 +140,17 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
             </li>
           )
         })}
+        {filtrados.length > limite && (
+          <li className="py-4">
+            <button
+              type="button"
+              onClick={() => setLimite((l) => l + POR_PAGINA)}
+              className="h-14 w-full rounded-2xl border border-borde bg-superficie text-lg font-semibold active:bg-borde"
+            >
+              Mostrar más ({filtrados.length - limite} restantes)
+            </button>
+          </li>
+        )}
         {ejercicios && filtrados.length === 0 && (
           <li className="py-8 text-center text-texto-suave">No encontramos ejercicios. Puedes crearlos en la tab Ejercicios.</li>
         )}
@@ -121,9 +164,7 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
             onClick={() => onAgregar(elegidos)}
             className="h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
           >
-            {elegidos.length === 0
-              ? 'Elige ejercicios'
-              : `Agregar ${elegidos.length} ${elegidos.length === 1 ? 'ejercicio' : 'ejercicios'}`}
+            {elegidos.length === 0 ? 'Elige ejercicios' : `Agregar ${elegidos.length} ${elegidos.length === 1 ? 'ejercicio' : 'ejercicios'}`}
           </button>
         </div>
       </div>

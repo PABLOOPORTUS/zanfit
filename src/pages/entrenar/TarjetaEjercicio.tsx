@@ -2,7 +2,8 @@ import { useState } from 'react'
 import GuiaEjercicio from '../../components/GuiaEjercicio'
 import ImagenEjercicio from '../../components/ImagenEjercicio'
 import SelectorEjercicios from '../../components/SelectorEjercicios'
-import { mediosDe, MUSCULOS } from '../../db/mediosEjercicios'
+import { mediosDe } from '../../db/mediosEjercicios'
+import { nombresMusculos } from '../../lib/musculos'
 import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie, reemplazarEjercicio } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useDescanso } from '../../hooks/useDescanso'
@@ -28,7 +29,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
   const { unidad } = u
   const selector = usePanel(`cambiar-${exercise.id}`)
   const guia = usePanel(`guia-${exercise.id}`)
-  const principales = mediosDe(exercise).musculos.principales.map((id) => MUSCULOS[id].nombre).join(', ')
+  const principales = nombresMusculos(mediosDe(exercise).musculos.principales)
   const completadas = sets.filter((s) => s.completada).length
 
   return (

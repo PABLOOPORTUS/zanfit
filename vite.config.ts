@@ -32,6 +32,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
+        // De las fotos de ejercicios solo las miniaturas van al precache (~6 MB); las grandes (~50 MB en total) se
+        // guardan la primera vez que se abre cada ejercicio (ver runtimeCaching).
+        globIgnores: ['medios/fotos/!(*-mini).webp'],
         navigateFallback: '/index.html',
         // Videos del fondo del login: no van al precache (pesan ~1 MB c/u); se guardan la primera vez que se ven.
         runtimeCaching: [
@@ -43,6 +46,15 @@ export default defineConfig({
               rangeRequests: true,
               cacheableResponse: { statuses: [200] },
               expiration: { maxEntries: 8 },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/medios/fotos/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fotos-ejercicios',
+              cacheableResponse: { statuses: [200] },
+              expiration: { maxEntries: 600 },
             },
           },
         ],

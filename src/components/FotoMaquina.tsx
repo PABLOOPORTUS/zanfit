@@ -1,8 +1,8 @@
-import { paginaFoto, type FotoEjercicio } from '../db/fotosEjercicios'
+import { paginaFoto, type Ficha } from '../db/fichasEjercicios'
 import { useAlternar } from '../hooks/useAlternar'
 
 /** Foto del ejercicio con su inicio y final alternando, más la fuente. */
-export default function FotoMaquina({ foto, nombre }: { foto: FotoEjercicio; nombre: string }) {
+export default function FotoMaquina({ foto, nombre }: { foto: Ficha; nombre: string }) {
   const cuadro = useAlternar(true)
   return (
     <figure className="overflow-hidden rounded-2xl border border-borde bg-superficie">

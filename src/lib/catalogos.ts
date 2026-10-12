@@ -7,6 +7,7 @@ export const GRUPOS_MUSCULARES: { valor: GrupoMuscular; etiqueta: string }[] = [
   { valor: 'hombros', etiqueta: 'Hombros' },
   { valor: 'biceps', etiqueta: 'Bíceps' },
   { valor: 'triceps', etiqueta: 'Tríceps' },
+  { valor: 'antebrazos', etiqueta: 'Antebrazos' },
   { valor: 'core', etiqueta: 'Core' },
 ]
 
@@ -19,6 +20,9 @@ export const EQUIPOS: { valor: Equipo; etiqueta: string }[] = [
   { valor: 'peso-corporal', etiqueta: 'Peso corporal' },
   { valor: 'kettlebell', etiqueta: 'Kettlebell' },
   { valor: 'banda', etiqueta: 'Banda elástica' },
+  { valor: 'balon-medicinal', etiqueta: 'Balón medicinal' },
+  { valor: 'fitball', etiqueta: 'Fitball' },
+  { valor: 'rodillo', etiqueta: 'Rodillo de espuma' },
   { valor: 'otro', etiqueta: 'Otro' },
 ]
 

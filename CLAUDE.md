@@ -17,6 +17,7 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 - Dexie + `dexie-react-hooks` (`useLiveQuery`) para IndexedDB
 - React Router (`react-router-dom`, `BrowserRouter`)
 - `vite-plugin-pwa` (generateSW, `registerType: 'autoUpdate'`), configurado en `vite.config.ts`
+- `react-body-highlighter` para el mapa muscular (ver "Recursos gráficos").
 - Recharts para gráficos. Solo se usa en `ProgresoEjercicio`, que se carga con `React.lazy` para sacar unos 380 kB del bundle principal (igual queda en el precache offline)
 - Fuentes self-hosted con `@fontsource-variable/*` (no usar Google Fonts: la app tiene que funcionar offline)
 
@@ -43,7 +44,7 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 
 ## Modelo de datos (Dexie, `src/db/index.ts`)
 
-Esquema actual: **v8** (local, por usuario). En la nube, una sola tabla: `datos_usuario`.
+Esquema actual: **v9** (local, por usuario). En la nube, una sola tabla: `datos_usuario`.
 
 | Tabla | Campos | Índices |
 | --- | --- | --- |
@@ -56,9 +57,9 @@ Esquema actual: **v8** (local, por usuario). En la nube, una sola tabla: `datos_
 | `plan` | id (`'actual'`), division, rutinaIds (orden de la semana), creadoEn | id |
 | `medios` | id, exerciseId, tipo (`'foto'`/`'video'`), archivo (Blob), miniatura (Blob JPEG), creadoEn | exerciseId |
 
-Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`. La v8 no cambia tablas: saca del catálogo los ejercicios sin ninguna imagen libre (`RETIRADOS_DEL_CATALOGO`, hoy solo Pallof press), salvo que el usuario ya los use en una rutina o en su historial. La v7 agrega `medios` (fotos y videos propios). La v6 agrega `perfil` y `plan` (evaluación inicial y plan generado). La v5 no cambia tablas: agrega a las bases existentes los ejercicios nuevos del catálogo, comparando nombres normalizados para no duplicar ejercicios propios. **Si agregas ejercicios al catálogo, crea una versión nueva con un upgrade igual**, porque `populate` solo corre en bases nuevas.
+Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`. La v8 no cambia tablas: saca del catálogo los ejercicios sin ninguna imagen libre (`RETIRADOS_DEL_CATALOGO`, hoy solo Pallof press), salvo que el usuario ya los use en una rutina o en su historial. La v7 agrega `medios` (fotos y videos propios). La v6 agrega `perfil` y `plan` (evaluación inicial y plan generado). La v5 no cambia tablas: agrega a las bases existentes los ejercicios nuevos del catálogo, comparando nombres normalizados para no duplicar ejercicios propios. La v9 hace lo mismo con el catálogo ampliado (`EJERCICIOS_EXTRA`); ambas usan `sumarAlCatalogo`. **Si agregas ejercicios al catálogo, crea una versión nueva con un upgrade igual**, porque `populate` solo corre en bases nuevas.
 
-`Equipo`: barra, mancuernas, maquina, smith (Máquina Smith), polea, peso-corporal, kettlebell, banda, otro. Las etiquetas están en `lib/catalogos.ts`.
+`Equipo`: barra, mancuernas, maquina, smith (Máquina Smith), polea, peso-corporal, kettlebell, banda, balon-medicinal, fitball, rodillo (de espuma), otro. `GrupoMuscular`: pecho, espalda, piernas, hombros, biceps, triceps, antebrazos, core. Las etiquetas están en `lib/catalogos.ts`.
 
 - **Pesos siempre en kg** en la base. La unidad del usuario solo afecta cómo se muestran e ingresan (ver Convenciones).
 - `exercises.propio`: `false` en el catálogo y `true` en los que crea el usuario. **Solo los propios se pueden editar o eliminar**; `db/exercises.ts` lo valida. Un ejercicio en uso (en una rutina o en `sets`) no se puede eliminar.
@@ -72,7 +73,7 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 - **Récords:** se comparan contra entrenos terminados que empezaron antes. La primera vez que haces un ejercicio no cuenta como récord. 1RM estimado con Epley: `peso × (1 + reps / 30)`, y con 1 rep es el mismo peso (`lib/calculos.ts`).
 - **Semanas** de lunes a domingo (`inicioSemana`). La racha semanal cuenta semanas seguidas con al menos un entreno; si esta semana todavía no entrenas, se cuenta desde la anterior.
 - `routines.ejercicios` no tiene índice: Dexie no indexa propiedades dentro de arrays de objetos, así que se usa `.filter()`.
-- **Datos iniciales:** 80 ejercicios en `db/ejerciciosBase.ts` (42 básicos + 38 de gimnasio: máquinas, poleas y Smith) y las rutinas Push, Pull y Legs en `db/rutinasBase.ts` (buscan los ejercicios por nombre). Se cargan desde `populate` cuando la base es nueva y desde los `upgrade()` de la v2, la v3 y la v5.
+- **Datos iniciales:** 873 ejercicios: los 79 "básicos" de `db/ejerciciosBase.ts` (escritos a mano; salen primero en las listas) y 794 de `db/ejerciciosExtra.ts` (generado desde free-exercise-db, con nombres e instrucciones traducidos y resumidos). Más las rutinas Push, Pull y Legs en `db/rutinasBase.ts` (buscan los ejercicios por nombre). Se cargan desde `populate` cuando la base es nueva y desde los `upgrade()` de la v2, la v3, la v5 y la v9.
 - **Respaldo** (`db/respaldo.ts`): JSON con `{ app: 'zanfit', formato, exportadoEn, datos: { exercises, routines, workouts, sets, ajustes } }`. Importar valida todo antes y después **reemplaza** todos los datos en una sola transacción; no los mezcla. Si cambias el esquema, revisa `crearRespaldo`, `leerRespaldo` y `restaurarRespaldo`, y sube `FORMATO` si cambia la forma del archivo.
 
 ## Evaluación y plan de entrenamiento
@@ -127,14 +128,14 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 ## Estructura de carpetas
 
 ```
-public/                  íconos (ZF), _redirects (Netlify) y medios/ (dibujos y diagramas de músculos de wger)
+public/                  íconos (ZF), _redirects (Netlify) y medios/ (fotos de ejercicios y videos del login)
 src/
   main.tsx               punto de entrada (BrowserRouter + StrictMode); pide almacenamiento persistente
   App.tsx                rutas + ProveedorAjustes + ProveedorDescanso
   index.css              Tailwind + tema (@theme) + utilidades propias (pt-safe, pb-safe, sin-scrollbar)
   components/            reutilizables: Layout, BottomNav, Marca, BotonVolver, BotonFlotante, ZonaEliminar,
                          SelectorOpciones, Stepper, SelectorEjercicios, DatosEntreno, NotasEntreno,
-                         GraficoProgreso, DiagramaMusculos, DibujosEjercicio, MiniaturaEjercicio, GuiaEjercicio,
+                         GraficoProgreso, DiagramaMusculos, CuerpoMusculos, MiniaturaEjercicio, GuiaEjercicio,
                          OpcionGrande, ProveedorAjustes, ProveedorDescanso
   contexts/              objetos de contexto (AjustesContext, DescansoContext); los proveedores están en components/
   pages/entrenar/        Entrenar (elige o retoma), ElegirEntreno, EntrenoActivo, TarjetaEjercicio, ResumenEntreno
@@ -190,19 +191,19 @@ Las 4 tabs y Ajustes están completas:
 - **Entrenar:** elegir una rutina o hacer un entreno libre. Cada ejercicio muestra sus series en filas peso | reps | listo, precargadas con la última vez. Al marcar una serie parte el descanso (barra flotante con +15s y Saltar; al terminar vibra y suena). Se pueden agregar o quitar series y ejercicios. Hay cronómetro total, y "Finalizar" muestra un resumen con duración, volumen, series y récords nuevos, más notas. El entreno se retoma si se cierra la app, y la tab Entrenar muestra un punto cuando hay uno en curso.
 - **Rutinas:** listar, crear, editar (nombre, ejercicios desde la biblioteca, series, reps y descanso, reordenar con flechas), duplicar y eliminar.
 - **Progreso:** racha semanal, esta semana, mejor racha y mapa de calor de las últimas 18 semanas. Historial por mes con detalle de cada entreno (series, récords, notas, eliminar). Récords por ejercicio (peso máximo y 1RM estimado) y, al tocar uno, gráficos de peso máximo y volumen por sesión con su tabla.
-- **Ejercicios:** 80 en el catálogo (incluye máquinas, poleas y Smith). Lista agrupada con buscador y filtros; detalle con dibujos de inicio y final (en 64), diagrama de músculos, instrucciones, registro y enlace a su progreso; ejercicios propios.
+- **Ejercicios:** 873 en el catálogo (gimnasio, casa, aire libre, bandas, kettlebell, estiramientos, pliometría, cardio, halterofilia…). Lista agrupada con buscador y filtros por grupo, equipo y tipo, de a 50 (`POR_PAGINA`, botón "Mostrar más"); detalle con fotos de inicio y final, nivel, mapa muscular, instrucciones, registro y enlace a su progreso; ejercicios propios.
 - **Evaluación y plan:** cuestionario inicial y plan generado según sexo, edad, peso, altura, objetivo, zonas, experiencia, lugar, tiempo, lesiones y salud. En el entreno: peso sugerido, subida automática de peso, "Última vez" y cambiar ejercicio.
 - **Ajustes:** unidad kg/lb, descanso por defecto, exportar o importar el respaldo JSON, y Créditos. En el teléfono, exportar usa la hoja de compartir; si no está disponible, descarga el archivo.
 
 ## Recursos gráficos de ejercicios
 
-Orden en la ficha y en la guía: **fotos y videos propios** (si hay) → **foto del ejercicio** (inicio y final alternando, `useAlternar`) → pasos → **diagrama de músculos**. El dibujo de Everkinetic solo se muestra si el ejercicio no tiene foto (hoy, ninguno del catálogo).
+Orden en la ficha y en la guía: **fotos y videos propios** (si hay) → **foto del ejercicio** (inicio y final alternando, `useAlternar`) → pasos → **mapa muscular**. Nivel y tipo van como etiquetas bajo el nombre.
 
 - **Fotos y videos propios (`medios`, `<MediosPropios>`):** el usuario graba la máquina de su gimnasio. `lib/medios.ts` los reduce en el teléfono: fotos a JPEG de 1280 px; videos recodificados con canvas + MediaRecorder a unos 540 px, 1,2 Mbps y máximo 15 s, con portada JPEG. Si no se puede recodificar, se guarda el original. Viven solo en el teléfono y **no entran en el respaldo general**. Se comparten aparte (Ajustes → "Fotos y videos de tu gimnasio"): un JSON con base64 que, al importarse, **se suma** por nombre de ejercicio sin borrar nada y sin duplicar.
-- **Regla: ningún ejercicio sin ejemplo.** Los 79 ejercicios tienen foto. Si un ejercicio nuevo no tiene ninguna imagen, no entra al catálogo.
-- **Fotos (`db/fotosEjercicios.ts`, generado; `public/medios/fotos/`):** desde octubre de 2026 **todas** vienen de **free-exercise-db** (`github.com/yuhonas/free-exercise-db`, carpeta `exercises/<id>/0.jpg` y `1.jpg`), por decisión del dueño del producto, que prefirió su calidad y que estén todas. Cada ejercicio tiene `<archivo>.webp` (inicio, 800 px), `<archivo>-final.webp` (final) y `<archivo>-mini.webp` (240 px, 4:3, del final). `id` es la carpeta en el repositorio; `nota` aclara cuando la foto muestra una variante (patada de glúteo en el suelo, encogimientos con la barra por detrás).
-  - **Ojo con la licencia:** el repositorio las publica como Unlicense (dominio público), pero su autor reconoce que se sacaron de internet; muchas traen el logo de bodybuilding.com. Es un riesgo aceptado mientras la app sea de uso personal. **Si la app se abre al público o se cobra, hay que reemplazarlas** por fotos con licencia verificada (Commons/Openverse, Pixabay, Mixkit; ver el historial de git, commit 027ed86, para la versión anterior con 66 fotos libres y sus créditos).
-  - Para cambiar la correspondencia: el script recibe un JSON `{ "<nombre del catálogo>": "<id de free-exercise-db>" }`, convierte a WebP con canvas en Chrome y regenera `fotosEjercicios.ts`.
+- **Regla: ningún ejercicio sin ejemplo.** Los 873 ejercicios tienen foto. Si un ejercicio nuevo no tiene ninguna imagen, no entra al catálogo (por eso faltan 3 de kettlebell de free-exercise-db: no tienen fotos).
+- **Fichas y fotos (`db/fichasEjercicios.ts`, generado; `public/medios/fotos/`):** todo viene de **free-exercise-db** (`github.com/yuhonas/free-exercise-db`), por decisión del dueño del producto. `FICHAS[nombre]` trae `archivo`, `id` (carpeta en el repositorio), músculos principales y secundarios, nivel, categoría (tipo), equipamiento detallado, mecánica y `nota` cuando la foto muestra una variante. Etiquetas en español en `lib/musculos.ts`. Cada ejercicio tiene `<archivo>.webp` (inicio, 800 px), `<archivo>-final.webp` y `<archivo>-mini.webp` (200 px, 4:3, del final). **Solo las miniaturas van al precache** (~6 MB); las grandes (~50 MB en total) se guardan la primera vez que se ven (`runtimeCaching`, caché `fotos-ejercicios`).
+  - **Generador:** `scripts/catalogo-fedb/generar.mjs` (instrucciones de uso arriba del archivo), con `mapa.json` (los 79 básicos → id) y `traducciones.json` (id → nombre e instrucciones en español). Regenera fotos, `fichasEjercicios.ts` y `ejerciciosExtra.ts`. Si cambian los nombres de `ejerciciosExtra`, ojo: los ejercicios se buscan por nombre, y las bases existentes ya los tienen guardados con el nombre anterior.
+  - **Ojo con la licencia:** el repositorio las publica como Unlicense (dominio público), pero su autor reconoce que se sacaron de internet; muchas traen el logo de bodybuilding.com. Es un riesgo aceptado mientras la app sea de uso personal. **Si la app se abre al público o se cobra, hay que reemplazarlas** por fotos con licencia verificada (Commons/Openverse, Pixabay, Mixkit; ver el historial de git, commit 027ed86, para la versión anterior con 66 fotos libres y sus créditos). Las instrucciones son resúmenes propios, no copia..
 - **Fondo del login (`FondoAcceso`):** 4 videos de **Mixkit** (licencia «Stock Video Free»: uso comercial permitido, sin atribución obligatoria; se revisó clip por clip, porque algunos son «Restricted», solo para uso personal). Van recodificados con MediaRecorder en Chrome a 960×540, ~1 Mbps y máximo 8 s (unos 0,9 MB cada uno), en `public/medios/fondo/` con portada WebP. Se reproducen en secuencia detrás del formulario, que no cambia de tamaño, con una capa oscura encima. **No van al precache:** se guardan la primera vez que se ven (`runtimeCaching` con `rangeRequests`, necesario para Safari). Sin conexión o con `prefers-reduced-motion` se muestra la portada fija. Bajo la marca, `FraseMotivadora` cambia cada 5 s.
 - **Fuentes descartadas para fotos libres (no volver a intentarlas):**
   - **Gymvisual:** de pago. Sus vistas previas con sello de agua no tienen licencia, aunque sean públicas.
@@ -210,23 +211,8 @@ Orden en la ficha y en la guía: **fotos y videos propios** (si hay) → **foto 
   - **Imágenes de Google en general.**
   - Lo legal con calidad 3D es de pago: Gym Animations, MoveKit, exercisedb.io.
 
-El detalle de cada ejercicio muestra dibujos de inicio y final (en 64 de los 80) y un diagrama de músculos de frente y espalda (en todos). Los datos están en `src/db/mediosEjercicios.ts` (se buscan por nombre del catálogo con `mediosDe()`) y los archivos en `public/medios/`. Todo entra en el precache, así que funciona offline.
-
-- **Dibujos** (`public/medios/ejercicios/`):
-  - `ek-<id>-inicio|final.svg`: de **Everkinetic** (repositorio `github.com/everkinetic/data`, carpeta `dist/svg`, licencia **CC BY-SA 4.0**). `<id>` es el id de 4 dígitos de `dist/exercises.json` (por ejemplo, `0127` = Leg Press). Se recolorearon invirtiendo la luminosidad: líneas a `#E5E5E5` y relleno a `#161616`, el color de la tarjeta, para que tapen las líneas de atrás. Después se optimizaron con svgo.
-  - `wger-<id>-1|2.webp`: solo 2 ejercicios (Remo con barra y Press de hombros con mancuernas), que faltan en el repositorio original y vienen de la copia de Everkinetic en wger (CC BY-SA 3.0). Se muestran con `invert` (`invertir: true`).
-  - **Faltan en Everkinetic** (no hay SVG ni PNG): jalón con barra ancha (0097), press inclinado en máquina (0084), butterfly (0047), press de hombros en máquina (0003), entre otros. Esos ejercicios solo tienen diagrama de músculos.
-  - **El dibujo tiene que coincidir con las instrucciones.** Antes de asignarlo, míralo: el Press militar de wger era sentado y nuestras instrucciones dicen de pie, así que se quitó; "High Cable Curls" (0229) era acostado y se descartó.
-- **Diagramas de músculos** (`public/medios/musculos/`): `frente.svg` y `espalda.svg` son las siluetas; `principal-N.svg` y `secundario-N.svg` son capas por músculo (N = id de músculo de wger, ver `MUSCULOS`). Origen: «Muscular system» de Termininja (Wikimedia Commons), adaptado por wger, **CC BY-SA 3.0**. Principal en lima al 100% y secundario al 40%. Ojo: los SVG de wger traían `opacity:.52` en ambos, por eso al principio se veían iguales. Las capas se apilan con `<img>` absolutos alineados arriba a la izquierda (`DiagramaMusculos`).
-- **Músculos de cada ejercicio:** los asignamos nosotros, sin copiarlos de wger, cuyos datos de usuarios son irregulares. Los ejercicios propios usan los músculos típicos de su grupo (`POR_GRUPO`).
-- **No usar otras imágenes de wger:** las fotos y renders 3D que suben los usuarios tienen licencias dudosas (una tenía marca de agua "© HOIST" y estaba etiquetada como CC BY-SA), y algunas son generadas con IA. La atribución no arregla una imagen con copyright.
-- **Atribución obligatoria (CC BY-SA):** cada dibujo y diagrama lleva su crédito con enlace a `/ajustes/creditos`, donde se listan autores, licencias y cambios. Si agregas recursos, actualiza los créditos.
-- **Para agregar un ejercicio con dibujo:**
-  1. Búscalo en `everkinetic/data/dist/exercises.json`.
-  2. Revisa el dibujo.
-  3. Descarga `dist/svg/<id>-relaxation.svg` y `<id>-tension.svg`, recoloréalos igual y optimízalos con `svgo --multipass -p 1`.
-  4. Agrégalo a `ejerciciosBase.ts` y a `CATALOGO`.
-  5. Crea una versión de Dexie que lo agregue a las bases existentes.
+- **Mapa muscular (`DiagramaMusculos`, `CuerpoMusculos`):** silueta de **react-body-highlighter** (MIT), de frente y de espalda, con los principales en lima y los secundarios en lima al 45%, más los nombres debajo. `MUSCULOS` (`lib/musculos.ts`) traduce cada músculo de free-exercise-db a las zonas de la silueta. Los ejercicios propios usan los músculos típicos de su grupo (`MUSCULOS_POR_GRUPO`) y, si no tienen foto propia, la silueta reemplaza a la foto.
+- **Ya no se usan** los dibujos de Everkinetic ni los diagramas de Termininja/wger (se borraron en la Etapa 1 del rediseño). Tampoco usar fotos ni renders subidos por usuarios a wger: tienen licencias dudosas.
 
 ## Íconos y PWA
 

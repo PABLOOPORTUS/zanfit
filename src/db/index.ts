@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable, type Transaction } from 'dexie'
 import type { Ajustes, Exercise, MedioPropio, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
 import { EJERCICIOS_BASE } from './ejerciciosBase'
+import { EJERCICIOS_EXTRA } from './ejerciciosExtra'
 import { RUTINAS_BASE } from './rutinasBase'
 import { normalizar } from '../lib/texto'
 
@@ -62,11 +63,7 @@ export function crearBase(nombre: string): BaseZanfit {
   base
     .version(5)
     .stores({})
-    .upgrade(async (tx) => {
-      const ejercicios = tx.table<Exercise, number>('exercises')
-      const existentes = new Set((await ejercicios.toArray()).map((e) => normalizar(e.nombre)))
-      await ejercicios.bulkAdd(EJERCICIOS_BASE.filter((e) => !existentes.has(normalizar(e.nombre))).map((e) => ({ ...e, propio: false })))
-    })
+    .upgrade((tx) => sumarAlCatalogo(tx, EJERCICIOS_BASE))
 
   // v6: evaluación inicial (perfil) y plan de entrenamiento generado.
   base.version(6).stores({ perfil: 'id', plan: 'id' })
@@ -90,6 +87,10 @@ export function crearBase(nombre: string): BaseZanfit {
         if (!enRutina && !enHistorial) await ejercicios.delete(ejercicio.id!)
       }
     })
+
+  // v9: sin cambios de tablas. Suma el catálogo ampliado de free-exercise-db (unos 800 ejercicios: casa, aire libre,
+  // estiramientos, cardio…). Igual que la v5, no duplica ejercicios propios con el mismo nombre.
+  base.version(9).stores({}).upgrade((tx) => sumarAlCatalogo(tx, EJERCICIOS_EXTRA))
 
   // `populate` corre cuando la base se crea desde cero; los `upgrade` cuando viene de una versión anterior.
   // El catálogo inicial no cuenta como cambio local (si no, una base recién creada pisaría los datos de la nube).
@@ -185,7 +186,14 @@ export async function guardarAjustes(cambios: Partial<Omit<Ajustes, 'id'>>): Pro
 // --- Datos iniciales -----------------------------------------------------------------------------------------------
 
 function cargarCatalogo(tx: Transaction) {
-  return tx.table('exercises').bulkAdd(EJERCICIOS_BASE.map((e) => ({ ...e, propio: false })))
+  return tx.table('exercises').bulkAdd([...EJERCICIOS_BASE, ...EJERCICIOS_EXTRA].map((e) => ({ ...e, propio: false })))
+}
+
+/** Agrega al catálogo los ejercicios que falten, comparando nombres normalizados (no duplica ejercicios propios). */
+async function sumarAlCatalogo(tx: Transaction, lista: Omit<Exercise, 'id' | 'propio'>[]) {
+  const ejercicios = tx.table<Exercise, number>('exercises')
+  const existentes = new Set((await ejercicios.toArray()).map((e) => normalizar(e.nombre)))
+  await ejercicios.bulkAdd(lista.filter((e) => !existentes.has(normalizar(e.nombre))).map((e) => ({ ...e, propio: false })))
 }
 
 /** Agrega Push, Pull y Legs solo si todavía no hay rutinas. Omite ejercicios del catálogo que no existan. */

@@ -1,4 +1,4 @@
-export type GrupoMuscular = 'pecho' | 'espalda' | 'piernas' | 'hombros' | 'biceps' | 'triceps' | 'core'
+export type GrupoMuscular = 'pecho' | 'espalda' | 'piernas' | 'hombros' | 'biceps' | 'triceps' | 'antebrazos' | 'core'
 
 export type Equipo =
   | 'barra'
@@ -9,6 +9,9 @@ export type Equipo =
   | 'peso-corporal'
   | 'kettlebell'
   | 'banda'
+  | 'balon-medicinal'
+  | 'fitball'
+  | 'rodillo'
   | 'otro'
 
 export interface Exercise {

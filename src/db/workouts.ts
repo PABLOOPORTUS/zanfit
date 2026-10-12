@@ -29,7 +29,7 @@ export async function ultimasSeries(exerciseId: number, excluirWorkoutId?: numbe
 /** Cuánto subir el peso cuando completaste todo: 2 kg por mancuerna, 2,5 kg en barras y máquinas. */
 export function incrementoPeso(equipo: Equipo): number {
   if (equipo === 'mancuernas' || equipo === 'kettlebell') return 2
-  if (equipo === 'peso-corporal' || equipo === 'banda' || equipo === 'otro') return 0
+  if (['peso-corporal', 'banda', 'balon-medicinal', 'fitball', 'rodillo', 'otro'].includes(equipo)) return 0
   return 2.5
 }
 

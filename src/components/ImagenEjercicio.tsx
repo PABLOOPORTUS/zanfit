@@ -1,4 +1,5 @@
-import { mediosDe, MUSCULOS } from '../db/mediosEjercicios'
+import CuerpoMusculos from './CuerpoMusculos'
+import { mediosDe } from '../db/mediosEjercicios'
 import { useAlternar } from '../hooks/useAlternar'
 import { useMediosPropios, useUrlBlob } from '../hooks/useMedios'
 import type { Exercise } from '../types'
@@ -7,13 +8,13 @@ type Props = { ejercicio: Pick<Exercise, 'id' | 'nombre' | 'grupoMuscular' | 'pr
 
 /**
  * Imagen grande para reconocer el ejercicio de un vistazo (por ejemplo, en el entreno).
- * Prioridad: foto o video propio (su portada) > foto del ejercicio (inicio y final alternando) > dibujo animado > silueta con el músculo.
+ * Prioridad: foto o video propio (su portada) > foto del ejercicio (inicio y final alternando) > silueta con los músculos.
  */
 export default function ImagenEjercicio({ ejercicio, className = 'h-48 w-full' }: Props) {
   const propios = useMediosPropios(ejercicio.id)
   const propia = useUrlBlob(propios?.[0]?.miniatura)
-  const { dibujos, musculos, foto } = mediosDe(ejercicio)
-  const cuadro = useAlternar(!propia && (!!foto || dibujos?.archivos.length === 2))
+  const { musculos, ficha } = mediosDe(ejercicio)
+  const cuadro = useAlternar(!propia && !!ficha)
 
   const marco = `relative block overflow-hidden ${className}`
 
@@ -28,10 +29,10 @@ export default function ImagenEjercicio({ ejercicio, className = 'h-48 w-full' }
     )
   }
 
-  if (foto) {
+  if (ficha) {
     return (
       <span className={`${marco} bg-fondo`}>
-        {[`${foto.archivo}.webp`, `${foto.archivo}-final.webp`].map((archivo, i) => (
+        {[`${ficha.archivo}.webp`, `${ficha.archivo}-final.webp`].map((archivo, i) => (
           <img
             key={archivo}
             src={`/medios/fotos/${archivo}`}
@@ -43,34 +44,11 @@ export default function ImagenEjercicio({ ejercicio, className = 'h-48 w-full' }
     )
   }
 
-  if (dibujos) {
-    // Los SVG traen relleno #161616 (bg-superficie): el fondo tiene que ser el mismo para que no se note el recuadro.
-    return (
-      <span className={`${marco} bg-superficie`}>
-        {dibujos.archivos.map((src, i) => (
-          <img
-            key={src}
-            src={src}
-            alt=""
-            className={`absolute inset-0 size-full object-contain p-2 transition-opacity duration-300 ${dibujos.invertir ? 'invert' : ''} ${
-              dibujos.archivos.length === 1 || cuadro === i ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-        ))}
-      </span>
-    )
-  }
-
-  const vista = MUSCULOS[musculos.principales[0]]?.vista ?? 'frente'
   return (
-    <span className={`${marco} bg-superficie`}>
-      <span className="absolute inset-y-2 left-1/2 block aspect-[200/369] -translate-x-1/2">
-        <img src={`/medios/musculos/${vista}.svg`} alt="" className="absolute inset-0 w-full opacity-35" />
-        {musculos.principales
-          .filter((id) => MUSCULOS[id].vista === vista)
-          .map((id) => (
-            <img key={id} src={`/medios/musculos/principal-${id}.svg`} alt="" className="absolute top-0 left-0 w-full" />
-          ))}
+    <span className={`${marco} bg-superficie py-2`}>
+      <span className="mx-auto grid h-full max-w-56 grid-cols-2 gap-2">
+        <CuerpoMusculos musculos={musculos} vista="frente" className="h-full [&_svg]:h-full" />
+        <CuerpoMusculos musculos={musculos} vista="espalda" className="h-full [&_svg]:h-full" />
       </span>
     </span>
   )

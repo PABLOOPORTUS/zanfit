@@ -303,7 +303,7 @@ export const EJERCICIOS_BASE: Omit<Exercise, 'id' | 'propio'>[] = [
       'De rodillas, rueda hacia adelante estirando el cuerpo tanto como puedas sin arquear la zona lumbar. Vuelve tirando con el abdomen.',
   },
 
-  // Gimnasio: máquinas, poleas y máquina Smith (dibujos de Everkinetic)
+  // Gimnasio: máquinas, poleas y máquina Smith
   {
     nombre: 'Press de pecho en máquina',
     grupoMuscular: 'pecho',

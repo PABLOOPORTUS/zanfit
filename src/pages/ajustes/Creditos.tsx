@@ -1,35 +1,24 @@
 import type { ReactNode } from 'react'
 import BotonVolver from '../../components/BotonVolver'
-import { REPOSITORIO_FOTOS } from '../../db/fotosEjercicios'
+import { REPOSITORIO_FOTOS } from '../../db/fichasEjercicios'
 
-/** `/ajustes/creditos`: atribución de los recursos con licencia Creative Commons (lo exige CC BY-SA). */
+/** `/ajustes/creditos`: fuentes y licencias de los recursos de terceros. */
 export default function Creditos() {
   return (
     <section>
       <BotonVolver to="/ajustes">Ajustes</BotonVolver>
       <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">Créditos</h1>
-      <p className="mt-2 text-texto-suave">
-        ZANFIT usa recursos gráficos libres del proyecto <Enlace href="https://wger.de">wger</Enlace>. Gracias a sus autores.
-      </p>
-
-      <Bloque titulo="Diagramas de músculos">
-        Basados en «Muscular system» y «Muscular system-back» de <Enlace href="https://commons.wikimedia.org/wiki/File:Muscular_system.svg">Termininja</Enlace>{' '}
-        (Wikimedia Commons), adaptados por el proyecto wger. Licencia{' '}
-        <Enlace href="https://creativecommons.org/licenses/by-sa/3.0/deed.es">CC BY-SA 3.0</Enlace>.
-        <Cambios>Cambios en ZANFIT: colores de los músculos (lima), silueta atenuada y archivos optimizados.</Cambios>
-      </Bloque>
-
-      <Bloque titulo="Dibujos de ejercicios">
-        Dibujos de <Enlace href="https://github.com/everkinetic/data">Everkinetic</Enlace>, licencia{' '}
-        <Enlace href="https://creativecommons.org/licenses/by-sa/4.0/deed.es">CC BY-SA 4.0</Enlace>. Dos de ellos (remo con barra y press de hombros
-        con mancuernas) vienen de la copia publicada en wger, con licencia{' '}
-        <Enlace href="https://creativecommons.org/licenses/by-sa/3.0/deed.es">CC BY-SA 3.0</Enlace>.
-        <Cambios>Cambios en ZANFIT: colores adaptados al modo oscuro, archivos optimizados y, en los de wger, tamaño reducido y formato WebP.</Cambios>
-      </Bloque>
+      <p className="mt-2 text-texto-suave">Recursos de terceros que usa ZANFIT. Gracias a sus autores.</p>
 
       <Bloque titulo="Fotos de los ejercicios">
-        Fotos de <Enlace href={REPOSITORIO_FOTOS}>free-exercise-db</Enlace>, que las publica como dominio público (Unlicense).
+        Fotos y datos de los ejercicios (músculos, nivel y equipamiento) de <Enlace href={REPOSITORIO_FOTOS}>free-exercise-db</Enlace>, que los
+        publica como dominio público (Unlicense).
         <Cambios>Cambios en ZANFIT: tamaño reducido, formato WebP y una versión recortada para miniaturas.</Cambios>
+      </Bloque>
+
+      <Bloque titulo="Mapa muscular">
+        Silueta de <Enlace href="https://github.com/GV79/react-body-highlighter">react-body-highlighter</Enlace>, licencia MIT.
+        <Cambios>Cambios en ZANFIT: colores adaptados al modo oscuro.</Cambios>
       </Bloque>
 
       <Bloque titulo="Videos de la pantalla de acceso">
@@ -38,8 +27,7 @@ export default function Creditos() {
       </Bloque>
 
       <p className="mt-6 text-sm text-texto-suave">
-        Las versiones adaptadas de estos recursos se comparten con la misma licencia que su original. Las instrucciones de los ejercicios y el resto de la
-        app son propios de ZANFIT.
+        Las instrucciones de los ejercicios son resúmenes en español hechos para ZANFIT a partir de las de free-exercise-db.
       </p>
     </section>
   )

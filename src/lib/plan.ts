@@ -128,7 +128,7 @@ function costoEquipo(equipo: Equipo, experiencia: Experiencia, compuesto: boolea
   return (compuesto ? (equipo === 'barra' ? 0 : equipo === 'mancuernas' ? 0.3 : 0.8) : maquina ? 0 : 0.3) + corporal
 }
 
-const EQUIPO_CASA: Equipo[] = ['mancuernas', 'peso-corporal', 'banda', 'kettlebell']
+const EQUIPO_CASA: Equipo[] = ['mancuernas', 'peso-corporal', 'banda', 'kettlebell', 'balon-medicinal', 'fitball']
 /** Isométricos (se miden en segundos, no en reps): no entran al plan. */
 const EXCLUIDOS = new Set(['Plancha'])
 

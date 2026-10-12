@@ -108,7 +108,7 @@ function FilaEjercicio({ numero, ejercicio, detalle }: { numero: number; ejercic
       </div>
     </>
   )
-  // Tocar el ejercicio lleva a su ficha (dibujos, pasos y músculos).
+  // Tocar el ejercicio lleva a su ficha (fotos, pasos y músculos).
   return ejercicio ? (
     <Link to={`/ejercicios/${ejercicio.id}`} className="flex items-center gap-3 px-3 py-2.5 active:bg-borde">
       {contenido}

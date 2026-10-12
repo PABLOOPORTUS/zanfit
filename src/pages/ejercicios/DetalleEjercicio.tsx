@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
 import DiagramaMusculos from '../../components/DiagramaMusculos'
-import DibujosEjercicio from '../../components/DibujosEjercicio'
 import FotoMaquina from '../../components/FotoMaquina'
 import MediosPropios from '../../components/MediosPropios'
 import ZonaEliminar from '../../components/ZonaEliminar'
@@ -10,6 +9,7 @@ import { mediosDe } from '../../db/mediosEjercicios'
 import { eliminarEjercicio } from '../../db/exercises'
 import { useExercise, useRegistroEjercicio, useUsosEjercicio } from '../../hooks/useExercises'
 import { etiquetaEquipo, etiquetaGrupo } from '../../lib/catalogos'
+import { CATEGORIAS, EQUIPAMIENTOS, NIVELES } from '../../lib/musculos'
 import { useUnidad } from '../../hooks/useAjustes'
 import { formatearFecha } from '../../lib/formato'
 import EjercicioNoEncontrado from './EjercicioNoEncontrado'
@@ -29,24 +29,20 @@ export default function DetalleEjercicio() {
 
       <div className="mt-3 flex flex-wrap gap-2">
         <Etiqueta>{etiquetaGrupo(ejercicio.grupoMuscular)}</Etiqueta>
-        <Etiqueta>{etiquetaEquipo(ejercicio.equipo)}</Etiqueta>
+        <Etiqueta>{medios.ficha ? EQUIPAMIENTOS[medios.ficha.equipamiento] : etiquetaEquipo(ejercicio.equipo)}</Etiqueta>
+        {medios.ficha && <Etiqueta>{NIVELES[medios.ficha.nivel]}</Etiqueta>}
+        {medios.ficha && medios.ficha.categoria !== 'fuerza' && <Etiqueta>{CATEGORIAS[medios.ficha.categoria]}</Etiqueta>}
         {ejercicio.propio && <Etiqueta destacada>Propio</Etiqueta>}
       </div>
 
-      {medios.foto && (
+      {medios.ficha && (
         <div className="mt-6">
-          <FotoMaquina foto={medios.foto} nombre={ejercicio.nombre} />
+          <FotoMaquina foto={medios.ficha} nombre={ejercicio.nombre} />
         </div>
       )}
 
       <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">En tu gimnasio</h2>
       <MediosPropios ejercicio={ejercicio} />
-
-      {medios.dibujos && !medios.foto && (
-        <div className="mt-6">
-          <DibujosEjercicio dibujos={medios.dibujos} nombre={ejercicio.nombre} />
-        </div>
-      )}
 
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Cómo se hace</h2>
       <div className="rounded-2xl border border-borde bg-superficie p-4 text-lg leading-relaxed">
