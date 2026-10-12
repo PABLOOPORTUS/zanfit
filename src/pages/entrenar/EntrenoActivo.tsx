@@ -90,6 +90,8 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
         </button>
       </div>
 
+      {rutina?.nota && <p className="mt-4 rounded-2xl border border-lima/40 bg-lima/10 p-4 leading-snug">{rutina.nota}</p>}
+
       {rutina?.calentamiento && (
         <div className="mt-4">
           <CalentamientoEntreno workoutId={id} pasos={rutina.calentamiento} />
@@ -148,6 +150,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
             anteriores={b.anteriores}
             subePeso={b.subePeso}
             casiSube={b.casiSube}
+            nota={b.nota}
             idsEnEntreno={bloques.map((x) => x.exercise.id!)}
           />
         ))}

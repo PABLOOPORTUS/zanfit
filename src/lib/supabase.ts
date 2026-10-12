@@ -1,13 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-
-/**
- * La URL y la clave `anon` son públicas por diseño: la seguridad la dan las políticas RLS de la tabla
- * (ver supabase/esquema.sql). Nunca poner aquí la clave `service_role`.
- */
-const URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://pjjjfonkccmhrswujysy.supabase.co'
-const CLAVE_ANON =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ??
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqampmb25rY2NtaHJzd3VqeXN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MjE2MTAsImV4cCI6MjEwNzM5NzYxMH0.ywwzXY17YC2R_QvC_SpeiplwgMlYWLfvJRjcaDcJ5ms'
+import { CLAVE_ANON, URL } from './configNube'
 
 export const supabase = createClient(URL, CLAVE_ANON, {
   auth: { persistSession: true, autoRefreshToken: true, storageKey: 'zanfit:sesion' },

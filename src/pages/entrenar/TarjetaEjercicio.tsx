@@ -22,12 +22,13 @@ type Props = {
   anteriores: WorkoutSet[]
   subePeso: boolean
   casiSube?: boolean
+  nota?: string
   /** Ejercicios que ya están en el entreno (no se ofrecen al reemplazar). */
   idsEnEntreno: number[]
 }
 
 /** Un ejercicio del entreno en curso: filas peso | reps | check, y botones para agregar o quitar series. */
-export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSeg, anteriores, subePeso, casiSube, idsEnEntreno }: Props) {
+export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSeg, anteriores, subePeso, casiSube, nota, idsEnEntreno }: Props) {
   const [confirmandoQuitar, setConfirmandoQuitar] = useState(false)
   const u = useUnidad()
   const { unidad } = u
@@ -116,6 +117,13 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
       </button>
 
       {guia.abierto && <GuiaEjercicio ejercicio={exercise} onCerrar={guia.cerrar} />}
+
+      {nota && (
+        <p className="px-4 pb-2 text-sm leading-snug">
+          <span className="font-semibold text-lima">Clave: </span>
+          {nota}
+        </p>
+      )}
 
       {anteriores.length > 0 && (
         <p className="px-4 pb-2 text-sm text-texto-suave">

@@ -3,6 +3,7 @@ import { mediosDe } from '../db/mediosEjercicios'
 import { PATRONES_COMPUESTOS, type Patron } from '../db/patronesEjercicios'
 import { clasificar, necesitaBarras, necesitaGimnasio } from './clasificacion'
 import { EQUIPAMIENTO_POR_DEFECTO } from './evaluacion'
+import type { DiaIa, PedidoIa, Rango } from './planIa'
 import type { Division, Equipo, Exercise, Experiencia, Objetivo, PasoCalentamiento, Perfil, RoutineExercise, Zona } from '../types'
 
 /**
@@ -24,6 +25,10 @@ export interface DiaGenerado {
   nombre: string
   tipo: TipoDia
   foco: string
+  /** Nota motivadora del día (solo si lo ajustó la IA). */
+  nota?: string
+  /** Patrones que buscó el motor, en orden de prioridad (para armar los candidatos de la IA). */
+  patrones: Patron[]
   ejercicios: RoutineExercise[]
   calentamiento: PasoCalentamiento[]
 }
@@ -32,6 +37,8 @@ export interface PlanGenerado {
   division: Division
   dias: DiaGenerado[]
   recomendaciones: string[]
+  /** `reglas`: armado solo por el motor; `ia`: la IA eligió y ordenó entre los candidatos de las reglas. */
+  origen: 'reglas' | 'ia'
 }
 
 export const NOMBRE_TIPO: Record<TipoDia, string> = {
@@ -314,12 +321,13 @@ export function generarPlan(perfil: Perfil, ejercicios: Exercise[]): PlanGenerad
       tipo,
       nombre: NOMBRE_TIPO[tipo],
       foco: FOCO_TIPO[tipo],
+      patrones: orden,
       ejercicios: ordenados.map(({ patron: _, ...x }) => x),
       calentamiento: calentamiento(perfil, tipo, ejercicios),
     }
   })
 
-  return { division: div, dias, recomendaciones: recomendaciones(perfil) }
+  return { division: div, dias, recomendaciones: recomendaciones(perfil), origen: 'reglas' }
 }
 
 /** Minutos estimados de una rutina: calentamiento + ejercicios (para mostrar en la vista semanal). */
@@ -378,4 +386,98 @@ export function alternativas(ejercicio: Exercise, catalogo: Exercise[], perfil: 
     .sort((a, b) => a.costo - b.costo || a.e.nombre.localeCompare(b.e.nombre))
     .slice(0, cantidad)
     .map(({ e }) => e)
+}
+
+// --- IA (ver lib/planIa.ts y api/plan-ia.ts) -------------------------------------------------------------------
+
+/** Rangos de la guía por objetivo, para compuestos principales y para aislamiento o accesorios. */
+const RANGOS: Record<Objetivo, { compuesto: Rango; aislamiento: Rango }> = {
+  musculo: { compuesto: { series: [3, 4], reps: [8, 12], descanso: [60, 90] }, aislamiento: { series: [2, 4], reps: [10, 15], descanso: [45, 90] } },
+  fuerza: { compuesto: { series: [4, 5], reps: [3, 6], descanso: [120, 180] }, aislamiento: { series: [2, 4], reps: [6, 12], descanso: [60, 120] } },
+  grasa: { compuesto: { series: [2, 3], reps: [12, 20], descanso: [30, 60] }, aislamiento: { series: [2, 3], reps: [12, 20], descanso: [30, 60] } },
+  resistencia: { compuesto: { series: [2, 3], reps: [12, 20], descanso: [30, 60] }, aislamiento: { series: [2, 3], reps: [15, 20], descanso: [30, 45] } },
+  condicion: { compuesto: { series: [2, 3], reps: [10, 12], descanso: [60, 90] }, aislamiento: { series: [2, 3], reps: [10, 15], descanso: [45, 75] } },
+}
+
+export function rangosPara(perfil: Perfil): { compuesto: Rango; aislamiento: Rango } {
+  const ajustar = (r: Rango): Rango => {
+    const series: [number, number] = [...r.series]
+    const reps: [number, number] = [...r.reps]
+    if (perfil.experiencia === 'principiante') series[1] = Math.max(2, series[1] - 1)
+    if (perfil.precaucion) series[1] = Math.min(series[1], 3)
+    if (perfil.precaucion || edad(perfil) >= 50) reps[0] = Math.max(reps[0], 8)
+    series[0] = Math.min(series[0], series[1])
+    reps[1] = Math.max(reps[1], reps[0])
+    return { series, reps, descanso: [...r.descanso] }
+  }
+  const r = RANGOS[perfil.objetivo]
+  return { compuesto: ajustar(r.compuesto), aislamiento: ajustar(r.aislamiento) }
+}
+
+/** Arma lo que se le manda a la IA: perfil reducido, rangos y, por día, candidatos filtrados por las reglas. */
+export function pedidoIa(perfil: Perfil, plan: PlanGenerado, ejercicios: Exercise[]): PedidoIa {
+  const porId = new Map(ejercicios.map((e) => [e.id!, e]))
+  return {
+    perfil: {
+      objetivo: perfil.objetivo === 'condicion' ? 'salud general' : perfil.objetivo,
+      experiencia: perfil.experiencia,
+      lugar: perfil.lugar,
+      equipamiento: perfil.lugar === 'gimnasio' ? [] : (perfil.equipamiento ?? EQUIPAMIENTO_POR_DEFECTO),
+      diasPorSemana: perfil.diasPorSemana,
+      minutosPorSesion: perfil.minutosPorSesion,
+      zonas: perfil.zonas,
+      lesiones: perfil.lesiones,
+      precaucion: perfil.precaucion,
+    },
+    rangos: rangosPara(perfil),
+    dias: plan.dias.map((d) => {
+      const ids = new Set(d.ejercicios.map((x) => x.exerciseId))
+      for (const patron of new Set(d.patrones)) {
+        const opciones = candidatos(perfil, ejercicios, patron).sort(
+          (a, b) => Number(!BASICOS.has(a.nombre)) - Number(!BASICOS.has(b.nombre)) || clasificar(a)!.nivel - clasificar(b)!.nivel,
+        )
+        for (const e of opciones.slice(0, 5)) ids.add(e.id!)
+      }
+      return {
+        tipo: NOMBRE_TIPO[d.tipo],
+        foco: d.foco,
+        base: d.ejercicios.map((x) => x.exerciseId),
+        maxEjercicios: Math.max(d.ejercicios.length + 1, 4),
+        candidatos: [...ids].map((id) => {
+          const e = porId.get(id)!
+          const cl = clasificar(e)!
+          return { id, nombre: e.nombre, patron: cl.patron, compuesto: PATRONES_COMPUESTOS.includes(cl.patron), equipo: e.equipo, nivel: cl.nivel }
+        }),
+      }
+    }),
+  }
+}
+
+/**
+ * Aplica la respuesta (ya validada) de la IA: sus ejercicios, series, reps, descansos y notas, con el peso sugerido
+ * de las reglas y los compuestos siempre primero. El calentamiento y la división no cambian.
+ */
+export function aplicarIa(perfil: Perfil, plan: PlanGenerado, diasIa: DiaIa[], ejercicios: Exercise[]): PlanGenerado {
+  const porId = new Map(ejercicios.map((e) => [e.id!, e]))
+  const dias = plan.dias.map((d, i) => {
+    const ia = diasIa[i]
+    const lista = ia.exercises.map((x) => {
+      const e = porId.get(x.id)!
+      const patron = clasificar(e)!.patron
+      return {
+        compuesto: PATRONES_COMPUESTOS.includes(patron),
+        ejercicio: {
+          exerciseId: x.id,
+          seriesObjetivo: x.sets,
+          repsObjetivo: x.reps,
+          descansoSeg: x.restSeconds,
+          pesoSugerido: pesoSugerido(perfil, e, patron),
+          ...(x.note && { nota: x.note }),
+        } satisfies RoutineExercise,
+      }
+    })
+    const ordenados = [...lista].sort((a, b) => Number(!a.compuesto) - Number(!b.compuesto)).map((x) => x.ejercicio)
+    return { ...d, foco: ia.focus || d.foco, nota: ia.note || undefined, ejercicios: ordenados }
+  })
+  return { ...plan, dias, origen: 'ia' }
 }

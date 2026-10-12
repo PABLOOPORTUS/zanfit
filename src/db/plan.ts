@@ -1,5 +1,6 @@
 import { db } from '.'
-import { generarPlan, type PlanGenerado } from '../lib/plan'
+import { pedirPlanIa, type MotivoSinIa } from '../lib/clienteIa'
+import { aplicarIa, generarPlan, pedidoIa, type PlanGenerado } from '../lib/plan'
 import type { Perfil, Plan } from '../types'
 
 const LETRAS = 'ABCDEF'
@@ -10,22 +11,41 @@ export function nombreDiaPlan(indice: number, nombre: string): string {
 
 /**
  * Guarda la evaluación y genera el plan: cada día queda como una rutina normal ("Plan · Día A — Torso").
- * Si ya había un plan, sus rutinas se reemplazan (los entrenos hechos con ellas se mantienen en el historial).
+ * Primero lo arma el motor por reglas; si `conIa` y hay conexión, la IA elige y ordena entre los candidatos de las
+ * reglas (si falla, queda el de reglas). Si ya había un plan, sus rutinas se reemplazan (los entrenos hechos con ellas
+ * se mantienen en el historial).
  */
-export async function guardarEvaluacion(perfil: Omit<Perfil, 'id' | 'actualizadoEn'>): Promise<PlanGenerado> {
-  return db.transaction('rw', [db.perfil, db.plan, db.routines, db.exercises], async () => {
-    const completo: Perfil = { ...perfil, id: 'general', actualizadoEn: Date.now() }
+export async function guardarEvaluacion(
+  perfil: Omit<Perfil, 'id' | 'actualizadoEn'>,
+  { conIa = true }: { conIa?: boolean } = {},
+): Promise<{ plan: PlanGenerado; motivoSinIa?: MotivoSinIa }> {
+  const completo: Perfil = { ...perfil, id: 'general', actualizadoEn: Date.now() }
+  const ejercicios = await db.exercises.toArray()
+  let generado = generarPlan(completo, ejercicios)
+  let motivoSinIa: MotivoSinIa | undefined
+  // La llamada a la IA va fuera de la transacción: IndexedDB cierra las transacciones que esperan a la red.
+  if (conIa) {
+    const ia = await pedirPlanIa(pedidoIa(completo, generado, ejercicios))
+    if (ia.ok) generado = aplicarIa(completo, generado, ia.dias, ejercicios)
+    else motivoSinIa = ia.motivo
+  }
+  await db.transaction('rw', [db.perfil, db.plan, db.routines], async () => {
     await db.perfil.put(completo)
-    const generado = generarPlan(completo, await db.exercises.toArray())
     const anterior = await db.plan.get('actual')
     if (anterior) await db.routines.bulkDelete(anterior.rutinaIds)
     const rutinaIds = (await db.routines.bulkAdd(
-      generado.dias.map((d, i) => ({ nombre: nombreDiaPlan(i, d.nombre), ejercicios: d.ejercicios, calentamiento: d.calentamiento, foco: d.foco })),
+      generado.dias.map((d, i) => ({
+        nombre: nombreDiaPlan(i, d.nombre),
+        ejercicios: d.ejercicios,
+        calentamiento: d.calentamiento,
+        foco: d.foco,
+        ...(d.nota && { nota: d.nota }),
+      })),
       { allKeys: true },
     )) as number[]
-    await db.plan.put({ id: 'actual', division: generado.division, rutinaIds, creadoEn: Date.now() })
-    return generado
+    await db.plan.put({ id: 'actual', division: generado.division, rutinaIds, creadoEn: Date.now(), origen: generado.origen, ...(motivoSinIa && { motivoSinIa }) })
   })
+  return { plan: generado, motivoSinIa }
 }
 
 export async function obtenerPlan(): Promise<Plan | undefined> {

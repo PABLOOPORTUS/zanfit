@@ -24,6 +24,8 @@ export function useBloquesEntreno(workoutId: number) {
         return {
           ...b,
           descansoSeg: objetivo?.descansoSeg ?? descansoPorDefectoSeg,
+          /** Indicación del plan para este ejercicio (de la IA). */
+          nota: objetivo?.nota,
           /** Series de la última vez (para mostrar "Última vez: …"). */
           anteriores,
           /** Completaste todo en las dos últimas sesiones: hoy el peso viene subido. */

@@ -133,6 +133,10 @@ export interface Plan {
   /** Rutinas del plan en el orden de la semana (Día A, Día B…). */
   rutinaIds: number[]
   creadoEn: number
+  /** `ia`: la IA eligió y ordenó los ejercicios; `reglas` (o sin valor, planes antiguos): solo el motor por reglas. */
+  origen?: 'reglas' | 'ia'
+  /** Por qué no se usó la IA (sin conexión, límite de uso…), para explicarlo en /plan. */
+  motivoSinIa?: 'sin-conexion' | 'sin-sesion' | 'limite' | 'invalida' | 'no-disponible' | 'error'
 }
 
 /** Foto o video que el usuario grabó para un ejercicio (por ejemplo, la máquina de su gimnasio). Vive solo en el teléfono. */

@@ -388,15 +388,17 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         disabled={!valido[paso] || guardando}
         className="mt-8 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
       >
-        {faltaEquipo
-          ? 'Siguiente'
-          : editando
-            ? 'Guardar y actualizar el plan'
-            : paso === 'inicio'
-              ? 'Empezar'
-              : esUltimo
-                ? 'Crear mi plan'
-                : 'Siguiente'}
+        {guardando
+          ? 'Armando tu plan…'
+          : faltaEquipo
+            ? 'Siguiente'
+            : editando
+              ? 'Guardar y actualizar el plan'
+              : paso === 'inicio'
+                ? 'Empezar'
+                : esUltimo
+                  ? 'Crear mi plan'
+                  : 'Siguiente'}
       </button>
     </section>
   )

@@ -1,10 +1,11 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AvisoSalud from '../../components/AvisoSalud'
 import CuerpoMusculos from '../../components/CuerpoMusculos'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { mediosDe } from '../../db/mediosEjercicios'
-import { eliminarPlan } from '../../db/plan'
+import { eliminarPlan, guardarEvaluacion } from '../../db/plan'
 import { iniciarEntreno } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useExercises } from '../../hooks/useExercises'
@@ -22,10 +23,11 @@ import {
   ZONAS,
   type Paso,
 } from '../../lib/evaluacion'
+import { MENSAJE_SIN_IA } from '../../lib/clienteIa'
 import { formatearDescanso } from '../../lib/formato'
 import { DESCRIPCION_DIVISION, duracionEstimada, edad, imc, recomendaciones } from '../../lib/plan'
 import { vistaPrincipal } from '../../lib/musculos'
-import type { Perfil } from '../../types'
+import type { Perfil, Plan } from '../../types'
 
 /** `/plan`: resultado de la evaluación y el plan generado. */
 export default function MiPlan() {
@@ -67,6 +69,7 @@ export default function MiPlan() {
         {rutinas.length} {rutinas.length === 1 ? 'día' : 'días'} por semana
       </h1>
       <p className="mt-2 text-texto-suave">{DESCRIPCION_DIVISION[plan.division]}</p>
+      <OrigenPlan perfil={perfil} origen={plan.origen} motivo={plan.motivoSinIa} />
 
       <div className="mt-6 rounded-2xl border border-borde bg-superficie p-4">
         <p className="font-semibold">
@@ -231,5 +234,33 @@ function Respuestas({ perfil }: { perfil: Perfil }) {
       </ul>
       <p className="mt-2 text-sm text-texto-suave">Al cambiar una respuesta, el plan se vuelve a armar. Tu historial se mantiene.</p>
     </>
+  )
+}
+
+/** Cómo se armó el plan (IA o reglas) y, si fue con reglas, un botón para intentar ajustarlo con IA. */
+function OrigenPlan({ perfil, origen, motivo }: { perfil: Perfil; origen: Plan['origen']; motivo: Plan['motivoSinIa'] }) {
+  const [ajustando, setAjustando] = useState(false)
+  if (origen === 'ia')
+    return (
+      <p className="mt-3 rounded-2xl border border-lima/40 bg-lima/10 p-3 text-sm leading-snug">
+        La IA (Gemini) eligió y ordenó tus ejercicios entre opciones que ya filtramos para ti: tu equipo, tu nivel y tus lesiones.
+      </p>
+    )
+  return (
+    <div className="mt-3 rounded-2xl border border-borde bg-superficie p-3 text-sm leading-snug text-texto-suave">
+      <p>{motivo ? MENSAJE_SIN_IA[motivo] : 'Plan armado con nuestras reglas de entrenamiento.'}</p>
+      <button
+        type="button"
+        disabled={ajustando}
+        onClick={async () => {
+          setAjustando(true)
+          await guardarEvaluacion(perfil)
+          setAjustando(false)
+        }}
+        className="mt-2 h-11 rounded-xl border border-lima/60 px-4 font-semibold text-lima active:bg-lima/10 disabled:opacity-60"
+      >
+        {ajustando ? 'Ajustando…' : 'Ajustar con IA'}
+      </button>
+    </div>
   )
 }

@@ -68,7 +68,7 @@ export default function DetalleRutina() {
             <FilaEjercicio
               numero={i + 1}
               ejercicio={porId.get(e.exerciseId)}
-              detalle={`${e.seriesObjetivo} × ${e.repsObjetivo} reps${e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso ${formatearDescanso(e.descansoSeg)}`}
+              detalle={`${e.seriesObjetivo} × ${e.repsObjetivo} reps${e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso ${formatearDescanso(e.descansoSeg)}${e.nota ? ` · ${e.nota}` : ''}`}
             />
           </li>
         ))}
