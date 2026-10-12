@@ -129,7 +129,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         {paso === 'inicio' && (
           <Pregunta titulo="Armemos tu plan" detalle="Responde 9 preguntas rápidas y te armamos un plan de entrenamiento a tu medida. Tus respuestas se guardan solo en este teléfono.">
             <ul className="flex flex-col gap-3 text-texto-suave">
-              <li>• Cuánto pesas, cuánto mides y tu edad</li>
+              <li>• Tu edad, cuánto pesas y cuánto mides</li>
               <li>• Qué quieres lograr y qué zonas quieres mejorar</li>
               <li>• Tu experiencia, cuántos días puedes entrenar y si tienes lesiones</li>
             </ul>
@@ -150,7 +150,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         )}
 
         {paso === 'datos' && (
-          <Pregunta titulo="Tus datos" detalle="Con tu peso y tu altura calculamos tu IMC y los pesos de partida.">
+          <Pregunta titulo="Tu edad, peso y altura" detalle="Con tu edad ajustamos la intensidad y los descansos; con tu peso y tu altura, tu IMC y los pesos de partida.">
             <Campo etiqueta="Edad" sufijo="años" valor={b.edad} onChange={(v) => cambiar({ edad: v.replace(/\D/g, '') })} error={errores.edad} modo="numeric" />
             <Campo etiqueta="Peso" sufijo={u.unidad} valor={b.peso} onChange={(v) => cambiar({ peso: v.replace(/[^\d.,]/g, '') })} error={errores.peso} modo="decimal" />
             <Campo etiqueta="Altura" sufijo="cm" valor={b.altura} onChange={(v) => cambiar({ altura: v.replace(/\D/g, '') })} error={errores.altura} modo="numeric" />
