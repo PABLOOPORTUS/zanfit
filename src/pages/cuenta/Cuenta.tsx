@@ -1,6 +1,8 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import PortadaAcceso from '../../components/PortadaAcceso'
+import FondoAcceso from '../../components/FondoAcceso'
+import FraseMotivadora from '../../components/FraseMotivadora'
+import Marca from '../../components/Marca'
 import { useCuenta } from '../../hooks/useCuenta'
 
 const INTENTOS_MAXIMOS = 5
@@ -188,9 +190,13 @@ export default function Cuenta() {
 /** Pantalla de acceso a pantalla completa (sin barra inferior), con la marca grande. */
 function Pantalla({ children }: { children: ReactNode }) {
   return (
-    <main className="pb-safe mx-auto min-h-dvh max-w-lg px-4">
-      <PortadaAcceso />
-      <section className="pt-2 pb-10">{children}</section>
+    <main className="pt-safe pb-safe relative mx-auto min-h-dvh max-w-lg px-4">
+      <FondoAcceso />
+      <div className="pt-10 pb-8 text-center">
+        <Marca className="text-5xl drop-shadow-lg" />
+        <FraseMotivadora />
+      </div>
+      <section className="pb-10">{children}</section>
     </main>
   )
 }

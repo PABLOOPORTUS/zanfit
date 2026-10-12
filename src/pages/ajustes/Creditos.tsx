@@ -43,6 +43,11 @@ export default function Creditos() {
         ))}
       </ul>
 
+      <Bloque titulo="Videos de la pantalla de acceso">
+        Videos de <Enlace href="https://mixkit.co">Mixkit</Enlace>, con su licencia «Stock Video Free» (uso libre, también comercial).
+        <Cambios>Cambios en ZANFIT: recortados a 8 segundos y comprimidos.</Cambios>
+      </Bloque>
+
       <p className="mt-6 text-sm text-texto-suave">
         Las versiones adaptadas de estos recursos se comparten con la misma licencia que su original. Las instrucciones de los ejercicios y el resto de la
         app son propios de ZANFIT.
