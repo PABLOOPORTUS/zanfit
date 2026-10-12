@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
+import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { eliminarPlan } from '../../db/plan'
 import { iniciarEntreno } from '../../db/workouts'
@@ -35,7 +36,7 @@ export default function MiPlan() {
   }
 
   const { plan, rutinas, siguienteId } = datos
-  const nombres = new Map(ejercicios.map((e) => [e.id!, e.nombre]))
+  const porId = new Map(ejercicios.map((e) => [e.id!, e]))
   const { valor: valorImc, categoria } = imc(perfil)
 
   async function empezar(id: number) {
@@ -87,16 +88,24 @@ export default function MiPlan() {
                 </Link>
                 {toca && <span className="shrink-0 rounded-full bg-lima px-2 py-0.5 text-xs font-bold text-fondo">Hoy</span>}
               </div>
-              <ul className="mt-3 flex flex-col gap-1.5 text-sm">
-                {r.ejercicios.map((e) => (
-                  <li key={e.exerciseId} className="flex justify-between gap-3">
-                    <span className="min-w-0">{nombres.get(e.exerciseId) ?? 'Ejercicio eliminado'}</span>
-                    <span className="shrink-0 text-right text-texto-suave tabular-nums">
-                      {e.seriesObjetivo}×{e.repsObjetivo}
-                      {e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)}` : ''} · {formatearDescanso(e.descansoSeg)}
-                    </span>
-                  </li>
-                ))}
+              <ul className="mt-3 flex flex-col gap-2">
+                {r.ejercicios.map((e) => {
+                  const ejercicio = porId.get(e.exerciseId)
+                  return (
+                    <li key={e.exerciseId}>
+                      <Link to={ejercicio ? `/ejercicios/${ejercicio.id}` : '#'} className="flex items-center gap-3 rounded-xl active:bg-borde">
+                        {ejercicio && <MiniaturaEjercicio ejercicio={ejercicio} className="h-12 w-16" />}
+                        <span className="min-w-0 flex-1">
+                          <span className="block leading-snug font-semibold">{ejercicio?.nombre ?? 'Ejercicio eliminado'}</span>
+                          <span className="text-sm text-texto-suave tabular-nums">
+                            {e.seriesObjetivo}×{e.repsObjetivo}
+                            {e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)}` : ''} · {formatearDescanso(e.descansoSeg)}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  )
+                })}
               </ul>
               {toca && !activo && (
                 <button type="button" onClick={() => empezar(r.id!)} className="mt-4 h-14 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro">

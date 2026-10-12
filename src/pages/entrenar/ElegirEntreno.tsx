@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
+import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import { iniciarEntreno } from '../../db/workouts'
+import { useExercises } from '../../hooks/useExercises'
 import { usePerfil, usePlan } from '../../hooks/usePlan'
 import { useRoutines } from '../../hooks/useRoutines'
 import { useUltimoEntreno } from '../../hooks/useWorkouts'
@@ -10,7 +12,9 @@ export default function ElegirEntreno() {
   const ultimo = useUltimoEntreno()
   const perfil = usePerfil()
   const datosPlan = usePlan()
-  if (rutinas === undefined || ultimo === undefined || perfil === undefined || datosPlan === undefined) return null
+  const ejercicios = useExercises()
+  if (rutinas === undefined || ultimo === undefined || perfil === undefined || datosPlan === undefined || ejercicios === undefined) return null
+  const porId = new Map(ejercicios.map((e) => [e.id!, e]))
   const hoy = datosPlan?.rutinas.find((r) => r.id === datosPlan.siguienteId)
   const delPlan = new Set(datosPlan?.plan.rutinaIds)
 
@@ -28,6 +32,19 @@ export default function ElegirEntreno() {
           <p className="text-sm font-bold tracking-wide text-lima uppercase">Tu plan · Hoy te toca</p>
           <p className="mt-1 font-marca text-2xl leading-tight font-bold tracking-tight">{hoy.nombre.replace(/^Plan · /, '')}</p>
           <p className="text-sm text-texto-suave">{hoy.ejercicios.length} ejercicios</p>
+          <ul className="sin-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4">
+            {hoy.ejercicios.map((e) => {
+              const ejercicio = porId.get(e.exerciseId)
+              return (
+                ejercicio && (
+                  <li key={e.exerciseId} className="w-24 shrink-0">
+                    <MiniaturaEjercicio ejercicio={ejercicio} className="h-16 w-24" />
+                    <p className="mt-1 line-clamp-2 text-xs leading-tight text-texto-suave">{ejercicio.nombre}</p>
+                  </li>
+                )
+              )
+            })}
+          </ul>
           <button type="button" onClick={() => iniciarEntreno(hoy.id)} className="mt-4 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro">
             Empezar
           </button>

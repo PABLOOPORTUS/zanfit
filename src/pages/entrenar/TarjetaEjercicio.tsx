@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import GuiaEjercicio from '../../components/GuiaEjercicio'
+import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import SelectorEjercicios from '../../components/SelectorEjercicios'
+import { mediosDe, MUSCULOS } from '../../db/mediosEjercicios'
 import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie, reemplazarEjercicio } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useDescanso } from '../../hooks/useDescanso'
@@ -24,6 +27,8 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
   const u = useUnidad()
   const { unidad } = u
   const selector = usePanel(`cambiar-${exercise.id}`)
+  const guia = usePanel(`guia-${exercise.id}`)
+  const principales = mediosDe(exercise).musculos.principales.map((id) => MUSCULOS[id].nombre).join(', ')
   const completadas = sets.filter((s) => s.completada).length
 
   return (
@@ -56,6 +61,25 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           </svg>
         </button>
       </header>
+
+      <button
+        type="button"
+        onClick={guia.abrir}
+        className="mx-4 mb-3 flex w-[calc(100%-2rem)] items-center gap-3 rounded-2xl border border-borde bg-fondo p-2 pr-3 text-left active:bg-borde"
+      >
+        <MiniaturaEjercicio ejercicio={exercise} className="h-20 w-28" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm text-texto-suave">Trabaja: {principales}</span>
+          <span className="mt-1 flex items-center gap-1 font-semibold text-lima">
+            Cómo se hace
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="m9 6 6 6-6 6" />
+            </svg>
+          </span>
+        </span>
+      </button>
+
+      {guia.abierto && <GuiaEjercicio ejercicio={exercise} onCerrar={guia.cerrar} />}
 
       {anteriores.length > 0 && (
         <p className="px-4 pb-2 text-sm text-texto-suave">

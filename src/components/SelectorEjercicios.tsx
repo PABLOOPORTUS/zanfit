@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useExercises } from '../hooks/useExercises'
+import MiniaturaEjercicio from './MiniaturaEjercicio'
 import { etiquetaEquipo, etiquetaGrupo, GRUPOS_MUSCULARES } from '../lib/catalogos'
 import { normalizar } from '../lib/texto'
 import type { GrupoMuscular } from '../types'
@@ -87,7 +88,7 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
                 <span
                   className={`flex size-8 shrink-0 items-center justify-center rounded-lg border-2 ${
                     elegido ? 'border-lima bg-lima text-fondo' : 'border-borde'
-                  }`}
+                  } ${unico ? 'hidden' : ''}`}
                   aria-hidden
                 >
                   {elegido && (
@@ -96,6 +97,7 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
                     </svg>
                   )}
                 </span>
+                <MiniaturaEjercicio ejercicio={e} className="h-14 w-20" />
                 <span className="min-w-0 flex-1">
                   <span className="line-clamp-2 text-lg leading-snug font-semibold">{e.nombre}</span>
                   <span className="text-sm text-texto-suave">

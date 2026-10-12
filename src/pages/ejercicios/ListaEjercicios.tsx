@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import BotonFlotante from '../../components/BotonFlotante'
+import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import { useExercises } from '../../hooks/useExercises'
 import { esGrupoMuscular, etiquetaEquipo, etiquetaGrupo, GRUPOS_MUSCULARES } from '../../lib/catalogos'
 import { normalizar } from '../../lib/texto'
@@ -100,7 +101,8 @@ export default function ListaEjercicios() {
             <ul className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
               {s.ejercicios.map((e) => (
                 <li key={e.id}>
-                  <Link to={`/ejercicios/${e.id}`} className="flex min-h-16 items-center gap-3 px-4 py-3 active:bg-borde">
+                  <Link to={`/ejercicios/${e.id}`} className="flex min-h-16 items-center gap-3 px-3 py-2.5 active:bg-borde">
+                    <MiniaturaEjercicio ejercicio={e} className="h-14 w-20" />
                     <div className="min-w-0 flex-1">
                       <p className="line-clamp-2 text-lg leading-snug font-semibold">{e.nombre}</p>
                       <p className="text-sm text-texto-suave">{etiquetaEquipo(e.equipo)}</p>

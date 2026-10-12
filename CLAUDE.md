@@ -31,6 +31,7 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 - **Navegación inferior fija** con 4 tabs, en este orden: Entrenar, Rutinas, Progreso, Ejercicios. Ajustes se abre con el engranaje del encabezado (`/ajustes`), no es una tab.
 - **Respetar safe areas** del iPhone: utilidades `pt-safe` y `pb-safe` definidas en `src/index.css`.
 - **Offline primero:** nada puede depender de la red. No usar CDNs ni llamadas a APIs externas.
+- **Siempre mostrar la imagen del ejercicio:** la gente nueva no se sabe los nombres. Donde se elige o se hace un ejercicio (entreno, selector, rutinas, plan, lista), va `<MiniaturaEjercicio>`: el dibujo de inicio o, si no hay, la silueta con el músculo principal. En el entreno, cada tarjeta tiene "Cómo se hace", que abre `<GuiaEjercicio>` (dibujos, pasos y músculos) con `usePanel`, sin salir del entreno.
 - **Textos largos:** los nombres de ejercicios y rutinas pueden ser largos. Usa `line-clamp-2` (o deja que hagan salto de línea) en vez de `truncate`, y no pongas varios botones al lado de un nombre.
 
 ## Idioma
@@ -108,7 +109,8 @@ src/
   index.css              Tailwind + tema (@theme) + utilidades propias (pt-safe, pb-safe, sin-scrollbar)
   components/            reutilizables: Layout, BottomNav, Marca, BotonVolver, BotonFlotante, ZonaEliminar,
                          SelectorOpciones, Stepper, SelectorEjercicios, DatosEntreno, NotasEntreno,
-                         GraficoProgreso, DiagramaMusculos, DibujosEjercicio, ProveedorAjustes, ProveedorDescanso
+                         GraficoProgreso, DiagramaMusculos, DibujosEjercicio, MiniaturaEjercicio, GuiaEjercicio,
+                         OpcionGrande, ProveedorAjustes, ProveedorDescanso
   contexts/              objetos de contexto (AjustesContext, DescansoContext); los proveedores están en components/
   pages/entrenar/        Entrenar (elige o retoma), ElegirEntreno, EntrenoActivo, TarjetaEjercicio, ResumenEntreno
   pages/rutinas/         ListaRutinas, DetalleRutina, NuevaRutina, EditarRutina, FormularioRutina, RutinaNoEncontrada

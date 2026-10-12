@@ -1,5 +1,6 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
+import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { duplicarRutina, eliminarRutina } from '../../db/routines'
 import { iniciarEntreno } from '../../db/workouts'
@@ -8,6 +9,7 @@ import { useExercises } from '../../hooks/useExercises'
 import { useRoutine } from '../../hooks/useRoutines'
 import { useEntrenoActivo } from '../../hooks/useWorkouts'
 import { formatearDescanso } from '../../lib/formato'
+import type { Exercise } from '../../types'
 import RutinaNoEncontrada from './RutinaNoEncontrada'
 
 export default function DetalleRutina() {
@@ -20,7 +22,7 @@ export default function DetalleRutina() {
 
   if (rutina === undefined || ejercicios === undefined || activo === undefined) return null
   if (rutina === null) return <RutinaNoEncontrada />
-  const nombres = new Map(ejercicios.map((e) => [e.id!, e.nombre]))
+  const porId = new Map(ejercicios.map((e) => [e.id!, e]))
 
   async function empezar() {
     await iniciarEntreno(id)
@@ -39,14 +41,12 @@ export default function DetalleRutina() {
 
       <ol className="mt-6 divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
         {rutina.ejercicios.map((e, i) => (
-          <li key={e.exerciseId} className="flex items-center gap-3 px-4 py-3">
-            <span className="w-6 shrink-0 font-marca text-lg font-bold text-texto-suave">{i + 1}</span>
-            <div className="min-w-0 flex-1">
-              <p className="text-lg font-semibold">{nombres.get(e.exerciseId) ?? 'Ejercicio eliminado'}</p>
-              <p className="text-sm text-texto-suave">
-                {e.seriesObjetivo} × {e.repsObjetivo} reps{e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso {formatearDescanso(e.descansoSeg)}
-              </p>
-            </div>
+          <li key={e.exerciseId}>
+            <FilaEjercicio
+              numero={i + 1}
+              ejercicio={porId.get(e.exerciseId)}
+              detalle={`${e.seriesObjetivo} × ${e.repsObjetivo} reps${e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso ${formatearDescanso(e.descansoSeg)}`}
+            />
           </li>
         ))}
         {rutina.ejercicios.length === 0 && <li className="p-4 text-texto-suave">Esta rutina no tiene ejercicios.</li>}
@@ -94,5 +94,26 @@ export default function DetalleRutina() {
         />
       </div>
     </section>
+  )
+}
+
+function FilaEjercicio({ numero, ejercicio, detalle }: { numero: number; ejercicio?: Exercise; detalle: string }) {
+  const contenido = (
+    <>
+      <span className="w-5 shrink-0 font-marca text-lg font-bold text-texto-suave">{numero}</span>
+      {ejercicio && <MiniaturaEjercicio ejercicio={ejercicio} className="h-14 w-20" />}
+      <div className="min-w-0 flex-1">
+        <p className="text-lg leading-snug font-semibold">{ejercicio?.nombre ?? 'Ejercicio eliminado'}</p>
+        <p className="text-sm text-texto-suave">{detalle}</p>
+      </div>
+    </>
+  )
+  // Tocar el ejercicio lleva a su ficha (dibujos, pasos y músculos).
+  return ejercicio ? (
+    <Link to={`/ejercicios/${ejercicio.id}`} className="flex items-center gap-3 px-3 py-2.5 active:bg-borde">
+      {contenido}
+    </Link>
+  ) : (
+    <div className="flex items-center gap-3 px-3 py-2.5">{contenido}</div>
   )
 }
