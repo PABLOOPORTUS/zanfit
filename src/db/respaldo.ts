@@ -1,4 +1,4 @@
-import { db, type BaseZanfit } from '.'
+import { completarCatalogo, db, type BaseZanfit } from '.'
 import { fechaArchivo } from '../lib/compartir'
 import type { Ajustes, Exercise, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
 
@@ -91,4 +91,6 @@ export async function restaurarRespaldo(respaldo: Respaldo, base: BaseZanfit = d
     await base.perfil.bulkAdd(datos.perfil)
     await base.plan.bulkAdd(datos.plan)
   })
+  // Un respaldo (o la copia de la nube) de una versión anterior trae menos ejercicios en el catálogo: se completan.
+  await completarCatalogo(base)
 }

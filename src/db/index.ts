@@ -104,6 +104,10 @@ export function crearBase(nombre: string): BaseZanfit {
     }
   })
 
+  // Al abrir, se agregan los ejercicios del catálogo que falten. Normalmente no falta ninguno, pero una copia de la nube
+  // o un respaldo hechos con una versión anterior de la app traen un catálogo más chico, y al restaurarlos lo reemplazan.
+  base.on('ready', () => completarCatalogo(base))
+
   // Cualquier cambio en una tabla sincronizada queda anotado para subirlo a la nube (ver db/nube.ts).
   for (const tabla of TABLAS_SINCRONIZADAS) {
     const t = base.table(tabla)
@@ -187,6 +191,20 @@ export async function guardarAjustes(cambios: Partial<Omit<Ajustes, 'id'>>): Pro
 
 function cargarCatalogo(tx: Transaction) {
   return tx.table('exercises').bulkAdd([...EJERCICIOS_BASE, ...EJERCICIOS_EXTRA].map((e) => ({ ...e, propio: false })))
+}
+
+/**
+ * Agrega los ejercicios del catálogo (básicos + ampliado) que falten en la base, comparando nombres normalizados (no
+ * duplica ejercicios propios). No cuenta como cambio local: si no, abrir la app con un catálogo incompleto subiría a la
+ * nube una copia "más nueva" que pisaría lo que otro teléfono haya subido. Los ejercicios agregados viajan a la nube con
+ * el próximo cambio real.
+ */
+export async function completarCatalogo(base: BaseZanfit = db): Promise<number> {
+  const existentes = new Set((await base.exercises.toArray()).map((e) => normalizar(e.nombre)))
+  const faltan = [...EJERCICIOS_BASE, ...EJERCICIOS_EXTRA].filter((e) => !existentes.has(normalizar(e.nombre)))
+  if (faltan.length === 0) return 0
+  await sinAnotarCambios(() => base.exercises.bulkAdd(faltan.map((e) => ({ ...e, propio: false }))))
+  return faltan.length
 }
 
 /** Agrega al catálogo los ejercicios que falten, comparando nombres normalizados (no duplica ejercicios propios). */

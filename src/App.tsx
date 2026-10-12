@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProveedorAjustes from './components/ProveedorAjustes'
+import AvisoActualizacion from './components/AvisoActualizacion'
 import ProveedorCuenta from './components/ProveedorCuenta'
 import ConSesion from './components/ConSesion'
 import Cuenta from './pages/cuenta/Cuenta'
@@ -30,6 +31,7 @@ const ProgresoEjercicio = lazy(() => import('./pages/progreso/ProgresoEjercicio'
 export default function App() {
   return (
     <ProveedorCuenta>
+      <AvisoActualizacion />
       <ProveedorAjustes>
         <ProveedorDescanso>
           <Routes>

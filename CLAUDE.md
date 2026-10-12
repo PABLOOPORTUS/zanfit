@@ -124,6 +124,7 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
   - Se sincroniza 4 s después de cada cambio, al volver la conexión, al ocultar la app con cambios pendientes y al iniciar sesión.
   - Si la nube es más nueva que lo último conocido y aquí no hay cambios más nuevos, se baja; si no, se sube.
   - Las **fotos y videos propios no se sincronizan** (se comparten con el archivo de Ajustes).
+- **El catálogo se completa solo (`completarCatalogo`):** una copia de la nube o un respaldo hechos con una versión anterior traen menos ejercicios, y restaurarlos reemplaza la tabla `exercises`. Por eso, después de cada `restaurarRespaldo` y al abrir la base (`on('ready')`) se agregan los del catálogo que falten, sin anotarlo como cambio local (para no pisar la nube). Pasó de verdad al publicar el catálogo de 873: el teléfono bajaba la copia vieja y quedaba con 79.
 - **Primer ingreso:** si la nube está vacía y hay datos sin cuenta en el teléfono (de antes de que la cuenta fuera obligatoria), se pregunta si guardarlos en la cuenta (`copiarInvitadoAUsuario`, que copia también las fotos y videos) o empezar de cero.
 - **Supabase se carga bajo demanda (`lib/clienteNube.ts`):** son unos 215 kB en un chunk aparte. Sin sesión guardada nunca se descarga.
 - **Foto de perfil:** `ajustes.fotoPerfil`, un JPEG cuadrado de 256 px como data URL. Viaja con la sincronización y se muestra en el encabezado (`<Avatar>`).
