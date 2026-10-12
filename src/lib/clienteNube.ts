@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
 
 /**
  * Supabase pesa ~300 kB: se carga en un chunk aparte y solo cuando hace falta (hay una sesión guardada o alguien va a
@@ -15,11 +15,15 @@ export async function mensajeErrorNube(error: { message?: string; status?: numbe
   return (await import('./supabase')).mensajeError(error)
 }
 
-/** ¿Hay una sesión guardada en este teléfono? Se revisa sin cargar Supabase (misma clave que `storageKey`). */
-export function haySesionGuardada(): boolean {
+/**
+ * Usuario de la sesión guardada en este teléfono, leído sin cargar Supabase (misma clave que `storageKey`).
+ * Permite entrar sin internet: en el gimnasio muchas veces no hay señal.
+ */
+export function usuarioGuardado(): User | null {
   try {
-    return localStorage.getItem('zanfit:sesion') !== null
+    const sesion = JSON.parse(localStorage.getItem('zanfit:sesion') ?? 'null') as { user?: User } | null
+    return sesion?.user?.id ? sesion.user : null
   } catch {
-    return false
+    return null
   }
 }

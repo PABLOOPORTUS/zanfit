@@ -3,7 +3,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type React
 import { CuentaContext, type CuentaApi, type EstadoSync, type Usuario } from '../contexts/CuentaContext'
 import { BASE_INVITADO, db, nombreBase, ultimoCambio, usarBase } from '../db'
 import { copiarInvitadoAUsuario, ErrorNube, hayDatosDeInvitado, hayDatosEnLaNube, sincronizar, subir } from '../db/nube'
-import { cliente, haySesionGuardada, mensajeErrorNube } from '../lib/clienteNube'
+import { cliente, mensajeErrorNube, usuarioGuardado } from '../lib/clienteNube'
 
 const ESPERA_SUBIDA_MS = 4000
 
@@ -27,8 +27,14 @@ export default function ProveedorCuenta({ children }: { children: ReactNode }) {
 
   const activar = useCallback((u: User) => {
     usarBase(nombreBase(u.id))
-    setUsuario(aUsuario(u))
+    setUsuario((actual) => (actual?.id === u.id ? actual : aUsuario(u)))
     setBase(nombreBase(u.id))
+  }, [])
+
+  const salir = useCallback(() => {
+    usarBase(BASE_INVITADO)
+    setUsuario(null)
+    setBase(BASE_INVITADO)
   }, [])
 
   const correr = useCallback(async (uid: string) => {
@@ -53,27 +59,25 @@ export default function ProveedorCuenta({ children }: { children: ReactNode }) {
 
   // Sesión guardada al abrir la app.
   useEffect(() => {
-    // Sin sesión guardada no se carga Supabase: la app abre directo con la base sin cuenta.
-    if (!haySesionGuardada()) {
-      setListo(true)
-      return
-    }
+    // Con sesión guardada se entra al tiro (también sin internet); Supabase la confirma después.
+    // Sin sesión guardada no se carga Supabase: se muestra directo la pantalla de ingreso.
+    const guardado = usuarioGuardado()
+    if (guardado) activar(guardado)
+    setListo(true)
+    if (!guardado) return
     let cancelar = () => {}
     cliente().then(async (sb) => {
-      const { data } = await sb.auth.getSession()
+      const { data, error } = await sb.auth.getSession()
       if (data.session) activar(data.session.user)
-      setListo(true)
+      // Solo se cierra la sesión si Supabase respondió que ya no es válida (no por falta de señal).
+      else if (!error && navigator.onLine) salir()
       const { data: suscripcion } = sb.auth.onAuthStateChange((evento) => {
-        if (evento === 'SIGNED_OUT') {
-          usarBase(BASE_INVITADO)
-          setUsuario(null)
-          setBase(BASE_INVITADO)
-        }
+        if (evento === 'SIGNED_OUT') salir()
       })
       cancelar = () => suscripcion.subscription.unsubscribe()
-    }, () => setListo(true))
+    })
     return () => cancelar()
-  }, [activar])
+  }, [activar, salir])
 
   // Sincronización automática mientras hay sesión.
   useEffect(() => {
@@ -144,15 +148,13 @@ export default function ProveedorCuenta({ children }: { children: ReactNode }) {
         // Antes de salir, subir lo que falte (si no hay conexión, queda guardado en el teléfono y se sube al volver).
         if (usuario && ultimoCambio(db.name)) await subir(usuario.id).catch(() => undefined)
         await (await cliente()).auth.signOut()
-        usarBase(BASE_INVITADO)
-        setUsuario(null)
-        setBase(BASE_INVITADO)
+        salir()
       },
       sincronizarAhora: async () => {
         if (usuario) await correr(usuario.id)
       },
     }),
-    [usuario, estado, error, ultimaSync, trasAutenticar, activar, correr],
+    [usuario, estado, error, ultimaSync, trasAutenticar, activar, salir, correr],
   )
 
   if (!listo) return null

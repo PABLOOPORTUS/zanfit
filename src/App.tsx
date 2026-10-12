@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProveedorAjustes from './components/ProveedorAjustes'
 import ProveedorCuenta from './components/ProveedorCuenta'
+import ConSesion from './components/ConSesion'
 import Cuenta from './pages/cuenta/Cuenta'
 import ProveedorDescanso from './components/ProveedorDescanso'
 import Ajustes from './pages/ajustes/Ajustes'
@@ -31,7 +32,14 @@ export default function App() {
       <ProveedorAjustes>
         <ProveedorDescanso>
           <Routes>
-            <Route element={<Layout />}>
+            <Route path="/cuenta" element={<Cuenta />} />
+            <Route
+              element={
+                <ConSesion>
+                  <Layout />
+                </ConSesion>
+              }
+            >
               <Route index element={<Navigate to="/entrenar" replace />} />
               <Route path="/entrenar" element={<Entrenar />} />
               <Route path="/entrenar/resumen/:id" element={<ResumenEntreno />} />
@@ -55,7 +63,6 @@ export default function App() {
               <Route path="/ejercicios/:id/editar" element={<EditarEjercicio />} />
               <Route path="/ajustes" element={<Ajustes />} />
               <Route path="/ajustes/creditos" element={<Creditos />} />
-              <Route path="/cuenta" element={<Cuenta />} />
               <Route path="/evaluacion" element={<Evaluacion />} />
               <Route path="/plan" element={<MiPlan />} />
               <Route path="*" element={<Navigate to="/entrenar" replace />} />

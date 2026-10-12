@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import Marca from '../../components/Marca'
 import { useCuenta } from '../../hooks/useCuenta'
 
 const INTENTOS_MAXIMOS = 5
@@ -38,8 +39,9 @@ export default function Cuenta() {
   const [aviso, setAviso] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [eligiendo, setEligiendo] = useState(false)
+  const volverA = (useLocation().state as { volverA?: string } | null)?.volverA ?? '/entrenar'
 
-  if (cuenta.usuario && !eligiendo) return <Navigate to="/entrenar" replace />
+  if (cuenta.usuario && !eligiendo) return <Navigate to={volverA} replace />
 
   async function enviar(e: FormEvent) {
     e.preventDefault()
@@ -58,7 +60,7 @@ export default function Cuenta() {
       guardarIntentos(null)
       if (resultado === 'confirmar-correo') setAviso('Te enviamos un correo para confirmar la cuenta. Ábrelo y después ingresa aquí con tu PIN.')
       else if (resultado === 'elegir') setEligiendo(true)
-      else navigate('/entrenar', { replace: true })
+      else navigate(volverA, { replace: true })
     } catch (err) {
       const reiniciar = Date.now() - intentos.desde > BLOQUEO_MS
       const cantidad = (reiniciar ? 0 : intentos.cantidad) + 1
@@ -72,12 +74,12 @@ export default function Cuenta() {
   async function elegir(opcion: 'subir' | 'cero') {
     setEnviando(true)
     await cuenta.elegirDatos(opcion)
-    navigate('/entrenar', { replace: true })
+    navigate(volverA, { replace: true })
   }
 
   if (eligiendo) {
     return (
-      <section>
+      <Pantalla>
         <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">¡Bienvenido a tu cuenta!</h1>
         <p className="mt-2 text-texto-suave">En este teléfono ya tienes entrenos guardados sin cuenta. ¿Qué hacemos con ellos?</p>
         <div className="mt-6 flex flex-col gap-3">
@@ -93,19 +95,22 @@ export default function Cuenta() {
             Empezar de cero
           </button>
         </div>
-        <p className="mt-3 text-sm text-texto-suave">Si eliges empezar de cero, los datos sin cuenta no se borran: siguen disponibles al cerrar sesión.</p>
-      </section>
+        <p className="mt-3 text-sm text-texto-suave">Si eliges empezar de cero, esos entrenos no se borran del teléfono, pero no quedan en tu cuenta.</p>
+      </Pantalla>
     )
   }
 
   return (
-    <section>
+    <Pantalla>
       <h1 className="font-marca text-3xl font-bold tracking-tight">{registro ? 'Crea tu cuenta' : 'Ingresa a tu cuenta'}</h1>
       <p className="mt-2 text-texto-suave">
         {registro
-          ? 'Guarda tu progreso en la nube: si cambias de teléfono, lo recuperas al ingresar.'
-          : 'Con tu correo y tu PIN de 6 números recuperas tu progreso en cualquier teléfono.'}
+          ? 'Tu progreso, tus récords y tus logros quedan guardados en tu cuenta: los recuperas en cualquier teléfono.'
+          : 'Con tu correo y tu PIN de 6 números entras a tu progreso desde cualquier teléfono.'}
       </p>
+      {typeof navigator !== 'undefined' && !navigator.onLine && (
+        <p className="mt-3 rounded-xl border border-peligro/50 bg-peligro/10 p-3 text-sm">Necesitas conexión a internet para ingresar. Después la app funciona sin señal.</p>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-1 rounded-2xl border border-borde bg-superficie p-1" role="tablist">
         {[
@@ -175,11 +180,21 @@ export default function Cuenta() {
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-texto-suave">
-        La cuenta es opcional: sin cuenta la app funciona igual, pero tu progreso queda solo en este teléfono. Cada persona que use este teléfono puede tener
-        su propia cuenta.
-      </p>
-    </section>
+      <p className="mt-6 text-sm text-texto-suave">Cada persona que use este teléfono puede tener su propia cuenta: cada una ve solo su progreso.</p>
+    </Pantalla>
+  )
+}
+
+/** Pantalla de acceso a pantalla completa (sin barra inferior), con la marca grande. */
+function Pantalla({ children }: { children: ReactNode }) {
+  return (
+    <main className="pt-safe pb-safe mx-auto min-h-dvh max-w-lg px-4">
+      <div className="pt-10 pb-8 text-center">
+        <Marca className="text-5xl" />
+        <p className="mt-2 text-texto-suave">Tu entrenamiento, a tu medida</p>
+      </div>
+      <section className="pb-10">{children}</section>
+    </main>
   )
 }
 

@@ -115,13 +115,6 @@ export default function ElegirEntreno() {
       </button>
       <p className="mt-2 text-center text-sm text-texto-suave">Sin rutina: agregas los ejercicios sobre la marcha.</p>
 
-      {!usuario && (
-        <Link to="/cuenta?modo=registro" className="mt-8 block rounded-2xl border border-borde bg-superficie p-4 active:bg-borde">
-          <p className="font-semibold">No pierdas tu progreso</p>
-          <p className="mt-1 text-sm text-texto-suave">Crea tu cuenta gratis y guarda tus entrenos, récords y logros en la nube.</p>
-          <span className="mt-2 inline-block font-semibold text-lima">Crear cuenta ›</span>
-        </Link>
-      )}
     </section>
   )
 }

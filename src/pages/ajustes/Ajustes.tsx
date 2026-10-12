@@ -256,22 +256,8 @@ const TEXTO_ESTADO = {
 function SeccionCuenta() {
   const cuenta = useCuenta()
   const [saliendo, setSaliendo] = useState(false)
-  if (!cuenta.usuario) {
-    return (
-      <div className="rounded-2xl border border-lima/60 bg-superficie p-4">
-        <p className="font-marca text-xl font-bold">Guarda tu progreso en la nube</p>
-        <p className="mt-1 text-texto-suave">Con una cuenta no pierdes tus entrenos si cambias de teléfono, y cada persona lleva su propio progreso.</p>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <Link to="/cuenta?modo=registro" className="flex h-14 items-center justify-center rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
-            Crear cuenta
-          </Link>
-          <Link to="/cuenta" className="flex h-14 items-center justify-center rounded-2xl border border-borde font-semibold active:bg-borde">
-            Ingresar
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  // La app exige cuenta (ConSesion), así que aquí siempre hay usuario.
+  if (!cuenta.usuario) return null
   const { usuario, estado, ultimaSync } = cuenta
   return (
     <div className="rounded-2xl border border-borde bg-superficie p-4">
