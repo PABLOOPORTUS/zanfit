@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
+import DiagramaMusculos from '../../components/DiagramaMusculos'
+import DibujosEjercicio from '../../components/DibujosEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
+import { mediosDe } from '../../db/mediosEjercicios'
 import { eliminarEjercicio } from '../../db/exercises'
 import { useExercise, useRegistroEjercicio, useUsosEjercicio } from '../../hooks/useExercises'
 import { etiquetaEquipo, etiquetaGrupo } from '../../lib/catalogos'
@@ -15,6 +18,7 @@ export default function DetalleEjercicio() {
 
   if (ejercicio === undefined) return null
   if (ejercicio === null) return <EjercicioNoEncontrado />
+  const medios = mediosDe(ejercicio)
 
   return (
     <section>
@@ -27,6 +31,12 @@ export default function DetalleEjercicio() {
         {ejercicio.propio && <Etiqueta destacada>Propio</Etiqueta>}
       </div>
 
+      {medios.dibujos && (
+        <div className="mt-6">
+          <DibujosEjercicio dibujos={medios.dibujos} nombre={ejercicio.nombre} />
+        </div>
+      )}
+
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Cómo se hace</h2>
       <div className="rounded-2xl border border-borde bg-superficie p-4 text-lg leading-relaxed">
         {ejercicio.instrucciones ?? (
@@ -35,6 +45,9 @@ export default function DetalleEjercicio() {
           </span>
         )}
       </div>
+
+      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Músculos</h2>
+      <DiagramaMusculos musculos={medios.musculos} />
 
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tu registro</h2>
       <Registro id={id} />

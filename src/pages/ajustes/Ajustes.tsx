@@ -1,4 +1,5 @@
 import { useRef, useState, type ChangeEvent } from 'react'
+import { Link } from 'react-router-dom'
 import SelectorOpciones from '../../components/SelectorOpciones'
 import Stepper from '../../components/Stepper'
 import ZonaEliminar from '../../components/ZonaEliminar'
@@ -165,6 +166,13 @@ export default function Ajustes() {
           </div>
         )}
       </div>
+
+      <Link to="/ajustes/creditos" className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde">
+        Créditos y licencias
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-texto-suave" aria-hidden>
+          <path d="m9 6 6 6-6 6" />
+        </svg>
+      </Link>
 
       <p className="text-center text-sm text-texto-suave">ZANFIT · funciona sin conexión</p>
     </section>

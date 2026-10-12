@@ -70,25 +70,26 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 ## Estructura de carpetas
 
 ```
-public/                  íconos (ZF), _redirects (Netlify) y assets estáticos
+public/                  íconos (ZF), _redirects (Netlify) y medios/ (dibujos y diagramas de músculos de wger)
 src/
   main.tsx               punto de entrada (BrowserRouter + StrictMode); pide almacenamiento persistente
   App.tsx                rutas + ProveedorAjustes + ProveedorDescanso
   index.css              Tailwind + tema (@theme) + utilidades propias (pt-safe, pb-safe, sin-scrollbar)
   components/            reutilizables: Layout, BottomNav, Marca, BotonVolver, BotonFlotante, ZonaEliminar,
                          SelectorOpciones, Stepper, SelectorEjercicios, DatosEntreno, NotasEntreno,
-                         GraficoProgreso, ProveedorAjustes, ProveedorDescanso
+                         GraficoProgreso, DiagramaMusculos, DibujosEjercicio, ProveedorAjustes, ProveedorDescanso
   contexts/              objetos de contexto (AjustesContext, DescansoContext); los proveedores están en components/
   pages/entrenar/        Entrenar (elige o retoma), ElegirEntreno, EntrenoActivo, TarjetaEjercicio, ResumenEntreno
   pages/rutinas/         ListaRutinas, DetalleRutina, NuevaRutina, EditarRutina, FormularioRutina, RutinaNoEncontrada
   pages/progreso/        Progreso (calendario + historial/récords), CalendarioEntrenos, DetalleEntreno, ProgresoEjercicio
   pages/ejercicios/      ListaEjercicios, DetalleEjercicio, NuevoEjercicio, EditarEjercicio, FormularioEjercicio, EjercicioNoEncontrado
-  pages/ajustes/         Ajustes (unidad, descanso por defecto, respaldo)
+  pages/ajustes/         Ajustes (unidad, descanso por defecto, respaldo), Creditos (licencias CC BY-SA)
   db/index.ts            instancia de Dexie, esquema, ajustes y carga de datos iniciales
   db/<tabla>.ts          escrituras y consultas: exercises.ts, routines.ts, workouts.ts
   db/progreso.ts         consultas de historial, récords, evolución y fechas entrenadas
   db/respaldo.ts         exportar, validar e importar el respaldo JSON
   db/ejerciciosBase.ts, db/rutinasBase.ts   datos iniciales
+  db/mediosEjercicios.ts músculos y dibujos de cada ejercicio del catálogo (recursos de wger)
   hooks/                 lectura con useLiveQuery (useExercises, useRoutines, useWorkouts…), useAjustes/useUnidad,
                          useDescanso, usePanel, useAhora
   lib/                   utilidades puras: texto.ts, catalogos.ts, formato.ts (Intl, unidades), calculos.ts (Epley,
@@ -128,8 +129,19 @@ Las 4 tabs y Ajustes están completas:
 - **Entrenar:** elegir una rutina o hacer un entreno libre. Cada ejercicio muestra sus series en filas peso | reps | listo, precargadas con la última vez. Al marcar una serie parte el descanso (barra flotante con +15s y Saltar; al terminar vibra y suena). Se pueden agregar o quitar series y ejercicios. Hay cronómetro total, y "Finalizar" muestra un resumen con duración, volumen, series y récords nuevos, más notas. El entreno se retoma si se cierra la app, y la tab Entrenar muestra un punto cuando hay uno en curso.
 - **Rutinas:** listar, crear, editar (nombre, ejercicios desde la biblioteca, series, reps y descanso, reordenar con flechas), duplicar y eliminar.
 - **Progreso:** racha semanal, esta semana, mejor racha y mapa de calor de las últimas 18 semanas. Historial por mes con detalle de cada entreno (series, récords, notas, eliminar). Récords por ejercicio (peso máximo y 1RM estimado) y, al tocar uno, gráficos de peso máximo y volumen por sesión con su tabla.
-- **Ejercicios:** lista agrupada con buscador y filtros, detalle con instrucciones, registro y enlace a su progreso, y ejercicios propios.
-- **Ajustes:** unidad kg/lb, descanso por defecto, y exportar o importar el respaldo JSON. En el teléfono, exportar usa la hoja de compartir; si no está disponible, descarga el archivo.
+- **Ejercicios:** lista agrupada con buscador y filtros; detalle con dibujos de inicio y final (en 20 ejercicios), diagrama de músculos, instrucciones, registro y enlace a su progreso; ejercicios propios.
+- **Ajustes:** unidad kg/lb, descanso por defecto, exportar o importar el respaldo JSON, y Créditos. En el teléfono, exportar usa la hoja de compartir; si no está disponible, descarga el archivo.
+
+## Recursos gráficos de ejercicios (wger)
+
+El detalle de cada ejercicio muestra dibujos de inicio y final (cuando existen) y un diagrama de músculos de frente y espalda. Los datos están en `src/db/mediosEjercicios.ts` (se buscan por nombre del catálogo, `mediosDe()`), y los archivos en `public/medios/`. Todo entra en el precache, así que funciona offline (unos 900 KB).
+
+- **Diagramas de músculos** (`public/medios/musculos/`): `frente.svg` y `espalda.svg` son las siluetas; `principal-N.svg` y `secundario-N.svg` son capas por músculo (N = id de músculo de wger, ver `MUSCULOS`). Origen: «Muscular system» de Termininja (Wikimedia Commons), adaptado por wger, **CC BY-SA 3.0**. En ZANFIT se recolorearon (principal en lima, secundario en lima al 45%) y se optimizaron con svgo. Las capas se apilan con `<img>` absolutos alineados arriba a la izquierda (`DiagramaMusculos`).
+- **Músculos de cada ejercicio:** los asignamos nosotros (no se copian de wger, cuyos datos de usuarios son irregulares). Los ejercicios propios usan los músculos típicos de su grupo (`POR_GRUPO`).
+- **Dibujos** (`public/medios/ejercicios/wger-<id>-<1|2>.webp`): solo de **Everkinetic** (estilo "line" de wger), **CC BY-SA 3.0**. Hay 20 ejercicios con dibujo. Se redujeron a 400 px, se pasaron a WebP y se muestran con `invert` para el modo oscuro.
+- **No usar otras imágenes de wger:** las fotos y renders 3D que suben los usuarios tienen licencias dudosas (por ejemplo, una con marca de agua "© HOIST" etiquetada como CC BY-SA), y algunas son generadas con IA. Para agregar un dibujo, que sea de Everkinetic y que represente exactamente el ejercicio (no uno parecido).
+- **Atribución obligatoria (CC BY-SA):** cada dibujo y diagrama lleva su crédito con enlace a `/ajustes/creditos`, y esa pantalla lista autores, licencia y cambios. Si agregas recursos, actualiza los créditos.
+- **Cómo se generaron:** se descargó `https://wger.de/api/v2/exerciseinfo/` (catálogo completo), las capas de músculos desde el repo `wger-project/wger` (`wger/core/static/images/muscles/`), se optimizó con `svgo --multipass -p 1` y los PNG se convirtieron a WebP desde un `canvas` en Chrome (no hay `cwebp` instalado).
 
 ## Íconos y PWA
 
