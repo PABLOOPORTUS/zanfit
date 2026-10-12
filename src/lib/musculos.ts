@@ -60,6 +60,8 @@ export type Categoria = keyof typeof CATEGORIAS
 export const MECANICAS = { compuesto: 'Compuesto (varias articulaciones)', aislamiento: 'Aislamiento (una articulación)' } as const
 export type Mecanica = keyof typeof MECANICAS
 
+export type Fuerza = 'empuje' | 'tiron' | 'estatico'
+
 /** Equipamiento con el detalle de free-exercise-db (más fino que `Equipo`: distingue la barra Z o "sin equipamiento"). */
 export const EQUIPAMIENTOS = {
   ninguno: 'Sin equipamiento',

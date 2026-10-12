@@ -33,7 +33,10 @@ export interface Clasificacion {
 
 const c = (patron: Patron, nivel: 1 | 2 | 3, ...riesgos: Lesion[]): Clasificacion => ({ patron, nivel, riesgos })
 
-/** Por nombre del catálogo (db/ejerciciosBase.ts). Los ejercicios propios no entran al generador. */
+/**
+ * Los 79 básicos, por nombre (db/ejerciciosBase.ts), clasificados a mano. El resto del catálogo se clasifica con reglas
+ * (lib/clasificacion.ts). Los ejercicios propios no entran al generador.
+ */
 export const CLASIFICACION: Record<string, Clasificacion> = {
   // Pecho
   'Press de banca': c('empuje-h', 2, 'hombros'),
@@ -41,8 +44,8 @@ export const CLASIFICACION: Record<string, Clasificacion> = {
   'Press inclinado con mancuernas': c('empuje-h', 2),
   'Aperturas con mancuernas': c('pecho-aisl', 2, 'hombros'),
   'Cruce de poleas': c('pecho-aisl', 1),
-  'Flexiones de brazos': c('empuje-h', 1),
-  'Fondos en paralelas': c('empuje-h', 3, 'hombros'),
+  'Flexiones de brazos': c('empuje-h', 1, 'munecas'),
+  'Fondos en paralelas': c('empuje-h', 3, 'hombros', 'munecas'),
   'Press de pecho en máquina': c('empuje-h', 1),
   'Press inclinado en máquina': c('empuje-h', 1),
   'Press declinado en máquina': c('empuje-h', 1),
@@ -89,14 +92,14 @@ export const CLASIFICACION: Record<string, Clasificacion> = {
   Pájaros: c('hombro-post', 2),
   'Face pull': c('hombro-post', 1),
   'Press de hombros en máquina': c('empuje-v', 1, 'hombros'),
-  'Elevaciones frontales en polea': c('hombro-aisl', 1),
+  'Elevaciones frontales en polea': c('hombro-aisl', 1, 'hombros'),
   'Remo al mentón en polea': c('hombro-aisl', 2, 'hombros'),
   'Remo al mentón en máquina Smith': c('hombro-aisl', 2, 'hombros'),
   'Pájaros en polea': c('hombro-post', 1),
   'Encogimientos en polea': c('trapecio', 1),
   'Encogimientos en máquina Smith': c('trapecio', 1),
   // Bíceps
-  'Curl con barra': c('biceps', 1),
+  'Curl con barra': c('biceps', 1, 'munecas'),
   'Curl con mancuernas': c('biceps', 1),
   'Curl martillo': c('biceps', 1),
   'Curl predicador': c('biceps', 1),
@@ -108,7 +111,7 @@ export const CLASIFICACION: Record<string, Clasificacion> = {
   'Extensión de tríceps en polea': c('triceps', 1),
   'Press francés': c('triceps', 2),
   'Extensión de tríceps sobre la cabeza': c('triceps', 1, 'hombros'),
-  'Fondos en banco': c('triceps', 2, 'hombros'),
+  'Fondos en banco': c('triceps', 2, 'hombros', 'munecas'),
   'Press de banca agarre cerrado': c('triceps', 2),
   'Extensión de tríceps con cuerda': c('triceps', 1),
   'Extensión de tríceps con agarre invertido': c('triceps', 1),

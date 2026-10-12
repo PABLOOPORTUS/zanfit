@@ -9,6 +9,7 @@ import { useExercises } from '../../hooks/useExercises'
 import { useRoutine } from '../../hooks/useRoutines'
 import { useEntrenoActivo } from '../../hooks/useWorkouts'
 import { formatearDescanso } from '../../lib/formato'
+import { duracionEstimada } from '../../lib/plan'
 import type { Exercise } from '../../types'
 import RutinaNoEncontrada from './RutinaNoEncontrada'
 
@@ -38,8 +39,30 @@ export default function DetalleRutina() {
     <section>
       <BotonVolver to="/rutinas">Rutinas</BotonVolver>
       <h1 className="mt-2 font-marca text-4xl font-bold tracking-tight">{rutina.nombre}</h1>
+      {rutina.foco && (
+        <p className="mt-1 text-texto-suave">
+          {rutina.foco} · ~{duracionEstimada(rutina)} min
+        </p>
+      )}
+      {rutina.nota && <p className="mt-3 rounded-2xl border border-lima/40 bg-lima/10 p-4 leading-snug">{rutina.nota}</p>}
 
-      <ol className="mt-6 divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+      {rutina.calentamiento && rutina.calentamiento.length > 0 && (
+        <>
+          <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Calentamiento sugerido</h2>
+          <ol className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+            {rutina.calentamiento.map((c) => (
+              <li key={c.exerciseId}>
+                <FilaEjercicio ejercicio={porId.get(c.exerciseId)} detalle={formatearDuracion(c.segundos)} />
+              </li>
+            ))}
+          </ol>
+          <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Ejercicios</h2>
+        </>
+      )}
+
+      <ol
+        className={`${rutina.calentamiento?.length ? '' : 'mt-6'} divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie`}
+      >
         {rutina.ejercicios.map((e, i) => (
           <li key={e.exerciseId}>
             <FilaEjercicio
@@ -97,10 +120,10 @@ export default function DetalleRutina() {
   )
 }
 
-function FilaEjercicio({ numero, ejercicio, detalle }: { numero: number; ejercicio?: Exercise; detalle: string }) {
+function FilaEjercicio({ numero, ejercicio, detalle }: { numero?: number; ejercicio?: Exercise; detalle: string }) {
   const contenido = (
     <>
-      <span className="w-5 shrink-0 font-marca text-lg font-bold text-texto-suave">{numero}</span>
+      {numero !== undefined && <span className="w-5 shrink-0 font-marca text-lg font-bold text-texto-suave">{numero}</span>}
       {ejercicio && <MiniaturaEjercicio ejercicio={ejercicio} className="h-14 w-20" />}
       <div className="min-w-0 flex-1">
         <p className="text-lg leading-snug font-semibold">{ejercicio?.nombre ?? 'Ejercicio eliminado'}</p>
@@ -117,3 +140,5 @@ function FilaEjercicio({ numero, ejercicio, detalle }: { numero: number; ejercic
     <div className="flex items-center gap-3 px-3 py-2.5">{contenido}</div>
   )
 }
+
+const formatearDuracion = (segundos: number) => (segundos >= 60 ? `${Math.round(segundos / 60)} min` : `${segundos} s`)

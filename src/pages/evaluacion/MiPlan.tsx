@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
+import AvisoSalud from '../../components/AvisoSalud'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { eliminarPlan } from '../../db/plan'
@@ -7,9 +8,21 @@ import { useUnidad } from '../../hooks/useAjustes'
 import { useExercises } from '../../hooks/useExercises'
 import { usePerfil, usePlan } from '../../hooks/usePlan'
 import { useEntrenoActivo } from '../../hooks/useWorkouts'
-import { etiqueta, EXPERIENCIAS, LUGARES, OBJETIVOS, ZONAS } from '../../lib/evaluacion'
+import {
+  EQUIPAMIENTO_POR_DEFECTO,
+  EQUIPOS_DISPONIBLES,
+  etiqueta,
+  EXPERIENCIAS,
+  LESIONES,
+  LUGARES,
+  OBJETIVOS,
+  pasosPara,
+  ZONAS,
+  type Paso,
+} from '../../lib/evaluacion'
 import { formatearDescanso } from '../../lib/formato'
-import { DESCRIPCION_DIVISION, edad, imc, recomendaciones } from '../../lib/plan'
+import { DESCRIPCION_DIVISION, duracionEstimada, edad, imc, recomendaciones } from '../../lib/plan'
+import type { Perfil } from '../../types'
 
 /** `/plan`: resultado de la evaluación y el plan generado. */
 export default function MiPlan() {
@@ -57,8 +70,8 @@ export default function MiPlan() {
           {perfil.sexo === 'hombre' ? 'Hombre' : 'Mujer'} · {edad(perfil)} años · {u.peso(perfil.pesoKg, 1)} · {perfil.alturaCm} cm
         </p>
         <p className="mt-1 text-texto-suave">
-          IMC <span className="font-semibold text-texto">{String(valorImc).replace('.', ',')}</span> ({categoria}). Es solo una referencia: no distingue
-          músculo de grasa.
+          IMC <span className="font-semibold text-texto">{String(valorImc).replace('.', ',')}</span> ({categoria}). Es solo una referencia: no
+          distingue músculo de grasa.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {[
@@ -84,7 +97,10 @@ export default function MiPlan() {
               <div className="flex items-start gap-2">
                 <Link to={`/rutinas/${r.id}`} className="min-w-0 flex-1">
                   <p className="font-marca text-xl leading-tight font-bold">{r.nombre.replace(/^Plan · /, '')}</p>
-                  <p className="text-sm text-texto-suave">{r.ejercicios.length} ejercicios · toca para ver o editar</p>
+                  {r.foco && <p className="text-texto-suave">{r.foco}</p>}
+                  <p className="text-sm text-texto-suave">
+                    {r.ejercicios.length} ejercicios · ~{duracionEstimada(r)} min · toca para ver o editar
+                  </p>
                 </Link>
                 {toca && <span className="shrink-0 rounded-full bg-lima px-2 py-0.5 text-xs font-bold text-fondo">Hoy</span>}
               </div>
@@ -108,7 +124,11 @@ export default function MiPlan() {
                 })}
               </ul>
               {toca && !activo && (
-                <button type="button" onClick={() => empezar(r.id!)} className="mt-4 h-14 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro">
+                <button
+                  type="button"
+                  onClick={() => empezar(r.id!)}
+                  className="mt-4 h-14 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+                >
                   Empezar este día
                 </button>
               )}
@@ -120,13 +140,25 @@ export default function MiPlan() {
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Recomendaciones</h2>
       <ul className="flex flex-col gap-2">
         {recomendaciones(perfil).map((r) => (
-          <li key={r} className={`rounded-2xl border p-4 leading-snug ${r.startsWith('Respondiste') ? 'border-peligro/50 bg-peligro/10' : 'border-borde bg-superficie'}`}>
+          <li
+            key={r}
+            className={`rounded-2xl border p-4 leading-snug ${r.startsWith('Respondiste') ? 'border-peligro/50 bg-peligro/10' : 'border-borde bg-superficie'}`}
+          >
             {r}
           </li>
         ))}
       </ul>
 
-      <Link to="/evaluacion" className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde">
+      <div className="mt-4">
+        <AvisoSalud />
+      </div>
+
+      <Respuestas perfil={perfil} />
+
+      <Link
+        to="/evaluacion"
+        className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde"
+      >
         Rehacer la evaluación
       </Link>
       <p className="mt-2 text-center text-sm text-texto-suave">Al rehacerla, las rutinas del plan se reemplazan. Tu historial se mantiene.</p>
@@ -143,5 +175,51 @@ export default function MiPlan() {
         />
       </div>
     </section>
+  )
+}
+
+/** Cada respuesta de la evaluación con un botón para cambiar solo esa (abre `/evaluacion?paso=N&editar=1`). */
+function Respuestas({ perfil }: { perfil: Perfil }) {
+  const u = useUnidad()
+  const pasos = pasosPara(perfil.lugar)
+  const lista = (valores: string[]) => (valores.length ? valores.join(', ') : 'Ninguna')
+  const filas: [Paso, string, string][] = [
+    ['sexo', 'Sexo', perfil.sexo === 'hombre' ? 'Hombre' : 'Mujer'],
+    ['datos', 'Edad, peso y altura', `${edad(perfil)} años · ${u.peso(perfil.pesoKg, 1)} · ${perfil.alturaCm} cm`],
+    ['objetivo', 'Objetivo', etiqueta(OBJETIVOS, perfil.objetivo)],
+    ['zonas', 'Quiero mejorar', lista(perfil.zonas.map((z) => etiqueta(ZONAS, z)))],
+    ['experiencia', 'Experiencia', etiqueta(EXPERIENCIAS, perfil.experiencia)],
+    ['lugar', 'Dónde entreno', etiqueta(LUGARES, perfil.lugar)],
+    ...(perfil.lugar !== 'gimnasio'
+      ? [
+          ['equipo', 'Equipo', lista((perfil.equipamiento ?? EQUIPAMIENTO_POR_DEFECTO).map((q) => etiqueta(EQUIPOS_DISPONIBLES, q)))] as [
+            Paso,
+            string,
+            string,
+          ],
+        ]
+      : []),
+    ['frecuencia', 'Tiempo', `${perfil.diasPorSemana} días · ${perfil.minutosPorSesion} min`],
+    ['lesiones', 'Lesiones', lista(perfil.lesiones.map((l) => etiqueta(LESIONES, l)))],
+    ['salud', 'Salud', perfil.precaucion ? 'Con alguna alerta' : 'Sin alertas'],
+  ]
+  return (
+    <>
+      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tus respuestas</h2>
+      <ul className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+        {filas.map(([paso, titulo, valor]) => (
+          <li key={paso}>
+            <Link to={`/evaluacion?paso=${pasos.indexOf(paso)}&editar=1`} className="flex min-h-14 items-center gap-3 px-4 py-2 active:bg-borde">
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm text-texto-suave">{titulo}</span>
+                <span className="block leading-snug font-semibold">{valor}</span>
+              </span>
+              <span className="shrink-0 text-sm font-semibold text-lima">Cambiar</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-sm text-texto-suave">Al cambiar una respuesta, el plan se vuelve a armar. Tu historial se mantiene.</p>
+    </>
   )
 }

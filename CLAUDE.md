@@ -6,6 +6,7 @@ PWA para registrar entrenamientos de gimnasio. Todo se guarda localmente (Indexe
 
 - `npm run dev`: servidor de desarrollo en http://localhost:5173 (el service worker también está activo en dev)
 - `npm run build`: chequeo de tipos (`tsc -b`) y build de producción en `dist/`
+- `npm test`: pruebas con Vitest (por ahora, el motor de rutinas)
 - `npm run preview`: sirve `dist/` en http://localhost:4173 para probar instalación y modo offline (el offline real solo se prueba aquí, no en dev)
 
 Antes de dar algo por terminado, corre `npm run build`, que también hace el chequeo de tipos.
@@ -49,11 +50,11 @@ Esquema actual: **v9** (local, por usuario). En la nube, una sola tabla: `datos_
 | Tabla | Campos | Índices |
 | --- | --- | --- |
 | `exercises` | id, nombre, grupoMuscular, equipo, instrucciones?, propio | nombre, grupoMuscular, equipo |
-| `routines` | id, nombre, ejercicios: `{ exerciseId, seriesObjetivo, repsObjetivo, descansoSeg, pesoSugerido? }[]` (en orden) | nombre |
+| `routines` | id, nombre, ejercicios: `{ exerciseId, seriesObjetivo, repsObjetivo, descansoSeg, pesoSugerido?, nota? }[]` (en orden); en las del plan además `foco?`, `nota?` y `calentamiento?: { exerciseId, segundos }[]` | nombre |
 | `workouts` | id, routineId?, nombre, fechaInicio, fechaFin?, notas? | routineId, fechaInicio |
 | `sets` | id, workoutId, exerciseId, numeroSerie, reps, peso (kg), completada | workoutId, exerciseId, [workoutId+exerciseId] |
 | `ajustes` | id (`'general'`), unidad (`'kg'`/`'lb'`), descansoPorDefectoSeg | id |
-| `perfil` | id (`'general'`), sexo, anioNacimiento, pesoKg, alturaCm, objetivo, zonas, experiencia, lugar, diasPorSemana, minutosPorSesion, lesiones, precaucion | id |
+| `perfil` | id (`'general'`), sexo, anioNacimiento, pesoKg, alturaCm, objetivo, zonas, experiencia, lugar, equipamiento?, diasPorSemana, minutosPorSesion, lesiones, precaucion, salud? | id |
 | `plan` | id (`'actual'`), division, rutinaIds (orden de la semana), creadoEn | id |
 | `medios` | id, exerciseId, tipo (`'foto'`/`'video'`), archivo (Blob), miniatura (Blob JPEG), creadoEn | exerciseId |
 
@@ -78,28 +79,32 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 
 ## Evaluación y plan de entrenamiento
 
-- **`/evaluacion?paso=N`:** 10 pantallas, una pregunta por pantalla. Cada paso es una entrada del historial, así que el botón atrás vuelve a la pregunta anterior; el estado vive en el componente. Si se entra directo a un paso, redirige al primero sin responder. Pregunta:
-  - Sexo: **obligatorio, hombre o mujer**. Lo pidió el dueño del producto, porque las referencias de fuerza son distintas.
-  - Edad, peso y altura.
-  - Objetivo y zonas a mejorar.
-  - Experiencia, lugar (gimnasio o casa), días por semana y minutos por sesión.
-  - Lesiones (rodillas, espalda baja, hombros).
-  - Salud: preguntas adaptadas del PAR-Q; la de embarazo solo aparece para mujeres. Cualquier "sí" activa `precaucion`.
-- **Generador (`lib/plan.ts`, función pura, sin IA, offline):**
-  - División según los días: 2 → cuerpo completo; 3 → cuerpo completo para principiantes, PPL para el resto; 4 → torso y pierna; 5 → PPL + torso + pierna; 6 → PPL ×2.
-  - Cada tipo de día tiene "huecos" de patrones de movimiento en orden de prioridad (`huecos`). Las zonas a mejorar adelantan patrones (`refuerzos`).
-  - Los ejercicios salen del catálogo según su clasificación en `db/patronesEjercicios.ts` (patrón, nivel técnico 1–3, zonas de riesgo). El filtro descarta lesiones, nivel 3 para principiantes o con precaución, y lo que no sea para la casa si entrena en casa. Se prefieren máquinas para principiantes y peso libre para avanzados, variando entre días.
-  - Series, reps y descanso dependen del objetivo y de si el ejercicio es compuesto; se ajustan por experiencia, por edad ≥ 50 y por precaución.
-  - Se corta por tiempo (minutos por sesión) y por un máximo de ejercicios (6, 7 u 8 según la experiencia).
-  - `pesoSugerido` = peso corporal × factor según patrón y equipo, ajustado por sexo, experiencia, objetivo, precaución y edad, y redondeado según el equipo. Es un punto de partida y así se le explica al usuario.
-- **Guardar (`db/plan.ts`, `guardarEvaluacion`):** guarda el perfil y crea una rutina normal por día ("Plan · Día A — Torso"). Si ya había un plan, borra sus rutinas; el historial se mantiene porque los entrenos guardan su propio nombre.
+- **`/evaluacion?paso=N`:** una pregunta por pantalla, con barra de progreso. Cada paso es una entrada del historial, así que el botón atrás vuelve a la pregunta anterior; el estado vive en el componente. Si se entra directo a un paso, redirige al primero sin responder. Los pasos salen de `pasosPara(lugar)` (`lib/evaluacion.ts`). Pregunta:
+  - Inicio con el aviso de que no reemplaza a un profesional (`AVISO_SALUD`, `<AvisoSalud>`; también aparece en /plan).
+  - Sexo: **obligatorio, hombre o mujer** (la guía de rediseño lo pedía opcional, pero el dueño del producto lo quiere obligatorio: las referencias de fuerza son distintas). Edad, peso y altura también son obligatorios.
+  - Objetivo (músculo, grasa, fuerza, resistencia, salud general; `condicion` = "Salud general", se mantuvo el valor para no migrar perfiles) y zonas a mejorar.
+  - Experiencia, lugar (gimnasio, casa, aire libre) y, si no es gimnasio, **qué equipo tiene** (`equipamiento`: mancuernas, kettlebell, bandas, barra de dominadas o paralelas, barra con discos, fitball, balón medicinal; sin nada = solo peso corporal). Perfiles antiguos de "casa" sin esta respuesta usan `EQUIPAMIENTO_POR_DEFECTO`.
+  - Días por semana (2–6) y minutos por sesión (30, 45, 60, 90).
+  - Lesiones (rodillas, espalda baja, hombros, muñecas).
+  - Salud: preguntas adaptadas del PAR-Q; la de embarazo solo aparece para mujeres. Cualquier "sí" activa `precaucion`; cada respuesta queda en `salud`.
+- **Editar una respuesta:** /plan → "Tus respuestas" → "Cambiar" abre `/evaluacion?paso=N&editar=1`: solo esa pregunta, con lo guardado, y "Guardar y actualizar el plan" regenera el plan. Si cambia de gimnasio a casa o aire libre, antes pasa por la pregunta del equipo.
+- **Motor por reglas (`lib/plan.ts`, función pura, sin IA, offline; pruebas en `lib/plan.test.ts`, `npm test`):**
+  - División: 2–3 días → cuerpo completo; 4 → torso y pierna; 5 → empuje/tirón/pierna + torso + pierna; 6 → empuje/tirón/pierna ×2. En las divisiones por grupos, dos días seguidos no repiten el grupo principal (`GRUPOS_TIPO`).
+  - Cada tipo de día tiene "huecos" de patrones de movimiento en orden de prioridad (`huecos`). Las zonas a mejorar adelantan patrones (`refuerzos`). Al final se ordena: compuestos primero, aislamiento al final.
+  - Clasificación (`lib/clasificacion.ts`): los 79 básicos a mano en `db/patronesEjercicios.ts` (patrón, nivel técnico 1–3, zonas de riesgo); el resto del catálogo, con reglas sobre su ficha (músculo principal, mecánica, empuje/tirón y palabras del id en inglés). Estiramientos, cardio, pliometría, halterofilia, strongman, isométricos y equipo "otro" no entran. Se prefieren los básicos.
+  - Filtros: lesiones (`riesgos`), equipo disponible (`tieneEquipo`: fuera del gimnasio nada de máquinas, poleas ni aparatos; `necesitaBarras` para dominadas y fondos), y nivel 3 fuera para principiantes o con precaución.
+  - Series, reps y descanso (`TABLA`): músculo 3–4 × 8–12, 60–90 s; fuerza 4–5 × 3–6, 2–3 min; grasa y resistencia 2–3 × 12–20, 30–60 s; salud general 2–3 × 10–12. Solo los dos primeros compuestos del día van con la prescripción "principal"; el resto, como accesorios. Ajustes por experiencia, edad ≥ 50 y precaución; core y pantorrillas con más reps y menos descanso.
+  - Se corta por tiempo (calentamiento + `minutosDe` de cada ejercicio, contra los minutos por sesión) y por un máximo de 6, 7 u 8 ejercicios según la experiencia.
+  - Calentamiento por día: 5 min de elíptica o bicicleta en el gimnasio (2 min de skipping fuera; nada de saltos con lesión de rodilla) + 3 movimientos de movilidad del tren que se va a trabajar.
+  - `pesoSugerido` = peso corporal × factor según patrón y equipo, ajustado por sexo, experiencia, objetivo, precaución, edad y si es a una mano o pierna; redondeado según el equipo. Es un punto de partida y así se le explica al usuario.
+- **Guardar (`db/plan.ts`, `guardarEvaluacion`):** guarda el perfil y crea una rutina normal por día ("Plan · Día A — Torso"), con `foco` y `calentamiento` (la rutina los muestra arriba de los ejercicios). Si ya había un plan, borra sus rutinas; el historial se mantiene porque los entrenos guardan su propio nombre.
 - **Qué día toca (`siguienteDiaDelPlan`):** el día siguiente al último entreno terminado con una rutina del plan.
 - **Dónde aparece:**
   - `/plan`: perfil con IMC (solo como referencia), semana, recomendaciones, rehacer o eliminar el plan.
   - Entrenar: tarjeta "Hoy te toca", o una invitación a hacer la evaluación si no hay perfil.
   - Rutinas: etiqueta "Tu plan".
   - Ajustes: "Mi evaluación y plan".
-- **Si agregas ejercicios al catálogo:** clasifícalos en `CLASIFICACION`. Si no, el generador no los usa.
+- **Si agregas ejercicios básicos al catálogo:** clasifícalos en `CLASIFICACION`. Los del catálogo ampliado se clasifican solos; revisa con `IMPRIMIR=1 npx vitest run src/lib/plan.test.ts`, que imprime los planes de 3 perfiles de prueba.
 
 ## Cuentas y sincronización (Supabase)
 

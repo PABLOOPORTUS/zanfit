@@ -20,7 +20,7 @@ export async function guardarEvaluacion(perfil: Omit<Perfil, 'id' | 'actualizado
     const anterior = await db.plan.get('actual')
     if (anterior) await db.routines.bulkDelete(anterior.rutinaIds)
     const rutinaIds = (await db.routines.bulkAdd(
-      generado.dias.map((d, i) => ({ nombre: nombreDiaPlan(i, d.nombre), ejercicios: d.ejercicios })),
+      generado.dias.map((d, i) => ({ nombre: nombreDiaPlan(i, d.nombre), ejercicios: d.ejercicios, calentamiento: d.calentamiento, foco: d.foco })),
       { allKeys: true },
     )) as number[]
     await db.plan.put({ id: 'actual', division: generado.division, rutinaIds, creadoEn: Date.now() })

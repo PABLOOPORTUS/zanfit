@@ -1,17 +1,27 @@
 import { useState, type ReactNode } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import AvisoSalud from '../../components/AvisoSalud'
 import OpcionGrande from '../../components/OpcionGrande'
 import SelectorOpciones from '../../components/SelectorOpciones'
 import { guardarEvaluacion } from '../../db/plan'
 import { useUnidad } from '../../hooks/useAjustes'
 import { usePerfil } from '../../hooks/usePlan'
-import { EXPERIENCIAS, LESIONES, LUGARES, OBJETIVOS, preguntasSalud, SEXOS, ZONAS } from '../../lib/evaluacion'
+import {
+  EQUIPAMIENTO_POR_DEFECTO,
+  EQUIPOS_DISPONIBLES,
+  EXPERIENCIAS,
+  LESIONES,
+  LUGARES,
+  OBJETIVOS,
+  pasosPara,
+  preguntasSalud,
+  SEXOS,
+  ZONAS,
+  type Paso,
+} from '../../lib/evaluacion'
 import { leerNumero } from '../../lib/formato'
 import { edad as calcularEdad } from '../../lib/plan'
-import type { Experiencia, Lesion, Lugar, Objetivo, Perfil, Sexo, Zona } from '../../types'
-
-const PASOS = ['inicio', 'sexo', 'datos', 'objetivo', 'zonas', 'experiencia', 'lugar', 'frecuencia', 'lesiones', 'salud'] as const
-type Paso = (typeof PASOS)[number]
+import type { EquipoDisponible, Experiencia, Lesion, Lugar, Objetivo, Perfil, Sexo, Zona } from '../../types'
 
 interface Borrador {
   sexo: Sexo | null
@@ -22,6 +32,7 @@ interface Borrador {
   zonas: Zona[]
   experiencia: Experiencia | null
   lugar: Lugar | null
+  equipamiento: EquipoDisponible[]
   dias: number
   minutos: number
   lesiones: Lesion[]
@@ -29,7 +40,11 @@ interface Borrador {
   salud: (boolean | null)[]
 }
 
-/** `/evaluacion?paso=N`: una pregunta por pantalla. Cada paso es una entrada del historial, así el botón atrás funciona. */
+/**
+ * `/evaluacion?paso=N`: una pregunta por pantalla. Cada paso es una entrada del historial, así el botón atrás funciona.
+ * Con `&editar=1` (desde "Editar respuestas" en /plan) se abre solo esa pregunta con las respuestas guardadas, y al
+ * guardar se actualiza el perfil y se regenera el plan.
+ */
 export default function Evaluacion() {
   const perfil = usePerfil()
   if (perfil === undefined) return null
@@ -50,10 +65,12 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
     zonas: anterior?.zonas ?? [],
     experiencia: anterior?.experiencia ?? null,
     lugar: anterior?.lugar ?? 'gimnasio',
+    equipamiento: anterior?.equipamiento ?? (anterior && anterior.lugar !== 'gimnasio' ? EQUIPAMIENTO_POR_DEFECTO : []),
     dias: anterior?.diasPorSemana ?? 3,
     minutos: anterior?.minutosPorSesion ?? 60,
     lesiones: anterior?.lesiones ?? [],
-    salud: preguntasSalud(anterior?.sexo ?? null).map(() => null),
+    // Al editar se reutilizan las respuestas guardadas (los perfiles antiguos solo guardaban si hubo algún "sí").
+    salud: preguntasSalud(anterior?.sexo ?? null).map((_, i) => anterior?.salud?.[i] ?? (anterior && !anterior.precaucion ? false : null)),
   }))
   const cambiar = (cambios: Partial<Borrador>) => setB((x) => ({ ...x, ...cambios }))
 
@@ -73,20 +90,27 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
     zonas: b.zonas.length > 0,
     experiencia: b.experiencia !== null,
     lugar: b.lugar !== null,
+    equipo: true,
     frecuencia: true,
     lesiones: true,
     salud: b.salud.every((r) => r !== null),
   }
 
+  const PASOS = pasosPara(b.lugar)
+  const editando = params.get('editar') === '1' && anterior !== null
   const indice = Math.min(Math.max(Number(params.get('paso')) || 0, 0), PASOS.length - 1)
   // Si se entra directo a un paso (o se recarga la página), volver al primero que falte responder.
   const pendiente = PASOS.slice(0, indice).findIndex((p) => !valido[p])
   if (pendiente >= 0) return <Navigate to={`/evaluacion?paso=${pendiente}`} replace />
   const paso = PASOS[indice]
   const esUltimo = indice === PASOS.length - 1
+  // Al editar, si cambia a "casa" o "aire libre" hay que preguntar el equipo antes de guardar.
+  const faltaEquipo = editando && paso === 'lugar' && b.lugar !== 'gimnasio' && anterior.lugar === 'gimnasio'
 
   async function siguiente() {
-    if (!esUltimo) return navigate(`/evaluacion?paso=${indice + 1}`)
+    if (faltaEquipo) return navigate(`/evaluacion?paso=${indice + 1}&editar=1`)
+    if (!esUltimo && !editando) return navigate(`/evaluacion?paso=${indice + 1}`)
+    if (!PASOS.every((p) => valido[p])) return navigate(`/evaluacion?paso=${PASOS.findIndex((p) => !valido[p])}`)
     setGuardando(true)
     await guardarEvaluacion({
       sexo: b.sexo!,
@@ -97,12 +121,15 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
       zonas: b.zonas,
       experiencia: b.experiencia!,
       lugar: b.lugar!,
+      ...(b.lugar !== 'gimnasio' && { equipamiento: b.equipamiento }),
       diasPorSemana: b.dias,
       minutosPorSesion: b.minutos,
       lesiones: b.lesiones,
       precaucion: b.salud.some(Boolean),
+      salud: b.salud.map(Boolean),
     })
-    navigate('/plan', { replace: true })
+    if (editando) navigate(-1)
+    else navigate('/plan', { replace: true })
   }
 
   const alternar = <T,>(lista: T[], valor: T) => (lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor])
@@ -110,29 +137,58 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
   return (
     <section className="flex min-h-[calc(100dvh-12rem)] flex-col">
       <div className="flex items-center gap-3">
-        {indice > 0 && (
-          <button type="button" onClick={() => navigate(-1)} aria-label="Pregunta anterior" className="-ml-3 flex size-12 items-center justify-center rounded-xl text-texto-suave active:bg-superficie">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        {(indice > 0 || editando) && (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Pregunta anterior"
+            className="-ml-3 flex size-12 items-center justify-center rounded-xl text-texto-suave active:bg-superficie"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
               <path d="m15 6-6 6 6 6" />
             </svg>
           </button>
         )}
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-borde" role="progressbar" aria-valuenow={indice + 1} aria-valuemin={1} aria-valuemax={PASOS.length}>
-          <div className="h-full rounded-full bg-lima transition-[width]" style={{ width: `${((indice + 1) / PASOS.length) * 100}%` }} />
-        </div>
-        <span className="text-sm text-texto-suave tabular-nums">
-          {indice + 1}/{PASOS.length}
-        </span>
+        {editando ? (
+          <p className="flex-1 font-semibold text-texto-suave">Editar respuesta</p>
+        ) : (
+          <div
+            className="h-2 flex-1 overflow-hidden rounded-full bg-borde"
+            role="progressbar"
+            aria-valuenow={indice + 1}
+            aria-valuemin={1}
+            aria-valuemax={PASOS.length}
+          >
+            <div className="h-full rounded-full bg-lima transition-[width]" style={{ width: `${((indice + 1) / PASOS.length) * 100}%` }} />
+          </div>
+        )}
+        {!editando && (
+          <span className="text-sm text-texto-suave tabular-nums">
+            {indice + 1}/{PASOS.length}
+          </span>
+        )}
       </div>
 
       <div className="mt-6 flex-1">
         {paso === 'inicio' && (
-          <Pregunta titulo="Armemos tu plan" detalle="Responde 9 preguntas rápidas y te armamos un plan de entrenamiento a tu medida. Tus respuestas se guardan solo en este teléfono.">
+          <Pregunta titulo="Armemos tu plan" detalle="Responde unas preguntas rápidas y te armamos un plan de entrenamiento a tu medida.">
             <ul className="flex flex-col gap-3 text-texto-suave">
               <li>• Tu edad, cuánto pesas y cuánto mides</li>
               <li>• Qué quieres lograr y qué zonas quieres mejorar</li>
+              <li>• Dónde entrenas y con qué equipo</li>
               <li>• Tu experiencia, cuántos días puedes entrenar y si tienes lesiones</li>
             </ul>
+            <AvisoSalud />
           </Pregunta>
         )}
 
@@ -150,17 +206,47 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         )}
 
         {paso === 'datos' && (
-          <Pregunta titulo="Tu edad, peso y altura" detalle="Con tu edad ajustamos la intensidad y los descansos; con tu peso y tu altura, tu IMC y los pesos de partida.">
-            <Campo etiqueta="Edad" sufijo="años" valor={b.edad} onChange={(v) => cambiar({ edad: v.replace(/\D/g, '') })} error={errores.edad} modo="numeric" />
-            <Campo etiqueta="Peso" sufijo={u.unidad} valor={b.peso} onChange={(v) => cambiar({ peso: v.replace(/[^\d.,]/g, '') })} error={errores.peso} modo="decimal" />
-            <Campo etiqueta="Altura" sufijo="cm" valor={b.altura} onChange={(v) => cambiar({ altura: v.replace(/\D/g, '') })} error={errores.altura} modo="numeric" />
+          <Pregunta
+            titulo="Tu edad, peso y altura"
+            detalle="Con tu edad ajustamos la intensidad y los descansos; con tu peso y tu altura, tu IMC y los pesos de partida."
+          >
+            <Campo
+              etiqueta="Edad"
+              sufijo="años"
+              valor={b.edad}
+              onChange={(v) => cambiar({ edad: v.replace(/\D/g, '') })}
+              error={errores.edad}
+              modo="numeric"
+            />
+            <Campo
+              etiqueta="Peso"
+              sufijo={u.unidad}
+              valor={b.peso}
+              onChange={(v) => cambiar({ peso: v.replace(/[^\d.,]/g, '') })}
+              error={errores.peso}
+              modo="decimal"
+            />
+            <Campo
+              etiqueta="Altura"
+              sufijo="cm"
+              valor={b.altura}
+              onChange={(v) => cambiar({ altura: v.replace(/\D/g, '') })}
+              error={errores.altura}
+              modo="numeric"
+            />
           </Pregunta>
         )}
 
         {paso === 'objetivo' && (
           <Pregunta titulo="¿Qué quieres lograr?" detalle="Elige tu objetivo principal.">
             {OBJETIVOS.map((o) => (
-              <OpcionGrande key={o.valor} titulo={o.etiqueta} detalle={o.detalle} activo={b.objetivo === o.valor} onClick={() => cambiar({ objetivo: o.valor })} />
+              <OpcionGrande
+                key={o.valor}
+                titulo={o.etiqueta}
+                detalle={o.detalle}
+                activo={b.objetivo === o.valor}
+                onClick={() => cambiar({ objetivo: o.valor })}
+              />
             ))}
           </Pregunta>
         )}
@@ -177,8 +263,13 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
                   cambiar({
                     zonas:
                       z.valor === 'general'
-                        ? b.zonas.includes('general') ? [] : ['general']
-                        : alternar(b.zonas.filter((x) => x !== 'general'), z.valor),
+                        ? b.zonas.includes('general')
+                          ? []
+                          : ['general']
+                        : alternar(
+                            b.zonas.filter((x) => x !== 'general'),
+                            z.valor,
+                          ),
                   })
                 }
               />
@@ -187,9 +278,18 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         )}
 
         {paso === 'experiencia' && (
-          <Pregunta titulo="¿Cuánta experiencia tienes?" detalle="Si recién partes, el plan usa más máquinas, que son más fáciles y seguras para aprender.">
+          <Pregunta
+            titulo="¿Cuánta experiencia tienes?"
+            detalle="Si recién partes, el plan usa más máquinas, que son más fáciles y seguras para aprender."
+          >
             {EXPERIENCIAS.map((e) => (
-              <OpcionGrande key={e.valor} titulo={e.etiqueta} detalle={e.detalle} activo={b.experiencia === e.valor} onClick={() => cambiar({ experiencia: e.valor })} />
+              <OpcionGrande
+                key={e.valor}
+                titulo={e.etiqueta}
+                detalle={e.detalle}
+                activo={b.experiencia === e.valor}
+                onClick={() => cambiar({ experiencia: e.valor })}
+              />
             ))}
           </Pregunta>
         )}
@@ -197,7 +297,28 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         {paso === 'lugar' && (
           <Pregunta titulo="¿Dónde vas a entrenar?">
             {LUGARES.map((l) => (
-              <OpcionGrande key={l.valor} titulo={l.etiqueta} detalle={l.detalle} activo={b.lugar === l.valor} onClick={() => cambiar({ lugar: l.valor })} />
+              <OpcionGrande
+                key={l.valor}
+                titulo={l.etiqueta}
+                detalle={l.detalle}
+                activo={b.lugar === l.valor}
+                onClick={() => cambiar({ lugar: l.valor })}
+              />
+            ))}
+          </Pregunta>
+        )}
+
+        {paso === 'equipo' && (
+          <Pregunta titulo="¿Con qué cuentas?" detalle="Marca todo lo que tengas. Si no tienes nada, armamos el plan solo con el peso de tu cuerpo.">
+            {EQUIPOS_DISPONIBLES.map((q) => (
+              <OpcionGrande
+                key={q.valor}
+                multiple
+                titulo={q.etiqueta}
+                detalle={q.detalle}
+                activo={b.equipamiento.includes(q.valor)}
+                onClick={() => cambiar({ equipamiento: alternar(b.equipamiento, q.valor) })}
+              />
             ))}
           </Pregunta>
         )}
@@ -212,7 +333,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
             />
             <SelectorOpciones
               leyenda="Minutos por sesión"
-              opciones={[30, 45, 60, 75, 90].map((m) => ({ valor: String(m), etiqueta: `${m} min` }))}
+              opciones={[30, 45, 60, 90].map((m) => ({ valor: String(m), etiqueta: `${m} min` }))}
               valor={String(b.minutos)}
               onChange={(v) => cambiar({ minutos: Number(v) })}
             />
@@ -223,13 +344,22 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
           <Pregunta titulo="¿Tienes alguna lesión o molestia?" detalle="Evitaremos los ejercicios que exigen esas zonas.">
             <OpcionGrande titulo="Ninguna" activo={b.lesiones.length === 0} onClick={() => cambiar({ lesiones: [] })} />
             {LESIONES.map((l) => (
-              <OpcionGrande key={l.valor} multiple titulo={l.etiqueta} activo={b.lesiones.includes(l.valor)} onClick={() => cambiar({ lesiones: alternar(b.lesiones, l.valor) })} />
+              <OpcionGrande
+                key={l.valor}
+                multiple
+                titulo={l.etiqueta}
+                activo={b.lesiones.includes(l.valor)}
+                onClick={() => cambiar({ lesiones: alternar(b.lesiones, l.valor) })}
+              />
             ))}
           </Pregunta>
         )}
 
         {paso === 'salud' && (
-          <Pregunta titulo="Antes de partir" detalle="Unas preguntas de salud. Si respondes que sí a alguna, te recomendaremos consultar a un médico y el plan partirá más suave.">
+          <Pregunta
+            titulo="Antes de partir"
+            detalle="Unas preguntas de salud. Si respondes que sí a alguna, te recomendaremos consultar a un médico y el plan partirá más suave."
+          >
             {preguntasSalud(b.sexo).map((texto, i) => (
               <div key={texto} className="rounded-2xl border border-borde bg-superficie p-4">
                 <p className="leading-snug">{texto}</p>
@@ -258,7 +388,15 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         disabled={!valido[paso] || guardando}
         className="mt-8 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
       >
-        {paso === 'inicio' ? 'Empezar' : esUltimo ? 'Crear mi plan' : 'Siguiente'}
+        {faltaEquipo
+          ? 'Siguiente'
+          : editando
+            ? 'Guardar y actualizar el plan'
+            : paso === 'inicio'
+              ? 'Empezar'
+              : esUltimo
+                ? 'Crear mi plan'
+                : 'Siguiente'}
       </button>
     </section>
   )
@@ -274,7 +412,14 @@ function Pregunta({ titulo, detalle, children }: { titulo: string; detalle?: str
   )
 }
 
-type PropsCampo = { etiqueta: string; sufijo: string; valor: string; onChange: (v: string) => void; error: string | null; modo: 'numeric' | 'decimal' }
+type PropsCampo = {
+  etiqueta: string
+  sufijo: string
+  valor: string
+  onChange: (v: string) => void
+  error: string | null
+  modo: 'numeric' | 'decimal'
+}
 
 function Campo({ etiqueta, sufijo, valor, onChange, error, modo }: PropsCampo) {
   return (

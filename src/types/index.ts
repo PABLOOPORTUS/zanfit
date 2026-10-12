@@ -31,12 +31,26 @@ export interface RoutineExercise {
   descansoSeg: number
   /** Peso de partida sugerido por el plan (kg). Solo se usa si el ejercicio todavía no tiene historial. */
   pesoSugerido?: number
+  /** Indicación breve del plan para este ejercicio (por ejemplo, de la IA). */
+  nota?: string
+}
+
+/** Movimiento del calentamiento sugerido de una rutina del plan. */
+export interface PasoCalentamiento {
+  exerciseId: number
+  /** Duración sugerida (los movimientos de movilidad se cuentan en segundos). */
+  segundos: number
 }
 
 export interface Routine {
   id?: number
   nombre: string
   ejercicios: RoutineExercise[]
+  /** Solo en las rutinas del plan: calentamiento sugerido antes del primer ejercicio. */
+  calentamiento?: PasoCalentamiento[]
+  /** Solo en las rutinas del plan: foco del día ("Pecho, hombros y tríceps") y una nota motivadora. */
+  foco?: string
+  nota?: string
 }
 
 export interface Workout {
@@ -77,11 +91,14 @@ export interface Ajustes {
 }
 
 export type Sexo = 'hombre' | 'mujer'
-export type Objetivo = 'musculo' | 'grasa' | 'fuerza' | 'condicion'
+/** `condicion` se muestra como "Salud general" (se mantiene el valor para no migrar perfiles antiguos). */
+export type Objetivo = 'musculo' | 'grasa' | 'fuerza' | 'resistencia' | 'condicion'
 export type Zona = 'piernas-gluteos' | 'brazos' | 'pecho' | 'espalda' | 'hombros' | 'abdomen' | 'general'
 export type Experiencia = 'principiante' | 'intermedio' | 'avanzado'
-export type Lugar = 'gimnasio' | 'casa'
-export type Lesion = 'rodillas' | 'espalda' | 'hombros'
+export type Lugar = 'gimnasio' | 'casa' | 'aire-libre'
+/** Lo que hay disponible fuera del gimnasio (el peso corporal siempre está). */
+export type EquipoDisponible = 'mancuernas' | 'kettlebell' | 'banda' | 'barra' | 'barras-dominadas' | 'fitball' | 'balon-medicinal'
+export type Lesion = 'rodillas' | 'espalda' | 'hombros' | 'munecas'
 
 /** Respuestas de la evaluación inicial. Una sola fila (`id: 'general'`) en la tabla `perfil`. */
 export interface Perfil {
@@ -95,11 +112,15 @@ export interface Perfil {
   zonas: Zona[]
   experiencia: Experiencia
   lugar: Lugar
+  /** Fuera del gimnasio: qué equipo tiene. Sin valor (perfiles antiguos de "casa"): mancuernas, banda y kettlebell. */
+  equipamiento?: EquipoDisponible[]
   diasPorSemana: number
   minutosPorSesion: number
   lesiones: Lesion[]
   /** Respondió "sí" a alguna pregunta de salud: el plan parte más suave y se recomienda consultar a un médico. */
   precaucion: boolean
+  /** Respuesta a cada pregunta de salud (para poder editar la evaluación sin volver a contestarlas). */
+  salud?: boolean[]
   actualizadoEn: number
 }
 
