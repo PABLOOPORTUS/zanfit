@@ -1,15 +1,36 @@
 import { mediosDe, MUSCULOS } from '../db/mediosEjercicios'
+import { useMediosPropios, useUrlBlob } from '../hooks/useMedios'
 import type { Exercise } from '../types'
 
-type Props = { ejercicio: Pick<Exercise, 'nombre' | 'grupoMuscular' | 'propio'>; className?: string }
+type Props = { ejercicio: Pick<Exercise, 'id' | 'nombre' | 'grupoMuscular' | 'propio'>; className?: string }
 
 /**
  * Imagen chica para reconocer un ejercicio sin saberse el nombre: el dibujo de la posición inicial o, si no hay
  * dibujo, la silueta con el músculo principal marcado.
  */
 export default function MiniaturaEjercicio({ ejercicio, className = 'size-16' }: Props) {
-  const { dibujos, musculos } = mediosDe(ejercicio)
+  const propios = useMediosPropios(ejercicio.id)
+  const propia = useUrlBlob(propios?.[0]?.miniatura)
+  const { dibujos, musculos, foto } = mediosDe(ejercicio)
   const marco = `relative block shrink-0 overflow-hidden rounded-xl border border-borde bg-superficie ${className}`
+
+  // Primero la foto o video que grabó el usuario (la máquina real de su gimnasio).
+  if (propia) {
+    return (
+      <span className={marco} aria-hidden>
+        <img src={propia} alt="" className="size-full object-cover" />
+        {propios?.[0]?.tipo === 'video' && <span className="absolute right-1 bottom-0.5 text-xs font-bold text-white drop-shadow">▶</span>}
+      </span>
+    )
+  }
+
+  if (foto) {
+    return (
+      <span className={marco} aria-hidden>
+        <img src={`/medios/fotos/${foto.archivo}-mini.webp`} alt="" loading="lazy" className="size-full object-cover" />
+      </span>
+    )
+  }
 
   if (dibujos) {
     return (

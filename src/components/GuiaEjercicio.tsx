@@ -3,6 +3,8 @@ import { etiquetaEquipo, etiquetaGrupo } from '../lib/catalogos'
 import type { Exercise } from '../types'
 import DiagramaMusculos from './DiagramaMusculos'
 import DibujosEjercicio from './DibujosEjercicio'
+import FotoMaquina from './FotoMaquina'
+import MediosPropios from './MediosPropios'
 
 /** Guía a pantalla completa de un ejercicio (dibujos, pasos y músculos). Ábrela con `usePanel` para que atrás la cierre. */
 export default function GuiaEjercicio({ ejercicio, onCerrar }: { ejercicio: Exercise; onCerrar: () => void }) {
@@ -26,6 +28,8 @@ export default function GuiaEjercicio({ ejercicio, onCerrar }: { ejercicio: Exer
           <p className="text-sm text-texto-suave">
             {etiquetaGrupo(ejercicio.grupoMuscular)} · {etiquetaEquipo(ejercicio.equipo)}
           </p>
+          <MediosPropios ejercicio={ejercicio} />
+          {medios.foto && <FotoMaquina foto={medios.foto} nombre={ejercicio.nombre} />}
           {medios.dibujos && <DibujosEjercicio dibujos={medios.dibujos} nombre={ejercicio.nombre} />}
           <div className="rounded-2xl border border-borde bg-superficie p-4 text-lg leading-relaxed">
             {ejercicio.instrucciones ?? <span className="text-texto-suave">Este ejercicio no tiene instrucciones.</span>}

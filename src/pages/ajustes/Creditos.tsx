@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import BotonVolver from '../../components/BotonVolver'
+import { FOTOS } from '../../db/fotosEjercicios'
 
 /** `/ajustes/creditos`: atribución de los recursos con licencia Creative Commons (lo exige CC BY-SA). */
 export default function Creditos() {
@@ -25,6 +26,21 @@ export default function Creditos() {
         <Enlace href="https://creativecommons.org/licenses/by-sa/3.0/deed.es">CC BY-SA 3.0</Enlace>.
         <Cambios>Cambios en ZANFIT: colores adaptados al modo oscuro, archivos optimizados y, en los de wger, tamaño reducido y formato WebP.</Cambios>
       </Bloque>
+
+      <Bloque titulo="Fotos de máquinas y ejercicios">
+        Fotos de <Enlace href="https://commons.wikimedia.org">Wikimedia Commons</Enlace> con licencias libres. Cada una indica su autor y licencia.
+        <Cambios>Cambios en ZANFIT: tamaño reducido, formato WebP y una versión recortada para miniaturas.</Cambios>
+      </Bloque>
+      <ul className="mt-3 flex flex-col gap-2 text-sm">
+        {[...new Map(Object.entries(FOTOS).map(([ejercicio, f]) => [f.archivo, { ejercicio, ...f }])).values()].map((f) => (
+          <li key={f.archivo} className="rounded-xl border border-borde bg-superficie px-3 py-2 leading-snug">
+            <span className="font-semibold">{f.ejercicio}</span>
+            <span className="block text-texto-suave">
+              {f.autor || 'Autor desconocido'} · <Enlace href={f.pagina}>{f.licencia}</Enlace>
+            </span>
+          </li>
+        ))}
+      </ul>
 
       <p className="mt-6 text-sm text-texto-suave">
         Las versiones adaptadas de estos recursos se comparten con la misma licencia que su original. Las instrucciones de los ejercicios y el resto de la

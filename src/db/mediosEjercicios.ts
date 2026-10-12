@@ -1,4 +1,5 @@
 import type { Exercise, GrupoMuscular } from '../types'
+import { FOTOS, type FotoEjercicio } from './fotosEjercicios'
 
 /**
  * Recursos gráficos del catálogo (archivos en public/medios). Solo se usan recursos con licencia verificada
@@ -55,6 +56,8 @@ export interface Dibujos {
 interface MediosEjercicio {
   musculos: Musculos
   dibujos?: Dibujos
+  /** Foto real de la máquina o del ejercicio (Wikimedia Commons). */
+  foto?: FotoEjercicio
 }
 
 const m = (principales: number[], secundarios: number[] = []): Musculos => ({ principales, secundarios })
@@ -160,5 +163,6 @@ const CATALOGO: Record<string, MediosEjercicio> = {
 
 export function mediosDe(ejercicio: Pick<Exercise, 'nombre' | 'grupoMuscular' | 'propio'>): MediosEjercicio {
   const delCatalogo = ejercicio.propio ? undefined : CATALOGO[ejercicio.nombre]
-  return delCatalogo ?? { musculos: POR_GRUPO[ejercicio.grupoMuscular] }
+  if (!delCatalogo) return { musculos: POR_GRUPO[ejercicio.grupoMuscular] }
+  return { ...delCatalogo, foto: FOTOS[ejercicio.nombre] }
 }

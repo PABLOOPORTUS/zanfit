@@ -108,3 +108,15 @@ export interface Plan {
   rutinaIds: number[]
   creadoEn: number
 }
+
+/** Foto o video que el usuario grabó para un ejercicio (por ejemplo, la máquina de su gimnasio). Vive solo en el teléfono. */
+export interface MedioPropio {
+  id?: number
+  exerciseId: number
+  tipo: 'foto' | 'video'
+  /** Ya reducido por la app (foto JPEG de máx. 1280 px; video de ~540 px y máx. 15 s). */
+  archivo: Blob
+  /** Imagen chica (JPEG) para miniaturas y como portada del video. */
+  miniatura: Blob
+  creadoEn: number
+}

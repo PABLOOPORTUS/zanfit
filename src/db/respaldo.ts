@@ -1,4 +1,5 @@
 import { db } from '.'
+import { fechaArchivo } from '../lib/compartir'
 import type { Ajustes, Exercise, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
 
 /** Sube este número si cambia la forma del respaldo (y agrega la conversión en `leerRespaldo`). */
@@ -38,8 +39,7 @@ export async function crearRespaldo(): Promise<Respaldo> {
 }
 
 export function nombreArchivoRespaldo(fecha = new Date()): string {
-  const dos = (n: number) => String(n).padStart(2, '0')
-  return `zanfit-respaldo-${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}.json`
+  return `zanfit-respaldo-${fechaArchivo(fecha)}.json`
 }
 
 const esNumero = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)

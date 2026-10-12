@@ -5,6 +5,10 @@ import Stepper from '../../components/Stepper'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { guardarAjustes } from '../../db'
 import { crearRespaldo, leerRespaldo, nombreArchivoRespaldo, restaurarRespaldo, type Respaldo } from '../../db/respaldo'
+import { exportarMedios, importarMedios } from '../../db/medios'
+import { compartirArchivo, fechaArchivo } from '../../lib/compartir'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../../db'
 import { useAjustes } from '../../hooks/useAjustes'
 import { useDescanso } from '../../hooks/useDescanso'
 import { formatearDescanso, formatearFecha } from '../../lib/formato'
@@ -34,29 +38,15 @@ export default function Ajustes() {
   const [porImportar, setPorImportar] = useState<Respaldo | null>(null)
   const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
   const inputArchivo = useRef<HTMLInputElement>(null)
+  const inputMedios = useRef<HTMLInputElement>(null)
+  const [mensajeMedios, setMensajeMedios] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
+  const [trabajandoMedios, setTrabajandoMedios] = useState(false)
+  const cantidadMedios = useLiveQuery(() => db.medios.count())
 
   async function exportar() {
     setMensaje(null)
     const nombre = nombreArchivoRespaldo()
-    const archivo = new File([JSON.stringify(await crearRespaldo(), null, 2)], nombre, { type: 'application/json' })
-    let compartido = false
-    // En el teléfono, compartir permite guardarlo en Archivos/Drive o enviarlo por WhatsApp o correo.
-    if (navigator.canShare?.({ files: [archivo] })) {
-      try {
-        await navigator.share({ files: [archivo], title: 'Respaldo de ZANFIT' })
-        compartido = true
-      } catch (e) {
-        if ((e as Error).name === 'AbortError') return
-      }
-    }
-    if (!compartido) {
-      const url = URL.createObjectURL(archivo)
-      const enlace = document.createElement('a')
-      enlace.href = url
-      enlace.download = nombre
-      enlace.click()
-      setTimeout(() => URL.revokeObjectURL(url), 1000)
-    }
+    if (!(await compartirArchivo(nombre, JSON.stringify(await crearRespaldo(), null, 2), 'Respaldo de ZANFIT'))) return
     try {
       localStorage.setItem(CLAVE_ULTIMO_RESPALDO, String(Date.now()))
     } catch {
@@ -64,6 +54,34 @@ export default function Ajustes() {
     }
     setUltimoRespaldo(Date.now())
     setMensaje({ tipo: 'ok', texto: `Respaldo listo: ${nombre}` })
+  }
+
+  async function compartirMedios() {
+    setMensajeMedios(null)
+    setTrabajandoMedios(true)
+    try {
+      const { texto, cantidad } = await exportarMedios()
+      if (await compartirArchivo(`zanfit-fotos-videos-${fechaArchivo()}.json`, texto, 'Fotos y videos de ZANFIT'))
+        setMensajeMedios({ tipo: 'ok', texto: `Listo: ${cantidad} ${cantidad === 1 ? 'archivo' : 'archivos'} para compartir.` })
+    } finally {
+      setTrabajandoMedios(false)
+    }
+  }
+
+  async function elegirMedios(e: ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0]
+    e.target.value = ''
+    if (!archivo) return
+    setMensajeMedios(null)
+    setTrabajandoMedios(true)
+    try {
+      const { agregados, omitidos } = await importarMedios(await archivo.text())
+      setMensajeMedios({ tipo: 'ok', texto: `Se agregaron ${agregados} ${agregados === 1 ? 'archivo' : 'archivos'}${omitidos ? ` (${omitidos} ya estaban o no corresponden a tus ejercicios)` : ''}.` })
+    } catch (error) {
+      setMensajeMedios({ tipo: 'error', texto: (error as Error).message })
+    } finally {
+      setTrabajandoMedios(false)
+    }
   }
 
   async function elegirArchivo(e: ChangeEvent<HTMLInputElement>) {
@@ -164,6 +182,38 @@ export default function Ajustes() {
               />
             </div>
           </div>
+        )}
+      </div>
+
+      <div>
+        <h2 className="mb-2 font-semibold">Fotos y videos de tu gimnasio</h2>
+        <p className="text-texto-suave">
+          Tienes {cantidadMedios ?? 0} {cantidadMedios === 1 ? 'archivo' : 'archivos'}. No entran en el respaldo general: compártelos aparte con quien entrena
+          contigo. Al importarlos se suman a los suyos, sin borrar nada.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={compartirMedios}
+            disabled={trabajandoMedios || !cantidadMedios}
+            className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde disabled:opacity-50"
+          >
+            Compartir
+          </button>
+          <button
+            type="button"
+            onClick={() => inputMedios.current?.click()}
+            disabled={trabajandoMedios}
+            className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde disabled:opacity-50"
+          >
+            Importar
+          </button>
+        </div>
+        <input ref={inputMedios} type="file" accept="application/json,.json" onChange={elegirMedios} className="hidden" aria-label="Archivo de fotos y videos" />
+        {mensajeMedios && (
+          <p role={mensajeMedios.tipo === 'error' ? 'alert' : 'status'} className={`mt-3 ${mensajeMedios.tipo === 'error' ? 'text-peligro' : 'text-lima'}`}>
+            {mensajeMedios.texto}
+          </p>
         )}
       </div>
 

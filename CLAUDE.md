@@ -31,7 +31,7 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 - **Navegación inferior fija** con 4 tabs, en este orden: Entrenar, Rutinas, Progreso, Ejercicios. Ajustes se abre con el engranaje del encabezado (`/ajustes`), no es una tab.
 - **Respetar safe areas** del iPhone: utilidades `pt-safe` y `pb-safe` definidas en `src/index.css`.
 - **Offline primero:** nada puede depender de la red. No usar CDNs ni llamadas a APIs externas.
-- **Siempre mostrar la imagen del ejercicio:** la gente nueva no se sabe los nombres. Donde se elige o se hace un ejercicio (entreno, selector, rutinas, plan, lista), va `<MiniaturaEjercicio>`: el dibujo de inicio o, si no hay, la silueta con el músculo principal. En el entreno, cada tarjeta tiene "Cómo se hace", que abre `<GuiaEjercicio>` (dibujos, pasos y músculos) con `usePanel`, sin salir del entreno.
+- **Siempre mostrar la imagen del ejercicio:** prioridad en `<MiniaturaEjercicio>`: foto o video propio > foto de Commons > dibujo > silueta con el músculo. la gente nueva no se sabe los nombres. Donde se elige o se hace un ejercicio (entreno, selector, rutinas, plan, lista), va `<MiniaturaEjercicio>`: el dibujo de inicio o, si no hay, la silueta con el músculo principal. En el entreno, cada tarjeta tiene "Cómo se hace", que abre `<GuiaEjercicio>` (dibujos, pasos y músculos) con `usePanel`, sin salir del entreno.
 - **Textos largos:** los nombres de ejercicios y rutinas pueden ser largos. Usa `line-clamp-2` (o deja que hagan salto de línea) en vez de `truncate`, y no pongas varios botones al lado de un nombre.
 
 ## Idioma
@@ -43,7 +43,7 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 
 ## Modelo de datos (Dexie, `src/db/index.ts`)
 
-Esquema actual: **v6**.
+Esquema actual: **v7**.
 
 | Tabla | Campos | Índices |
 | --- | --- | --- |
@@ -54,8 +54,9 @@ Esquema actual: **v6**.
 | `ajustes` | id (`'general'`), unidad (`'kg'`/`'lb'`), descansoPorDefectoSeg | id |
 | `perfil` | id (`'general'`), sexo, anioNacimiento, pesoKg, alturaCm, objetivo, zonas, experiencia, lugar, diasPorSemana, minutosPorSesion, lesiones, precaucion | id |
 | `plan` | id (`'actual'`), division, rutinaIds (orden de la semana), creadoEn | id |
+| `medios` | id, exerciseId, tipo (`'foto'`/`'video'`), archivo (Blob), miniatura (Blob JPEG), creadoEn | exerciseId |
 
-Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`. La v6 agrega `perfil` y `plan` (evaluación inicial y plan generado). La v5 no cambia tablas: agrega a las bases existentes los ejercicios nuevos del catálogo, comparando nombres normalizados para no duplicar ejercicios propios. **Si agregas ejercicios al catálogo, crea una versión nueva con un upgrade igual**, porque `populate` solo corre en bases nuevas.
+Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`. La v7 agrega `medios` (fotos y videos propios). La v6 agrega `perfil` y `plan` (evaluación inicial y plan generado). La v5 no cambia tablas: agrega a las bases existentes los ejercicios nuevos del catálogo, comparando nombres normalizados para no duplicar ejercicios propios. **Si agregas ejercicios al catálogo, crea una versión nueva con un upgrade igual**, porque `populate` solo corre en bases nuevas.
 
 `Equipo`: barra, mancuernas, maquina, smith (Máquina Smith), polea, peso-corporal, kettlebell, banda, otro. Las etiquetas están en `lib/catalogos.ts`.
 
@@ -170,6 +171,17 @@ Las 4 tabs y Ajustes están completas:
 - **Ajustes:** unidad kg/lb, descanso por defecto, exportar o importar el respaldo JSON, y Créditos. En el teléfono, exportar usa la hoja de compartir; si no está disponible, descarga el archivo.
 
 ## Recursos gráficos de ejercicios
+
+Orden en la ficha y en la guía: **fotos y videos propios** (si hay) → **foto real de la máquina** (Commons) → **dibujo animado** (Everkinetic, inicio y final alternando) → pasos → **diagrama de músculos**.
+
+- **Fotos y videos propios (`medios`, `<MediosPropios>`):** el usuario graba la máquina de su gimnasio. `lib/medios.ts` los reduce en el teléfono: fotos a JPEG de 1280 px; videos recodificados con canvas + MediaRecorder a unos 540 px, 1,2 Mbps y máximo 15 s, con portada JPEG. Si no se puede recodificar, se guarda el original. Viven solo en el teléfono y **no entran en el respaldo general**. Se comparten aparte (Ajustes → "Fotos y videos de tu gimnasio"): un JSON con base64 que, al importarse, **se suma** por nombre de ejercicio sin borrar nada y sin duplicar.
+- **Fotos de Wikimedia Commons (`db/fotosEjercicios.ts`, `public/medios/fotos/`):** 27 fotos que cubren 34 ejercicios; las fotos de Smith y de la máquina de jalón se reutilizan en sus variantes. Solo licencias CC0, dominio público, CC BY y CC BY-SA. **Cada una se eligió mirándola**: la búsqueda automática trae mucha basura (botes, suéteres, estatuas). Se descartaron las que no calzan con las instrucciones; por ejemplo, la plancha alta, porque la nuestra es sobre antebrazos. Cada foto va en `<archivo>.webp` (800 px) y `<archivo>-mini.webp` (240 px, 4:3). El crédito (autor, licencia y enlace) se muestra bajo la foto (`FotoMaquina`) y en Créditos. Para agregar una, busca en la API de Commons con `User-Agent` propio y pausas (si no, responde 429), revísala, convierte a WebP con canvas en Chrome y súmala a `fotosEjercicios.ts`.
+- **Fuentes descartadas (no volver a intentarlas):**
+  - **Gymvisual:** de pago. Sus vistas previas con sello de agua no tienen licencia, aunque sean públicas.
+  - **API gratuita de ExerciseDB:** no comercial y de baja resolución.
+  - **free-exercise-db / wrkout exercises.json:** dice ser de dominio público, pero su autor reconoce que las fotos se sacaron de internet (por ejemplo, de bodybuilding.com).
+  - **Imágenes de Google en general.**
+  - Lo legal con calidad 3D es de pago: Gym Animations, MoveKit, exercisedb.io.
 
 El detalle de cada ejercicio muestra dibujos de inicio y final (en 64 de los 80) y un diagrama de músculos de frente y espalda (en todos). Los datos están en `src/db/mediosEjercicios.ts` (se buscan por nombre del catálogo con `mediosDe()`) y los archivos en `public/medios/`. Todo entra en el precache, así que funciona offline.
 

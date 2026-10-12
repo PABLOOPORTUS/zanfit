@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable, type Transaction } from 'dexie'
-import type { Ajustes, Exercise, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
+import type { Ajustes, Exercise, MedioPropio, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
 import { EJERCICIOS_BASE } from './ejerciciosBase'
 import { RUTINAS_BASE } from './rutinasBase'
 import { normalizar } from '../lib/texto'
@@ -12,6 +12,7 @@ export const db = new Dexie('zanfit') as Dexie & {
   ajustes: EntityTable<Ajustes, 'id'>
   perfil: EntityTable<Perfil, 'id'>
   plan: EntityTable<Plan, 'id'>
+  medios: EntityTable<MedioPropio, 'id'>
 }
 
 // Solo se indexan los campos por los que se consulta. Nunca modificar una versión existente:
@@ -52,6 +53,9 @@ db.version(5).stores({}).upgrade(async (tx) => {
 
 // v6: evaluación inicial (perfil) y plan de entrenamiento generado.
 db.version(6).stores({ perfil: 'id', plan: 'id' })
+
+// v7: fotos y videos propios de cada ejercicio (Blobs; no entran en el respaldo JSON general).
+db.version(7).stores({ medios: '++id, exerciseId' })
 
 export const AJUSTES_POR_DEFECTO: Ajustes = { id: 'general', unidad: 'kg', descansoPorDefectoSeg: 90 }
 

@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
 import DiagramaMusculos from '../../components/DiagramaMusculos'
 import DibujosEjercicio from '../../components/DibujosEjercicio'
+import FotoMaquina from '../../components/FotoMaquina'
+import MediosPropios from '../../components/MediosPropios'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { mediosDe } from '../../db/mediosEjercicios'
 import { eliminarEjercicio } from '../../db/exercises'
@@ -30,6 +32,15 @@ export default function DetalleEjercicio() {
         <Etiqueta>{etiquetaEquipo(ejercicio.equipo)}</Etiqueta>
         {ejercicio.propio && <Etiqueta destacada>Propio</Etiqueta>}
       </div>
+
+      {medios.foto && (
+        <div className="mt-6">
+          <FotoMaquina foto={medios.foto} nombre={ejercicio.nombre} />
+        </div>
+      )}
+
+      <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">En tu gimnasio</h2>
+      <MediosPropios ejercicio={ejercicio} />
 
       {medios.dibujos && (
         <div className="mt-6">
