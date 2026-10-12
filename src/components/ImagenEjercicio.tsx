@@ -1,38 +1,44 @@
-import { useEffect, useState } from 'react'
 import { mediosDe, MUSCULOS } from '../db/mediosEjercicios'
+import { useAlternar } from '../hooks/useAlternar'
 import { useMediosPropios, useUrlBlob } from '../hooks/useMedios'
 import type { Exercise } from '../types'
 
 type Props = { ejercicio: Pick<Exercise, 'id' | 'nombre' | 'grupoMuscular' | 'propio'>; className?: string }
 
-const reducirMovimiento = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
-
 /**
  * Imagen grande para reconocer el ejercicio de un vistazo (por ejemplo, en el entreno).
- * Prioridad: foto o video propio (su portada) > foto real de la máquina > dibujo animado > silueta con el músculo.
+ * Prioridad: foto o video propio (su portada) > foto del ejercicio (inicio y final alternando) > dibujo animado > silueta con el músculo.
  */
 export default function ImagenEjercicio({ ejercicio, className = 'h-48 w-full' }: Props) {
   const propios = useMediosPropios(ejercicio.id)
   const propia = useUrlBlob(propios?.[0]?.miniatura)
   const { dibujos, musculos, foto } = mediosDe(ejercicio)
-  const [cuadro, setCuadro] = useState(0)
-  const animar = !propia && !foto && dibujos?.archivos.length === 2 && !reducirMovimiento()
-
-  useEffect(() => {
-    if (!animar) return
-    const id = setInterval(() => setCuadro((c) => 1 - c), 1100)
-    return () => clearInterval(id)
-  }, [animar])
+  const cuadro = useAlternar(!propia && (!!foto || dibujos?.archivos.length === 2))
 
   const marco = `relative block overflow-hidden ${className}`
 
-  if (propia || foto) {
+  if (propia) {
     return (
       <span className={`${marco} bg-fondo`}>
-        <img src={propia ?? `/medios/fotos/${foto!.archivo}.webp`} alt="" className="size-full object-cover" />
+        <img src={propia} alt="" className="size-full object-cover" />
         {propios?.[0]?.tipo === 'video' && (
           <span className="absolute top-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-bold text-white">▶ Tu video</span>
         )}
+      </span>
+    )
+  }
+
+  if (foto) {
+    return (
+      <span className={`${marco} bg-fondo`}>
+        {[`${foto.archivo}.webp`, `${foto.archivo}-final.webp`].map((archivo, i) => (
+          <img
+            key={archivo}
+            src={`/medios/fotos/${archivo}`}
+            alt=""
+            className={`absolute inset-0 size-full object-cover transition-opacity duration-300 ${cuadro === i ? 'opacity-100' : 'opacity-0'}`}
+          />
+        ))}
       </span>
     )
   }

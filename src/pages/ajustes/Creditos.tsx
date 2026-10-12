@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import BotonVolver from '../../components/BotonVolver'
-import { FOTOS } from '../../db/fotosEjercicios'
+import { REPOSITORIO_FOTOS } from '../../db/fotosEjercicios'
 
 /** `/ajustes/creditos`: atribución de los recursos con licencia Creative Commons (lo exige CC BY-SA). */
 export default function Creditos() {
@@ -27,22 +27,10 @@ export default function Creditos() {
         <Cambios>Cambios en ZANFIT: colores adaptados al modo oscuro, archivos optimizados y, en los de wger, tamaño reducido y formato WebP.</Cambios>
       </Bloque>
 
-      <Bloque titulo="Fotos de máquinas y ejercicios">
-        Fotos con licencias libres de <Enlace href="https://commons.wikimedia.org">Wikimedia Commons</Enlace> y de Flickr (encontradas con{' '}
-        <Enlace href="https://openverse.org">Openverse</Enlace>), de <Enlace href="https://pixabay.com">Pixabay</Enlace> y cuadros de videos de{' '}
-        <Enlace href="https://mixkit.co">Mixkit</Enlace>. Cada una indica su autor, su licencia y su fuente.
+      <Bloque titulo="Fotos de los ejercicios">
+        Fotos de <Enlace href={REPOSITORIO_FOTOS}>free-exercise-db</Enlace>, que las publica como dominio público (Unlicense).
         <Cambios>Cambios en ZANFIT: tamaño reducido, formato WebP y una versión recortada para miniaturas.</Cambios>
       </Bloque>
-      <ul className="mt-3 flex flex-col gap-2 text-sm">
-        {[...new Map(Object.entries(FOTOS).map(([ejercicio, f]) => [f.archivo, { ejercicio, ...f }])).values()].map((f) => (
-          <li key={f.archivo} className="rounded-xl border border-borde bg-superficie px-3 py-2 leading-snug">
-            <span className="font-semibold">{f.ejercicio}</span>
-            <span className="block text-texto-suave">
-              {f.autor || 'Autor desconocido'} · <Enlace href={f.pagina}>{f.licencia}</Enlace>
-            </span>
-          </li>
-        ))}
-      </ul>
 
       <Bloque titulo="Videos de la pantalla de acceso">
         Videos de <Enlace href="https://mixkit.co">Mixkit</Enlace>, con su licencia «Stock Video Free» (uso libre, también comercial).

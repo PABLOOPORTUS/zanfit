@@ -42,7 +42,7 @@ export default function DetalleEjercicio() {
       <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">En tu gimnasio</h2>
       <MediosPropios ejercicio={ejercicio} />
 
-      {medios.dibujos && (
+      {medios.dibujos && !medios.foto && (
         <div className="mt-6">
           <DibujosEjercicio dibujos={medios.dibujos} nombre={ejercicio.nombre} />
         </div>

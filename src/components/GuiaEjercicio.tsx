@@ -30,7 +30,7 @@ export default function GuiaEjercicio({ ejercicio, onCerrar }: { ejercicio: Exer
           </p>
           <MediosPropios ejercicio={ejercicio} />
           {medios.foto && <FotoMaquina foto={medios.foto} nombre={ejercicio.nombre} />}
-          {medios.dibujos && <DibujosEjercicio dibujos={medios.dibujos} nombre={ejercicio.nombre} />}
+          {medios.dibujos && !medios.foto && <DibujosEjercicio dibujos={medios.dibujos} nombre={ejercicio.nombre} />}
           <div className="rounded-2xl border border-borde bg-superficie p-4 text-lg leading-relaxed">
             {ejercicio.instrucciones ?? <span className="text-texto-suave">Este ejercicio no tiene instrucciones.</span>}
           </div>
