@@ -153,7 +153,7 @@ src/
   pages/rutinas/         ListaRutinas, DetalleRutina, NuevaRutina, EditarRutina, FormularioRutina, RutinaNoEncontrada
   pages/progreso/        Progreso (calendario + historial/récords), CalendarioEntrenos, DetalleEntreno, ProgresoEjercicio
   pages/ejercicios/      ListaEjercicios, DetalleEjercicio, NuevoEjercicio, EditarEjercicio, FormularioEjercicio, EjercicioNoEncontrado
-  pages/ajustes/         Ajustes (unidad, descanso por defecto, respaldo), Creditos (licencias CC BY-SA)
+  pages/ajustes/         Ajustes (unidad, descanso por defecto, respaldo), Creditos (fuentes y licencias), Privacidad (qué datos se guardan y qué se envía a la IA)
   pages/evaluacion/      Evaluacion (cuestionario paso a paso), MiPlan (/plan)
   db/index.ts            instancia de Dexie, esquema, ajustes y carga de datos iniciales
   db/<tabla>.ts          escrituras y consultas: exercises.ts, routines.ts, workouts.ts
