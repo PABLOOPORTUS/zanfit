@@ -14,6 +14,7 @@ export const EQUIPOS: { valor: Equipo; etiqueta: string }[] = [
   { valor: 'barra', etiqueta: 'Barra' },
   { valor: 'mancuernas', etiqueta: 'Mancuernas' },
   { valor: 'maquina', etiqueta: 'Máquina' },
+  { valor: 'smith', etiqueta: 'Máquina Smith' },
   { valor: 'polea', etiqueta: 'Polea' },
   { valor: 'peso-corporal', etiqueta: 'Peso corporal' },
   { valor: 'kettlebell', etiqueta: 'Kettlebell' },

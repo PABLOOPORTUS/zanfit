@@ -1,5 +1,5 @@
 import { db } from '.'
-import type { Ajustes, Exercise, Routine, Workout, WorkoutSet } from '../types'
+import type { Ajustes, Exercise, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
 
 /** Sube este número si cambia la forma del respaldo (y agrega la conversión en `leerRespaldo`). */
 const FORMATO = 1
@@ -14,11 +14,14 @@ export interface Respaldo {
     workouts: Workout[]
     sets: WorkoutSet[]
     ajustes: Ajustes[]
+    /** Desde la v6. Los respaldos anteriores no los traen. */
+    perfil: Perfil[]
+    plan: Plan[]
   }
 }
 
 export async function crearRespaldo(): Promise<Respaldo> {
-  return db.transaction('r', [db.exercises, db.routines, db.workouts, db.sets, db.ajustes], async () => ({
+  return db.transaction('r', [db.exercises, db.routines, db.workouts, db.sets, db.ajustes, db.perfil, db.plan], async () => ({
     app: 'zanfit',
     formato: FORMATO,
     exportadoEn: Date.now(),
@@ -28,6 +31,8 @@ export async function crearRespaldo(): Promise<Respaldo> {
       workouts: await db.workouts.toArray(),
       sets: await db.sets.toArray(),
       ajustes: await db.ajustes.toArray(),
+      perfil: await db.perfil.toArray(),
+      plan: await db.plan.toArray(),
     },
   }))
 }
@@ -66,6 +71,8 @@ export function leerRespaldo(texto: string): Respaldo {
     workouts: validarLista(d.workouts, 'entrenos', (x) => esTexto(x.nombre) && esNumero(x.fechaInicio)),
     sets: validarLista(d.sets, 'series', (x) => esNumero(x.workoutId) && esNumero(x.exerciseId) && esNumero(x.peso) && esNumero(x.reps)),
     ajustes: Array.isArray(d.ajustes) ? (d.ajustes as Ajustes[]).filter((a) => esObjeto(a) && a.id === 'general') : [],
+    perfil: Array.isArray(d.perfil) ? (d.perfil as Perfil[]).filter((x) => esObjeto(x) && x.id === 'general' && esTexto(x.sexo) && esNumero(x.pesoKg)) : [],
+    plan: Array.isArray(d.plan) ? (d.plan as Plan[]).filter((x) => esObjeto(x) && x.id === 'actual' && Array.isArray(x.rutinaIds)) : [],
   }
   return { app: 'zanfit', formato: json.formato, exportadoEn: esNumero(json.exportadoEn) ? json.exportadoEn : 0, datos }
 }
@@ -73,12 +80,15 @@ export function leerRespaldo(texto: string): Respaldo {
 /** Reemplaza TODOS los datos por los del respaldo, en una sola transacción (si algo falla, no cambia nada). */
 export async function restaurarRespaldo(respaldo: Respaldo): Promise<void> {
   const { datos } = respaldo
-  await db.transaction('rw', [db.exercises, db.routines, db.workouts, db.sets, db.ajustes], async () => {
-    await Promise.all([db.exercises.clear(), db.routines.clear(), db.workouts.clear(), db.sets.clear(), db.ajustes.clear()])
+  const tablas = [db.exercises, db.routines, db.workouts, db.sets, db.ajustes, db.perfil, db.plan]
+  await db.transaction('rw', tablas, async () => {
+    await Promise.all(tablas.map((t) => t.clear()))
     await db.exercises.bulkAdd(datos.exercises)
     await db.routines.bulkAdd(datos.routines)
     await db.workouts.bulkAdd(datos.workouts)
     await db.sets.bulkAdd(datos.sets)
     await db.ajustes.bulkAdd(datos.ajustes)
+    await db.perfil.bulkAdd(datos.perfil)
+    await db.plan.bulkAdd(datos.plan)
   })
 }

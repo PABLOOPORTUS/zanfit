@@ -42,17 +42,21 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 
 ## Modelo de datos (Dexie, `src/db/index.ts`)
 
-Esquema actual: **v4**.
+Esquema actual: **v6**.
 
 | Tabla | Campos | Índices |
 | --- | --- | --- |
 | `exercises` | id, nombre, grupoMuscular, equipo, instrucciones?, propio | nombre, grupoMuscular, equipo |
-| `routines` | id, nombre, ejercicios: `{ exerciseId, seriesObjetivo, repsObjetivo, descansoSeg }[]` (en orden) | nombre |
+| `routines` | id, nombre, ejercicios: `{ exerciseId, seriesObjetivo, repsObjetivo, descansoSeg, pesoSugerido? }[]` (en orden) | nombre |
 | `workouts` | id, routineId?, nombre, fechaInicio, fechaFin?, notas? | routineId, fechaInicio |
 | `sets` | id, workoutId, exerciseId, numeroSerie, reps, peso (kg), completada | workoutId, exerciseId, [workoutId+exerciseId] |
 | `ajustes` | id (`'general'`), unidad (`'kg'`/`'lb'`), descansoPorDefectoSeg | id |
+| `perfil` | id (`'general'`), sexo, anioNacimiento, pesoKg, alturaCm, objetivo, zonas, experiencia, lugar, diasPorSemana, minutosPorSesion, lesiones, precaucion | id |
+| `plan` | id (`'actual'`), division, rutinaIds (orden de la semana), creadoEn | id |
 
-Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`.
+Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron. La v2 crea las tablas actuales y carga el catálogo. La v3 no cambia tablas, solo carga las rutinas de ejemplo en bases que venían de la v2. La v4 agrega `ajustes`. La v6 agrega `perfil` y `plan` (evaluación inicial y plan generado). La v5 no cambia tablas: agrega a las bases existentes los ejercicios nuevos del catálogo, comparando nombres normalizados para no duplicar ejercicios propios. **Si agregas ejercicios al catálogo, crea una versión nueva con un upgrade igual**, porque `populate` solo corre en bases nuevas.
+
+`Equipo`: barra, mancuernas, maquina, smith (Máquina Smith), polea, peso-corporal, kettlebell, banda, otro. Las etiquetas están en `lib/catalogos.ts`.
 
 - **Pesos siempre en kg** en la base. La unidad del usuario solo afecta cómo se muestran e ingresan (ver Convenciones).
 - `exercises.propio`: `false` en el catálogo y `true` en los que crea el usuario. **Solo los propios se pueden editar o eliminar**; `db/exercises.ts` lo valida. Un ejercicio en uso (en una rutina o en `sets`) no se puede eliminar.
@@ -60,12 +64,39 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 - **Entreno en curso** = el workout sin `fechaFin`. Solo hay uno a la vez (`iniciarEntreno` devuelve el existente). Como todo se guarda al instante, cerrar la app no pierde nada y `/entrenar` lo retoma.
 - **Orden de los ejercicios en un entreno:** sale del id de su primera serie (`agruparPorEjercicio`). Por eso un ejercicio siempre tiene al menos una serie; para sacarlo entero se usa `quitarEjercicio`.
 - **Al finalizar** se borran las series sin marcar (`completada: false`).
-- **Precarga:** las series nuevas toman peso y reps del último entreno terminado con ese ejercicio (`ultimasSeries`). Si no hay historial, usan las reps objetivo y peso 0.
+- **Precarga:** las series nuevas toman peso y reps del último entreno terminado con ese ejercicio (`ultimasSeries`). Si no hay historial, usan el `pesoSugerido` de la rutina (o 0) y las reps objetivo.
+- **Progresión (`debeSubir`):** si la última vez hiciste al menos las series objetivo y todas llegaron a las reps objetivo, el peso precargado sube: 2 kg en mancuernas y kettlebell, 2,5 kg en barra, máquina, Smith y polea, nada con el peso corporal. La tarjeta muestra "Última vez: …" y "↑ Completaste todo".
+- **Reemplazar un ejercicio en el entreno (`reemplazarEjercicio`):** reutiliza las mismas filas de `sets` (cambia `exerciseId` y vuelve a precargar), así el ejercicio nuevo queda en la misma posición.
 - **Récords:** se comparan contra entrenos terminados que empezaron antes. La primera vez que haces un ejercicio no cuenta como récord. 1RM estimado con Epley: `peso × (1 + reps / 30)`, y con 1 rep es el mismo peso (`lib/calculos.ts`).
 - **Semanas** de lunes a domingo (`inicioSemana`). La racha semanal cuenta semanas seguidas con al menos un entreno; si esta semana todavía no entrenas, se cuenta desde la anterior.
 - `routines.ejercicios` no tiene índice: Dexie no indexa propiedades dentro de arrays de objetos, así que se usa `.filter()`.
-- **Datos iniciales:** 42 ejercicios en `db/ejerciciosBase.ts` y las rutinas Push, Pull y Legs en `db/rutinasBase.ts` (buscan los ejercicios por nombre). Se cargan desde `populate` cuando la base es nueva y desde los `upgrade()` de la v2 y la v3.
+- **Datos iniciales:** 80 ejercicios en `db/ejerciciosBase.ts` (42 básicos + 38 de gimnasio: máquinas, poleas y Smith) y las rutinas Push, Pull y Legs en `db/rutinasBase.ts` (buscan los ejercicios por nombre). Se cargan desde `populate` cuando la base es nueva y desde los `upgrade()` de la v2, la v3 y la v5.
 - **Respaldo** (`db/respaldo.ts`): JSON con `{ app: 'zanfit', formato, exportadoEn, datos: { exercises, routines, workouts, sets, ajustes } }`. Importar valida todo antes y después **reemplaza** todos los datos en una sola transacción; no los mezcla. Si cambias el esquema, revisa `crearRespaldo`, `leerRespaldo` y `restaurarRespaldo`, y sube `FORMATO` si cambia la forma del archivo.
+
+## Evaluación y plan de entrenamiento
+
+- **`/evaluacion?paso=N`:** 10 pantallas, una pregunta por pantalla. Cada paso es una entrada del historial, así que el botón atrás vuelve a la pregunta anterior; el estado vive en el componente. Si se entra directo a un paso, redirige al primero sin responder. Pregunta:
+  - Sexo: **obligatorio, hombre o mujer**. Lo pidió el dueño del producto, porque las referencias de fuerza son distintas.
+  - Edad, peso y altura.
+  - Objetivo y zonas a mejorar.
+  - Experiencia, lugar (gimnasio o casa), días por semana y minutos por sesión.
+  - Lesiones (rodillas, espalda baja, hombros).
+  - Salud: preguntas adaptadas del PAR-Q; la de embarazo solo aparece para mujeres. Cualquier "sí" activa `precaucion`.
+- **Generador (`lib/plan.ts`, función pura, sin IA, offline):**
+  - División según los días: 2 → cuerpo completo; 3 → cuerpo completo para principiantes, PPL para el resto; 4 → torso y pierna; 5 → PPL + torso + pierna; 6 → PPL ×2.
+  - Cada tipo de día tiene "huecos" de patrones de movimiento en orden de prioridad (`huecos`). Las zonas a mejorar adelantan patrones (`refuerzos`).
+  - Los ejercicios salen del catálogo según su clasificación en `db/patronesEjercicios.ts` (patrón, nivel técnico 1–3, zonas de riesgo). El filtro descarta lesiones, nivel 3 para principiantes o con precaución, y lo que no sea para la casa si entrena en casa. Se prefieren máquinas para principiantes y peso libre para avanzados, variando entre días.
+  - Series, reps y descanso dependen del objetivo y de si el ejercicio es compuesto; se ajustan por experiencia, por edad ≥ 50 y por precaución.
+  - Se corta por tiempo (minutos por sesión) y por un máximo de ejercicios (6, 7 u 8 según la experiencia).
+  - `pesoSugerido` = peso corporal × factor según patrón y equipo, ajustado por sexo, experiencia, objetivo, precaución y edad, y redondeado según el equipo. Es un punto de partida y así se le explica al usuario.
+- **Guardar (`db/plan.ts`, `guardarEvaluacion`):** guarda el perfil y crea una rutina normal por día ("Plan · Día A — Torso"). Si ya había un plan, borra sus rutinas; el historial se mantiene porque los entrenos guardan su propio nombre.
+- **Qué día toca (`siguienteDiaDelPlan`):** el día siguiente al último entreno terminado con una rutina del plan.
+- **Dónde aparece:**
+  - `/plan`: perfil con IMC (solo como referencia), semana, recomendaciones, rehacer o eliminar el plan.
+  - Entrenar: tarjeta "Hoy te toca", o una invitación a hacer la evaluación si no hay perfil.
+  - Rutinas: etiqueta "Tu plan".
+  - Ajustes: "Mi evaluación y plan".
+- **Si agregas ejercicios al catálogo:** clasifícalos en `CLASIFICACION`. Si no, el generador no los usa.
 
 ## Estructura de carpetas
 
@@ -84,12 +115,15 @@ src/
   pages/progreso/        Progreso (calendario + historial/récords), CalendarioEntrenos, DetalleEntreno, ProgresoEjercicio
   pages/ejercicios/      ListaEjercicios, DetalleEjercicio, NuevoEjercicio, EditarEjercicio, FormularioEjercicio, EjercicioNoEncontrado
   pages/ajustes/         Ajustes (unidad, descanso por defecto, respaldo), Creditos (licencias CC BY-SA)
+  pages/evaluacion/      Evaluacion (cuestionario paso a paso), MiPlan (/plan)
   db/index.ts            instancia de Dexie, esquema, ajustes y carga de datos iniciales
   db/<tabla>.ts          escrituras y consultas: exercises.ts, routines.ts, workouts.ts
   db/progreso.ts         consultas de historial, récords, evolución y fechas entrenadas
   db/respaldo.ts         exportar, validar e importar el respaldo JSON
   db/ejerciciosBase.ts, db/rutinasBase.ts   datos iniciales
-  db/mediosEjercicios.ts músculos y dibujos de cada ejercicio del catálogo (recursos de wger)
+  db/mediosEjercicios.ts músculos y dibujos de cada ejercicio del catálogo
+  db/patronesEjercicios.ts clasificación para el generador (patrón, nivel, riesgos)
+  db/plan.ts             guardar la evaluación, rutinas del plan y qué día toca
   hooks/                 lectura con useLiveQuery (useExercises, useRoutines, useWorkouts…), useAjustes/useUnidad,
                          useDescanso, usePanel, useAhora
   lib/                   utilidades puras: texto.ts, catalogos.ts, formato.ts (Intl, unidades), calculos.ts (Epley,
@@ -129,19 +163,29 @@ Las 4 tabs y Ajustes están completas:
 - **Entrenar:** elegir una rutina o hacer un entreno libre. Cada ejercicio muestra sus series en filas peso | reps | listo, precargadas con la última vez. Al marcar una serie parte el descanso (barra flotante con +15s y Saltar; al terminar vibra y suena). Se pueden agregar o quitar series y ejercicios. Hay cronómetro total, y "Finalizar" muestra un resumen con duración, volumen, series y récords nuevos, más notas. El entreno se retoma si se cierra la app, y la tab Entrenar muestra un punto cuando hay uno en curso.
 - **Rutinas:** listar, crear, editar (nombre, ejercicios desde la biblioteca, series, reps y descanso, reordenar con flechas), duplicar y eliminar.
 - **Progreso:** racha semanal, esta semana, mejor racha y mapa de calor de las últimas 18 semanas. Historial por mes con detalle de cada entreno (series, récords, notas, eliminar). Récords por ejercicio (peso máximo y 1RM estimado) y, al tocar uno, gráficos de peso máximo y volumen por sesión con su tabla.
-- **Ejercicios:** lista agrupada con buscador y filtros; detalle con dibujos de inicio y final (en 20 ejercicios), diagrama de músculos, instrucciones, registro y enlace a su progreso; ejercicios propios.
+- **Ejercicios:** 80 en el catálogo (incluye máquinas, poleas y Smith). Lista agrupada con buscador y filtros; detalle con dibujos de inicio y final (en 64), diagrama de músculos, instrucciones, registro y enlace a su progreso; ejercicios propios.
+- **Evaluación y plan:** cuestionario inicial y plan generado según sexo, edad, peso, altura, objetivo, zonas, experiencia, lugar, tiempo, lesiones y salud. En el entreno: peso sugerido, subida automática de peso, "Última vez" y cambiar ejercicio.
 - **Ajustes:** unidad kg/lb, descanso por defecto, exportar o importar el respaldo JSON, y Créditos. En el teléfono, exportar usa la hoja de compartir; si no está disponible, descarga el archivo.
 
-## Recursos gráficos de ejercicios (wger)
+## Recursos gráficos de ejercicios
 
-El detalle de cada ejercicio muestra dibujos de inicio y final (cuando existen) y un diagrama de músculos de frente y espalda. Los datos están en `src/db/mediosEjercicios.ts` (se buscan por nombre del catálogo, `mediosDe()`), y los archivos en `public/medios/`. Todo entra en el precache, así que funciona offline (unos 900 KB).
+El detalle de cada ejercicio muestra dibujos de inicio y final (en 64 de los 80) y un diagrama de músculos de frente y espalda (en todos). Los datos están en `src/db/mediosEjercicios.ts` (se buscan por nombre del catálogo con `mediosDe()`) y los archivos en `public/medios/`. Todo entra en el precache, así que funciona offline.
 
-- **Diagramas de músculos** (`public/medios/musculos/`): `frente.svg` y `espalda.svg` son las siluetas; `principal-N.svg` y `secundario-N.svg` son capas por músculo (N = id de músculo de wger, ver `MUSCULOS`). Origen: «Muscular system» de Termininja (Wikimedia Commons), adaptado por wger, **CC BY-SA 3.0**. En ZANFIT se recolorearon (principal en lima, secundario en lima al 45%) y se optimizaron con svgo. Las capas se apilan con `<img>` absolutos alineados arriba a la izquierda (`DiagramaMusculos`).
-- **Músculos de cada ejercicio:** los asignamos nosotros (no se copian de wger, cuyos datos de usuarios son irregulares). Los ejercicios propios usan los músculos típicos de su grupo (`POR_GRUPO`).
-- **Dibujos** (`public/medios/ejercicios/wger-<id>-<1|2>.webp`): solo de **Everkinetic** (estilo "line" de wger), **CC BY-SA 3.0**. Hay 20 ejercicios con dibujo. Se redujeron a 400 px, se pasaron a WebP y se muestran con `invert` para el modo oscuro.
-- **No usar otras imágenes de wger:** las fotos y renders 3D que suben los usuarios tienen licencias dudosas (por ejemplo, una con marca de agua "© HOIST" etiquetada como CC BY-SA), y algunas son generadas con IA. Para agregar un dibujo, que sea de Everkinetic y que represente exactamente el ejercicio (no uno parecido).
-- **Atribución obligatoria (CC BY-SA):** cada dibujo y diagrama lleva su crédito con enlace a `/ajustes/creditos`, y esa pantalla lista autores, licencia y cambios. Si agregas recursos, actualiza los créditos.
-- **Cómo se generaron:** se descargó `https://wger.de/api/v2/exerciseinfo/` (catálogo completo), las capas de músculos desde el repo `wger-project/wger` (`wger/core/static/images/muscles/`), se optimizó con `svgo --multipass -p 1` y los PNG se convirtieron a WebP desde un `canvas` en Chrome (no hay `cwebp` instalado).
+- **Dibujos** (`public/medios/ejercicios/`):
+  - `ek-<id>-inicio|final.svg`: de **Everkinetic** (repositorio `github.com/everkinetic/data`, carpeta `dist/svg`, licencia **CC BY-SA 4.0**). `<id>` es el id de 4 dígitos de `dist/exercises.json` (por ejemplo, `0127` = Leg Press). Se recolorearon invirtiendo la luminosidad: líneas a `#E5E5E5` y relleno a `#161616`, el color de la tarjeta, para que tapen las líneas de atrás. Después se optimizaron con svgo.
+  - `wger-<id>-1|2.webp`: solo 2 ejercicios (Remo con barra y Press de hombros con mancuernas), que faltan en el repositorio original y vienen de la copia de Everkinetic en wger (CC BY-SA 3.0). Se muestran con `invert` (`invertir: true`).
+  - **Faltan en Everkinetic** (no hay SVG ni PNG): jalón con barra ancha (0097), press inclinado en máquina (0084), butterfly (0047), press de hombros en máquina (0003), entre otros. Esos ejercicios solo tienen diagrama de músculos.
+  - **El dibujo tiene que coincidir con las instrucciones.** Antes de asignarlo, míralo: el Press militar de wger era sentado y nuestras instrucciones dicen de pie, así que se quitó; "High Cable Curls" (0229) era acostado y se descartó.
+- **Diagramas de músculos** (`public/medios/musculos/`): `frente.svg` y `espalda.svg` son las siluetas; `principal-N.svg` y `secundario-N.svg` son capas por músculo (N = id de músculo de wger, ver `MUSCULOS`). Origen: «Muscular system» de Termininja (Wikimedia Commons), adaptado por wger, **CC BY-SA 3.0**. Principal en lima al 100% y secundario al 40%. Ojo: los SVG de wger traían `opacity:.52` en ambos, por eso al principio se veían iguales. Las capas se apilan con `<img>` absolutos alineados arriba a la izquierda (`DiagramaMusculos`).
+- **Músculos de cada ejercicio:** los asignamos nosotros, sin copiarlos de wger, cuyos datos de usuarios son irregulares. Los ejercicios propios usan los músculos típicos de su grupo (`POR_GRUPO`).
+- **No usar otras imágenes de wger:** las fotos y renders 3D que suben los usuarios tienen licencias dudosas (una tenía marca de agua "© HOIST" y estaba etiquetada como CC BY-SA), y algunas son generadas con IA. La atribución no arregla una imagen con copyright.
+- **Atribución obligatoria (CC BY-SA):** cada dibujo y diagrama lleva su crédito con enlace a `/ajustes/creditos`, donde se listan autores, licencias y cambios. Si agregas recursos, actualiza los créditos.
+- **Para agregar un ejercicio con dibujo:**
+  1. Búscalo en `everkinetic/data/dist/exercises.json`.
+  2. Revisa el dibujo.
+  3. Descarga `dist/svg/<id>-relaxation.svg` y `<id>-tension.svg`, recoloréalos igual y optimízalos con `svgo --multipass -p 1`.
+  4. Agrégalo a `ejerciciosBase.ts` y a `CATALOGO`.
+  5. Crea una versión de Dexie que lo agregue a las bases existentes.
 
 ## Íconos y PWA
 

@@ -10,13 +10,16 @@ type Props = {
   excluir: number[]
   onAgregar: (ids: number[]) => void
   onCerrar: () => void
+  /** Elegir uno solo (para reemplazar): al tocarlo se confirma de inmediato. */
+  unico?: boolean
+  grupoInicial?: GrupoMuscular
 }
 
 /** Panel a pantalla completa para elegir uno o varios ejercicios de la biblioteca. Ábrelo con `usePanel`. */
-export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excluir, onAgregar, onCerrar }: Props) {
+export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excluir, onAgregar, onCerrar, unico = false, grupoInicial }: Props) {
   const ejercicios = useExercises()
   const [busqueda, setBusqueda] = useState('')
-  const [grupo, setGrupo] = useState<GrupoMuscular | null>(null)
+  const [grupo, setGrupo] = useState<GrupoMuscular | null>(grupoInicial ?? null)
   const [elegidos, setElegidos] = useState<number[]>([])
 
   const filtrados = useMemo(() => {
@@ -28,8 +31,10 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
     })
   }, [ejercicios, busqueda, grupo])
 
-  const alternar = (id: number) =>
+  const alternar = (id: number) => {
+    if (unico) return onAgregar([id])
     setElegidos((actual) => (actual.includes(id) ? actual.filter((x) => x !== id) : [...actual, id]))
+  }
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-fondo" role="dialog" aria-modal="true" aria-label={titulo}>
@@ -106,7 +111,7 @@ export default function SelectorEjercicios({ titulo = 'Agregar ejercicios', excl
         )}
       </ul>
 
-      <div className="pb-safe border-t border-borde bg-superficie">
+      <div className={`pb-safe border-t border-borde bg-superficie ${unico ? 'hidden' : ''}`}>
         <div className="mx-auto max-w-lg p-4">
           <button
             type="button"

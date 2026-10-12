@@ -19,13 +19,15 @@ export default function Creditos() {
       </Bloque>
 
       <Bloque titulo="Dibujos de ejercicios">
-        Dibujos de <Enlace href="https://github.com/everkinetic/data">Everkinetic</Enlace>, tomados de wger, donde se publican con licencia{' '}
+        Dibujos de <Enlace href="https://github.com/everkinetic/data">Everkinetic</Enlace>, licencia{' '}
+        <Enlace href="https://creativecommons.org/licenses/by-sa/4.0/deed.es">CC BY-SA 4.0</Enlace>. Dos de ellos (remo con barra y press de hombros
+        con mancuernas) vienen de la copia publicada en wger, con licencia{' '}
         <Enlace href="https://creativecommons.org/licenses/by-sa/3.0/deed.es">CC BY-SA 3.0</Enlace>.
-        <Cambios>Cambios en ZANFIT: tamaño reducido, formato WebP y colores invertidos para el modo oscuro.</Cambios>
+        <Cambios>Cambios en ZANFIT: colores adaptados al modo oscuro, archivos optimizados y, en los de wger, tamaño reducido y formato WebP.</Cambios>
       </Bloque>
 
       <p className="mt-6 text-sm text-texto-suave">
-        Las versiones adaptadas de estos recursos se comparten con la misma licencia CC BY-SA 3.0. Las instrucciones de los ejercicios y el resto de la
+        Las versiones adaptadas de estos recursos se comparten con la misma licencia que su original. Las instrucciones de los ejercicios y el resto de la
         app son propios de ZANFIT.
       </p>
     </section>

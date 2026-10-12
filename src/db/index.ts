@@ -1,7 +1,8 @@
 import Dexie, { type EntityTable, type Transaction } from 'dexie'
-import type { Ajustes, Exercise, Routine, Workout, WorkoutSet } from '../types'
+import type { Ajustes, Exercise, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
 import { EJERCICIOS_BASE } from './ejerciciosBase'
 import { RUTINAS_BASE } from './rutinasBase'
+import { normalizar } from '../lib/texto'
 
 export const db = new Dexie('zanfit') as Dexie & {
   exercises: EntityTable<Exercise, 'id'>
@@ -9,6 +10,8 @@ export const db = new Dexie('zanfit') as Dexie & {
   workouts: EntityTable<Workout, 'id'>
   sets: EntityTable<WorkoutSet, 'id'>
   ajustes: EntityTable<Ajustes, 'id'>
+  perfil: EntityTable<Perfil, 'id'>
+  plan: EntityTable<Plan, 'id'>
 }
 
 // Solo se indexan los campos por los que se consulta. Nunca modificar una versión existente:
@@ -38,6 +41,17 @@ db.version(3).stores({}).upgrade(cargarRutinasEjemplo)
 
 // v4: tabla de ajustes (unidad y descanso por defecto). Si no hay fila, se usan AJUSTES_POR_DEFECTO.
 db.version(4).stores({ ajustes: 'id' })
+
+// v5: sin cambios de tablas. Agrega a las bases existentes los ejercicios nuevos del catálogo (máquinas, poleas y Smith).
+// Si el usuario ya tenía un ejercicio propio con el mismo nombre, no se duplica.
+db.version(5).stores({}).upgrade(async (tx) => {
+  const ejercicios = tx.table<Exercise, number>('exercises')
+  const existentes = new Set((await ejercicios.toArray()).map((e) => normalizar(e.nombre)))
+  await ejercicios.bulkAdd(EJERCICIOS_BASE.filter((e) => !existentes.has(normalizar(e.nombre))).map((e) => ({ ...e, propio: false })))
+})
+
+// v6: evaluación inicial (perfil) y plan de entrenamiento generado.
+db.version(6).stores({ perfil: 'id', plan: 'id' })
 
 export const AJUSTES_POR_DEFECTO: Ajustes = { id: 'general', unidad: 'kg', descansoPorDefectoSeg: 90 }
 

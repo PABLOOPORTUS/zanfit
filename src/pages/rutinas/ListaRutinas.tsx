@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom'
 import BotonFlotante from '../../components/BotonFlotante'
 import { useExercises } from '../../hooks/useExercises'
+import { usePlan } from '../../hooks/usePlan'
 import { useRoutines } from '../../hooks/useRoutines'
 
 export default function ListaRutinas() {
   const rutinas = useRoutines()
   const ejercicios = useExercises()
-  if (rutinas === undefined || ejercicios === undefined) return null
+  const datosPlan = usePlan()
+  if (rutinas === undefined || ejercicios === undefined || datosPlan === undefined) return null
+  const delPlan = new Set(datosPlan?.plan.rutinaIds)
   const nombres = new Map(ejercicios.map((e) => [e.id!, e.nombre]))
 
   return (
@@ -24,6 +27,7 @@ export default function ListaRutinas() {
             return (
               <li key={r.id}>
                 <Link to={`/rutinas/${r.id}`} className="block rounded-2xl border border-borde bg-superficie p-4 active:bg-borde">
+                  {delPlan.has(r.id!) && <p className="text-xs font-bold tracking-wide text-lima uppercase">Tu plan</p>}
                   <p className="font-marca text-2xl leading-tight font-bold tracking-tight break-words">{r.nombre}</p>
                   <p className="mt-1 text-sm text-texto-suave">
                     {r.ejercicios.length} {r.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'} · {series} series

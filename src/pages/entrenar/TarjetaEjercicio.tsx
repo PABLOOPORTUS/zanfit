@@ -1,16 +1,29 @@
 import { useState } from 'react'
-import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie } from '../../db/workouts'
+import SelectorEjercicios from '../../components/SelectorEjercicios'
+import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie, reemplazarEjercicio } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useDescanso } from '../../hooks/useDescanso'
+import { usePanel } from '../../hooks/usePanel'
 import { formatearDescanso, leerNumero } from '../../lib/formato'
 import type { Exercise, WorkoutSet } from '../../types'
 
-type Props = { workoutId: number; exercise: Exercise; sets: WorkoutSet[]; descansoSeg: number }
+type Props = {
+  workoutId: number
+  exercise: Exercise
+  sets: WorkoutSet[]
+  descansoSeg: number
+  anteriores: WorkoutSet[]
+  subePeso: boolean
+  /** Ejercicios que ya están en el entreno (no se ofrecen al reemplazar). */
+  idsEnEntreno: number[]
+}
 
 /** Un ejercicio del entreno en curso: filas peso | reps | check, y botones para agregar o quitar series. */
-export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSeg }: Props) {
+export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSeg, anteriores, subePeso, idsEnEntreno }: Props) {
   const [confirmandoQuitar, setConfirmandoQuitar] = useState(false)
-  const { unidad } = useUnidad()
+  const u = useUnidad()
+  const { unidad } = u
+  const selector = usePanel(`cambiar-${exercise.id}`)
   const completadas = sets.filter((s) => s.completada).length
 
   return (
@@ -24,6 +37,16 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         </div>
         <button
           type="button"
+          onClick={selector.abrir}
+          aria-label={`Cambiar ${exercise.nombre} por otro ejercicio`}
+          className="flex size-12 shrink-0 items-center justify-center rounded-xl text-texto-suave active:bg-borde"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
+          </svg>
+        </button>
+        <button
+          type="button"
           onClick={() => setConfirmandoQuitar((v) => !v)}
           aria-label={`Quitar ${exercise.nombre}`}
           className="flex size-12 shrink-0 items-center justify-center rounded-xl text-texto-suave active:bg-borde"
@@ -33,6 +56,27 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           </svg>
         </button>
       </header>
+
+      {anteriores.length > 0 && (
+        <p className="px-4 pb-2 text-sm text-texto-suave">
+          Última vez: {u.peso(Math.max(...anteriores.map((s) => s.peso)))} × {anteriores.map((s) => s.reps).join(' · ')}
+          {subePeso && <span className="mt-1 block font-semibold text-lima">↑ Completaste todo: hoy sube el peso</span>}
+        </p>
+      )}
+
+      {selector.abierto && (
+        <SelectorEjercicios
+          titulo="Cambiar ejercicio"
+          unico
+          grupoInicial={exercise.grupoMuscular}
+          excluir={idsEnEntreno}
+          onCerrar={selector.cerrar}
+          onAgregar={async ([nuevo]) => {
+            await reemplazarEjercicio(workoutId, exercise.id!, nuevo)
+            selector.cerrar()
+          }}
+        />
+      )}
 
       {confirmandoQuitar && (
         <div className="mx-4 mb-2 rounded-xl border border-peligro/50 bg-peligro/10 p-3">

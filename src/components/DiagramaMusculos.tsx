@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { MUSCULOS, type Musculos } from '../db/mediosEjercicios'
 
 /**
- * Silueta de frente y de espalda con los músculos trabajados (principales en lima, secundarios translúcidos).
+ * Silueta de frente y de espalda con los músculos trabajados (principales en lima, secundarios en lima tenue).
  * Debajo van los nombres, para que la información no dependa solo del color.
  */
 export default function DiagramaMusculos({ musculos }: { musculos: Musculos }) {
@@ -42,7 +42,7 @@ export default function DiagramaMusculos({ musculos }: { musculos: Musculos }) {
         {musculos.secundarios.length > 0 && (
           <div className="flex items-start gap-2">
             <dt className="flex shrink-0 items-center gap-2 text-texto-suave">
-              <span className="size-3 rounded-sm bg-lima/45" aria-hidden /> Secundarios:
+              <span className="size-3 rounded-sm bg-lima/40" aria-hidden /> Secundarios:
             </dt>
             <dd className="font-semibold">{nombres(musculos.secundarios)}</dd>
           </div>

@@ -4,6 +4,7 @@ export type Equipo =
   | 'barra'
   | 'mancuernas'
   | 'maquina'
+  | 'smith'
   | 'polea'
   | 'peso-corporal'
   | 'kettlebell'
@@ -25,6 +26,8 @@ export interface RoutineExercise {
   seriesObjetivo: number
   repsObjetivo: number
   descansoSeg: number
+  /** Peso de partida sugerido por el plan (kg). Solo se usa si el ejercicio todavía no tiene historial. */
+  pesoSugerido?: number
 }
 
 export interface Routine {
@@ -66,4 +69,42 @@ export interface Ajustes {
   unidad: Unidad
   /** Descanso para ejercicios que no vienen de una rutina y para los que se agregan a una rutina. */
   descansoPorDefectoSeg: number
+}
+
+export type Sexo = 'hombre' | 'mujer'
+export type Objetivo = 'musculo' | 'grasa' | 'fuerza' | 'condicion'
+export type Zona = 'piernas-gluteos' | 'brazos' | 'pecho' | 'espalda' | 'hombros' | 'abdomen' | 'general'
+export type Experiencia = 'principiante' | 'intermedio' | 'avanzado'
+export type Lugar = 'gimnasio' | 'casa'
+export type Lesion = 'rodillas' | 'espalda' | 'hombros'
+
+/** Respuestas de la evaluación inicial. Una sola fila (`id: 'general'`) en la tabla `perfil`. */
+export interface Perfil {
+  id: 'general'
+  sexo: Sexo
+  /** Se guarda el año de nacimiento (no la edad) para que la edad se mantenga al día. */
+  anioNacimiento: number
+  pesoKg: number
+  alturaCm: number
+  objetivo: Objetivo
+  zonas: Zona[]
+  experiencia: Experiencia
+  lugar: Lugar
+  diasPorSemana: number
+  minutosPorSesion: number
+  lesiones: Lesion[]
+  /** Respondió "sí" a alguna pregunta de salud: el plan parte más suave y se recomienda consultar a un médico. */
+  precaucion: boolean
+  actualizadoEn: number
+}
+
+export type Division = 'completo' | 'torso-pierna' | 'ppl' | 'ppl-torso-pierna'
+
+/** Plan generado. Una sola fila (`id: 'actual'`) en la tabla `plan`. Sus días son rutinas normales. */
+export interface Plan {
+  id: 'actual'
+  division: Division
+  /** Rutinas del plan en el orden de la semana (Día A, Día B…). */
+  rutinaIds: number[]
+  creadoEn: number
 }

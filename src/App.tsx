@@ -5,6 +5,8 @@ import ProveedorAjustes from './components/ProveedorAjustes'
 import ProveedorDescanso from './components/ProveedorDescanso'
 import Ajustes from './pages/ajustes/Ajustes'
 import Creditos from './pages/ajustes/Creditos'
+import Evaluacion from './pages/evaluacion/Evaluacion'
+import MiPlan from './pages/evaluacion/MiPlan'
 import Entrenar from './pages/entrenar/Entrenar'
 import ResumenEntreno from './pages/entrenar/ResumenEntreno'
 import ListaRutinas from './pages/rutinas/ListaRutinas'
@@ -50,6 +52,8 @@ export default function App() {
             <Route path="/ejercicios/:id/editar" element={<EditarEjercicio />} />
             <Route path="/ajustes" element={<Ajustes />} />
             <Route path="/ajustes/creditos" element={<Creditos />} />
+            <Route path="/evaluacion" element={<Evaluacion />} />
+            <Route path="/plan" element={<MiPlan />} />
             <Route path="*" element={<Navigate to="/entrenar" replace />} />
           </Route>
         </Routes>

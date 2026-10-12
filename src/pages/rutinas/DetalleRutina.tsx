@@ -3,6 +3,7 @@ import BotonVolver from '../../components/BotonVolver'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { duplicarRutina, eliminarRutina } from '../../db/routines'
 import { iniciarEntreno } from '../../db/workouts'
+import { useUnidad } from '../../hooks/useAjustes'
 import { useExercises } from '../../hooks/useExercises'
 import { useRoutine } from '../../hooks/useRoutines'
 import { useEntrenoActivo } from '../../hooks/useWorkouts'
@@ -15,6 +16,7 @@ export default function DetalleRutina() {
   const rutina = useRoutine(id)
   const ejercicios = useExercises()
   const activo = useEntrenoActivo()
+  const u = useUnidad()
 
   if (rutina === undefined || ejercicios === undefined || activo === undefined) return null
   if (rutina === null) return <RutinaNoEncontrada />
@@ -42,7 +44,7 @@ export default function DetalleRutina() {
             <div className="min-w-0 flex-1">
               <p className="text-lg font-semibold">{nombres.get(e.exerciseId) ?? 'Ejercicio eliminado'}</p>
               <p className="text-sm text-texto-suave">
-                {e.seriesObjetivo} × {e.repsObjetivo} reps · descanso {formatearDescanso(e.descansoSeg)}
+                {e.seriesObjetivo} × {e.repsObjetivo} reps{e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso {formatearDescanso(e.descansoSeg)}
               </p>
             </div>
           </li>

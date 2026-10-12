@@ -40,7 +40,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
     <section className="pb-28">
       <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-10 -mx-4 -mt-4 flex items-center gap-3 border-b border-borde bg-fondo/95 px-4 py-3 backdrop-blur">
         <div className="min-w-0 flex-1">
-          <p className="truncate font-marca text-xl font-bold tracking-tight">{workout.nombre}</p>
+          <p className="line-clamp-2 font-marca text-xl leading-tight font-bold tracking-tight">{workout.nombre}</p>
           <p className="text-sm text-texto-suave tabular-nums">
             <span className="font-semibold text-lima">{formatearCronometro(ahora - workout.fechaInicio)}</span> · {completadas}/{total} series
           </p>
@@ -52,7 +52,16 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
 
       <div className="mt-4 flex flex-col gap-4">
         {bloques.map((b) => (
-          <TarjetaEjercicio key={b.exercise.id} workoutId={id} exercise={b.exercise} sets={b.sets} descansoSeg={b.descansoSeg} />
+          <TarjetaEjercicio
+            key={b.exercise.id}
+            workoutId={id}
+            exercise={b.exercise}
+            sets={b.sets}
+            descansoSeg={b.descansoSeg}
+            anteriores={b.anteriores}
+            subePeso={b.subePeso}
+            idsEnEntreno={bloques.map((x) => x.exercise.id!)}
+          />
         ))}
         {bloques.length === 0 && (
           <p className="rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">

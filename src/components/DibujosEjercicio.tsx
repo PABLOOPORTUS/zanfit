@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
+import type { Dibujos } from '../db/mediosEjercicios'
 
-/** Dibujos de Everkinetic (posición inicial y final). Se invierten los colores para que se vean bien en modo oscuro. */
-export default function DibujosEjercicio({ dibujos, nombre }: { dibujos: string[]; nombre: string }) {
+/** Dibujos de Everkinetic (posición inicial y final), ya adaptados al modo oscuro. */
+export default function DibujosEjercicio({ dibujos: { archivos: dibujos, invertir }, nombre }: { dibujos: Dibujos; nombre: string }) {
   const etiquetas = dibujos.length === 2 ? ['Inicio', 'Final'] : ['']
   return (
     <div className="rounded-2xl border border-borde bg-superficie p-3">
@@ -11,7 +12,7 @@ export default function DibujosEjercicio({ dibujos, nombre }: { dibujos: string[
             <img
               src={src}
               alt={`${nombre}${etiquetas[i] ? `: posición de ${etiquetas[i].toLowerCase()}` : ''}`}
-              className={`w-full ${dibujos.length === 1 ? 'max-w-56' : ''} invert`}
+              className={`aspect-[285/200] w-full object-contain ${dibujos.length === 1 ? 'max-w-56' : ''} ${invertir ? 'invert' : ''}`}
               loading="lazy"
             />
             {etiquetas[i] && <figcaption className="mt-1 text-xs font-semibold text-texto-suave">{etiquetas[i]}</figcaption>}
@@ -19,7 +20,7 @@ export default function DibujosEjercicio({ dibujos, nombre }: { dibujos: string[
         ))}
       </div>
       <Link to="/ajustes/creditos" className="inline-flex h-11 items-center text-xs text-texto-suave underline decoration-borde underline-offset-4">
-        Dibujo: Everkinetic / wger · CC BY-SA 3.0
+        Dibujo: Everkinetic · CC BY-SA
       </Link>
     </div>
   )
