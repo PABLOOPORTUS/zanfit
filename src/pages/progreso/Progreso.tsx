@@ -1,6 +1,8 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useFechasEntrenadas, useHistorial, useRecordsPorEjercicio } from '../../hooks/useWorkouts'
+import Medalla from '../../components/Medalla'
 import { useUnidad } from '../../hooks/useAjustes'
+import { useLogros } from '../../hooks/useLogros'
 import { formatearDuracion, formatearFecha } from '../../lib/formato'
 import CalendarioEntrenos from './CalendarioEntrenos'
 
@@ -9,7 +11,8 @@ const diaSemana = new Intl.DateTimeFormat('es-CL', { weekday: 'short' })
 
 export default function Progreso() {
   const [params, setParams] = useSearchParams()
-  const vista = params.get('vista') === 'records' ? 'records' : 'historial'
+  const vistaParam = params.get('vista')
+  const vista = vistaParam === 'records' || vistaParam === 'logros' ? vistaParam : 'historial'
   const fechas = useFechasEntrenadas()
 
   if (fechas === undefined) return null
@@ -22,22 +25,22 @@ export default function Progreso() {
         <CalendarioEntrenos fechas={fechas} />
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-1 rounded-2xl border border-borde bg-superficie p-1" role="tablist">
-        {(['historial', 'records'] as const).map((v) => (
+      <div className="mt-6 grid grid-cols-3 gap-1 rounded-2xl border border-borde bg-superficie p-1" role="tablist">
+        {(['historial', 'records', 'logros'] as const).map((v) => (
           <button
             key={v}
             type="button"
             role="tab"
             aria-selected={vista === v}
-            onClick={() => setParams(v === 'records' ? { vista: v } : {}, { replace: true })}
+            onClick={() => setParams(v === 'historial' ? {} : { vista: v }, { replace: true })}
             className={`h-12 rounded-xl font-semibold ${vista === v ? 'bg-lima text-fondo' : 'text-texto-suave active:bg-borde'}`}
           >
-            {v === 'historial' ? 'Historial' : 'Récords'}
+            {{ historial: 'Historial', records: 'Récords', logros: 'Logros' }[v]}
           </button>
         ))}
       </div>
 
-      <div className="mt-4">{vista === 'historial' ? <Historial /> : <Records />}</div>
+      <div className="mt-4">{vista === 'historial' ? <Historial /> : vista === 'records' ? <Records /> : <Logros />}</div>
     </section>
   )
 }
@@ -113,6 +116,44 @@ function Records() {
         ))}
       </ul>
     </>
+  )
+}
+
+function Logros() {
+  const logros = useLogros()
+  if (logros === undefined) return null
+  const ganados = logros.filter((l) => l.desbloqueado)
+  const siguiente = logros.filter((l) => !l.desbloqueado).sort((a, b) => b.progreso / b.meta - a.progreso / a.meta)[0]
+  const miles = new Intl.NumberFormat('es-CL')
+  const n = (l: (typeof logros)[number]) => (l.categoria === 'volumen' ? `${miles.format(Math.round(l.progreso / 1000))}/${miles.format(l.meta / 1000)} t` : `${l.progreso}/${l.meta}`)
+  return (
+    <div>
+      <p className="px-1 text-texto-suave">
+        Tienes <span className="font-semibold text-texto">{ganados.length}</span> de {logros.length} logros.
+        {siguiente && <> El próximo: <span className="font-semibold text-lima">{siguiente.titulo}</span> ({n(siguiente)}).</>}
+      </p>
+      <ul className="mt-3 flex flex-col gap-2">
+        {[...ganados.sort((a, b) => b.desbloqueado!.fecha - a.desbloqueado!.fecha), ...logros.filter((l) => !l.desbloqueado)].map((l) => (
+          <li key={l.id} className={`flex items-center gap-3 rounded-2xl border p-3 ${l.desbloqueado ? 'border-lima/40 bg-superficie' : 'border-borde bg-superficie'}`}>
+            <Medalla categoria={l.categoria} ganada={!!l.desbloqueado} />
+            <div className="min-w-0 flex-1">
+              <p className={`font-semibold ${l.desbloqueado ? '' : 'text-texto-suave'}`}>{l.titulo}</p>
+              <p className="text-sm text-texto-suave">{l.descripcion}</p>
+              {l.desbloqueado ? (
+                <p className="mt-0.5 text-xs font-semibold text-lima">Ganado el {formatearFecha(l.desbloqueado.fecha)}</p>
+              ) : (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-borde">
+                    <span className="block h-full rounded-full bg-lima/70" style={{ width: `${(l.progreso / l.meta) * 100}%` }} />
+                  </span>
+                  <span className="text-xs text-texto-suave tabular-nums">{n(l)}</span>
+                </div>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 

@@ -105,3 +105,15 @@ export function procesarMedio(archivo: File, alProgresar?: (p: number) => void):
   if (archivo.type.startsWith('image/')) return procesarFoto(archivo)
   return Promise.reject(new Error('El archivo no es una foto ni un video.'))
 }
+
+/** Foto de perfil: recorte cuadrado al centro, 256 px, JPEG. Devuelve un data URL (se guarda junto a los ajustes). */
+export async function procesarFotoPerfil(archivo: File): Promise<string> {
+  if (!archivo.type.startsWith('image/')) throw new Error('Elige una foto.')
+  const img = await createImageBitmap(archivo)
+  const lado = Math.min(img.width, img.height)
+  const c = document.createElement('canvas')
+  c.width = c.height = 256
+  c.getContext('2d')!.drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 256, 256)
+  img.close()
+  return c.toDataURL('image/jpeg', 0.85)
+}

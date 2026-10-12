@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProveedorAjustes from './components/ProveedorAjustes'
+import ProveedorCuenta from './components/ProveedorCuenta'
+import Cuenta from './pages/cuenta/Cuenta'
 import ProveedorDescanso from './components/ProveedorDescanso'
 import Ajustes from './pages/ajustes/Ajustes'
 import Creditos from './pages/ajustes/Creditos'
@@ -25,39 +27,42 @@ const ProgresoEjercicio = lazy(() => import('./pages/progreso/ProgresoEjercicio'
 
 export default function App() {
   return (
-    <ProveedorAjustes>
-      <ProveedorDescanso>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route index element={<Navigate to="/entrenar" replace />} />
-            <Route path="/entrenar" element={<Entrenar />} />
-            <Route path="/entrenar/resumen/:id" element={<ResumenEntreno />} />
-            <Route path="/rutinas" element={<ListaRutinas />} />
-            <Route path="/rutinas/nueva" element={<NuevaRutina />} />
-            <Route path="/rutinas/:id" element={<DetalleRutina />} />
-            <Route path="/rutinas/:id/editar" element={<EditarRutina />} />
-            <Route path="/progreso" element={<Progreso />} />
-            <Route path="/progreso/entrenos/:id" element={<DetalleEntreno />} />
-            <Route
-              path="/progreso/ejercicios/:id"
-              element={
-                <Suspense fallback={null}>
-                  <ProgresoEjercicio />
-                </Suspense>
-              }
-            />
-            <Route path="/ejercicios" element={<ListaEjercicios />} />
-            <Route path="/ejercicios/nuevo" element={<NuevoEjercicio />} />
-            <Route path="/ejercicios/:id" element={<DetalleEjercicio />} />
-            <Route path="/ejercicios/:id/editar" element={<EditarEjercicio />} />
-            <Route path="/ajustes" element={<Ajustes />} />
-            <Route path="/ajustes/creditos" element={<Creditos />} />
-            <Route path="/evaluacion" element={<Evaluacion />} />
-            <Route path="/plan" element={<MiPlan />} />
-            <Route path="*" element={<Navigate to="/entrenar" replace />} />
-          </Route>
-        </Routes>
-      </ProveedorDescanso>
-    </ProveedorAjustes>
+    <ProveedorCuenta>
+      <ProveedorAjustes>
+        <ProveedorDescanso>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<Navigate to="/entrenar" replace />} />
+              <Route path="/entrenar" element={<Entrenar />} />
+              <Route path="/entrenar/resumen/:id" element={<ResumenEntreno />} />
+              <Route path="/rutinas" element={<ListaRutinas />} />
+              <Route path="/rutinas/nueva" element={<NuevaRutina />} />
+              <Route path="/rutinas/:id" element={<DetalleRutina />} />
+              <Route path="/rutinas/:id/editar" element={<EditarRutina />} />
+              <Route path="/progreso" element={<Progreso />} />
+              <Route path="/progreso/entrenos/:id" element={<DetalleEntreno />} />
+              <Route
+                path="/progreso/ejercicios/:id"
+                element={
+                  <Suspense fallback={null}>
+                    <ProgresoEjercicio />
+                  </Suspense>
+                }
+              />
+              <Route path="/ejercicios" element={<ListaEjercicios />} />
+              <Route path="/ejercicios/nuevo" element={<NuevoEjercicio />} />
+              <Route path="/ejercicios/:id" element={<DetalleEjercicio />} />
+              <Route path="/ejercicios/:id/editar" element={<EditarEjercicio />} />
+              <Route path="/ajustes" element={<Ajustes />} />
+              <Route path="/ajustes/creditos" element={<Creditos />} />
+              <Route path="/cuenta" element={<Cuenta />} />
+              <Route path="/evaluacion" element={<Evaluacion />} />
+              <Route path="/plan" element={<MiPlan />} />
+              <Route path="*" element={<Navigate to="/entrenar" replace />} />
+            </Route>
+          </Routes>
+        </ProveedorDescanso>
+      </ProveedorAjustes>
+    </ProveedorCuenta>
   )
 }

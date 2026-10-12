@@ -1,4 +1,4 @@
-import { db } from '.'
+import { db, type BaseZanfit } from '.'
 import { fechaArchivo } from '../lib/compartir'
 import type { Ajustes, Exercise, Perfil, Plan, Routine, Workout, WorkoutSet } from '../types'
 
@@ -21,19 +21,19 @@ export interface Respaldo {
   }
 }
 
-export async function crearRespaldo(): Promise<Respaldo> {
-  return db.transaction('r', [db.exercises, db.routines, db.workouts, db.sets, db.ajustes, db.perfil, db.plan], async () => ({
+export async function crearRespaldo(base: BaseZanfit = db): Promise<Respaldo> {
+  return base.transaction('r', [base.exercises, base.routines, base.workouts, base.sets, base.ajustes, base.perfil, base.plan], async () => ({
     app: 'zanfit',
     formato: FORMATO,
     exportadoEn: Date.now(),
     datos: {
-      exercises: await db.exercises.toArray(),
-      routines: await db.routines.toArray(),
-      workouts: await db.workouts.toArray(),
-      sets: await db.sets.toArray(),
-      ajustes: await db.ajustes.toArray(),
-      perfil: await db.perfil.toArray(),
-      plan: await db.plan.toArray(),
+      exercises: await base.exercises.toArray(),
+      routines: await base.routines.toArray(),
+      workouts: await base.workouts.toArray(),
+      sets: await base.sets.toArray(),
+      ajustes: await base.ajustes.toArray(),
+      perfil: await base.perfil.toArray(),
+      plan: await base.plan.toArray(),
     },
   }))
 }
@@ -78,17 +78,17 @@ export function leerRespaldo(texto: string): Respaldo {
 }
 
 /** Reemplaza TODOS los datos por los del respaldo, en una sola transacción (si algo falla, no cambia nada). */
-export async function restaurarRespaldo(respaldo: Respaldo): Promise<void> {
+export async function restaurarRespaldo(respaldo: Respaldo, base: BaseZanfit = db): Promise<void> {
   const { datos } = respaldo
-  const tablas = [db.exercises, db.routines, db.workouts, db.sets, db.ajustes, db.perfil, db.plan]
-  await db.transaction('rw', tablas, async () => {
+  const tablas = [base.exercises, base.routines, base.workouts, base.sets, base.ajustes, base.perfil, base.plan]
+  await base.transaction('rw', tablas, async () => {
     await Promise.all(tablas.map((t) => t.clear()))
-    await db.exercises.bulkAdd(datos.exercises)
-    await db.routines.bulkAdd(datos.routines)
-    await db.workouts.bulkAdd(datos.workouts)
-    await db.sets.bulkAdd(datos.sets)
-    await db.ajustes.bulkAdd(datos.ajustes)
-    await db.perfil.bulkAdd(datos.perfil)
-    await db.plan.bulkAdd(datos.plan)
+    await base.exercises.bulkAdd(datos.exercises)
+    await base.routines.bulkAdd(datos.routines)
+    await base.workouts.bulkAdd(datos.workouts)
+    await base.sets.bulkAdd(datos.sets)
+    await base.ajustes.bulkAdd(datos.ajustes)
+    await base.perfil.bulkAdd(datos.perfil)
+    await base.plan.bulkAdd(datos.plan)
   })
 }

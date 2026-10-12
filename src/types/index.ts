@@ -69,6 +69,8 @@ export interface Ajustes {
   unidad: Unidad
   /** Descanso para ejercicios que no vienen de una rutina y para los que se agregan a una rutina. */
   descansoPorDefectoSeg: number
+  /** Foto de perfil: JPEG cuadrado de 256 px como data URL (~15 kB). Viaja con el resto de los datos al sincronizar. */
+  fotoPerfil?: string
 }
 
 export type Sexo = 'hombre' | 'mujer'

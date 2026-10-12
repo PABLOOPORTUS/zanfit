@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import MetaSemanal from '../../components/MetaSemanal'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import { iniciarEntreno } from '../../db/workouts'
 import { useExercises } from '../../hooks/useExercises'
+import { useCuenta } from '../../hooks/useCuenta'
 import { usePerfil, usePlan } from '../../hooks/usePlan'
 import { useRoutines } from '../../hooks/useRoutines'
 import { useUltimoEntreno } from '../../hooks/useWorkouts'
@@ -13,6 +15,7 @@ export default function ElegirEntreno() {
   const perfil = usePerfil()
   const datosPlan = usePlan()
   const ejercicios = useExercises()
+  const { usuario } = useCuenta()
   if (rutinas === undefined || ultimo === undefined || perfil === undefined || datosPlan === undefined || ejercicios === undefined) return null
   const porId = new Map(ejercicios.map((e) => [e.id!, e]))
   const hoy = datosPlan?.rutinas.find((r) => r.id === datosPlan.siguienteId)
@@ -20,15 +23,19 @@ export default function ElegirEntreno() {
 
   return (
     <section>
-      <h1 className="font-marca text-3xl font-bold tracking-tight">Entrenar</h1>
+      <h1 className="font-marca text-3xl font-bold tracking-tight">{usuario ? `Hola, ${usuario.nombre}` : 'Entrenar'}</h1>
       {ultimo && (
         <p className="mt-1 text-texto-suave">
           Último entreno: {ultimo.nombre}, {formatearFecha(ultimo.fechaInicio)}
         </p>
       )}
 
+      <div className="mt-4">
+        <MetaSemanal />
+      </div>
+
       {hoy ? (
-        <div className="mt-6 rounded-2xl border border-lima bg-lima/10 p-4">
+        <div className="mt-4 rounded-2xl border border-lima bg-lima/10 p-4">
           <p className="text-sm font-bold tracking-wide text-lima uppercase">Tu plan · Hoy te toca</p>
           <p className="mt-1 font-marca text-2xl leading-tight font-bold tracking-tight">{hoy.nombre.replace(/^Plan · /, '')}</p>
           <p className="text-sm text-texto-suave">{hoy.ejercicios.length} ejercicios</p>
@@ -107,6 +114,14 @@ export default function ElegirEntreno() {
         Entreno libre
       </button>
       <p className="mt-2 text-center text-sm text-texto-suave">Sin rutina: agregas los ejercicios sobre la marcha.</p>
+
+      {!usuario && (
+        <Link to="/cuenta?modo=registro" className="mt-8 block rounded-2xl border border-borde bg-superficie p-4 active:bg-borde">
+          <p className="font-semibold">No pierdas tu progreso</p>
+          <p className="mt-1 text-sm text-texto-suave">Crea tu cuenta gratis y guarda tus entrenos, récords y logros en la nube.</p>
+          <span className="mt-2 inline-block font-semibold text-lima">Crear cuenta ›</span>
+        </Link>
+      )}
     </section>
   )
 }

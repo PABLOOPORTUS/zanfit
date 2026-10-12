@@ -43,7 +43,7 @@ Antes de dar algo por terminado, corre `npm run build`, que también hace el che
 
 ## Modelo de datos (Dexie, `src/db/index.ts`)
 
-Esquema actual: **v7**.
+Esquema actual: **v7** (local, por usuario). En la nube, una sola tabla: `datos_usuario`.
 
 | Tabla | Campos | Índices |
 | --- | --- | --- |
@@ -99,6 +99,29 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
   - Rutinas: etiqueta "Tu plan".
   - Ajustes: "Mi evaluación y plan".
 - **Si agregas ejercicios al catálogo:** clasifícalos en `CLASIFICACION`. Si no, el generador no los usa.
+
+## Cuentas y sincronización (Supabase)
+
+- **Proyecto:** `pjjjfonkccmhrswujysy`. URL y clave `anon` en `src/lib/supabase.ts`; son públicas por diseño y se pueden sobrescribir con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. **Nunca poner la `service_role` en el código.**
+- **Tabla:** `public.datos_usuario` (`supabase/esquema.sql`), con una fila por usuario: `datos` (jsonb con el mismo formato del respaldo JSON) y `actualizado_en`. RLS: cada usuario solo ve y modifica su fila. Si la tabla no existe, la app muestra "Falta crear la tabla en Supabase".
+- **Ingreso:** correo y **PIN de 6 números** elegido por el usuario (es la contraseña de Supabase), más nombre en `user_metadata.nombre`. La cuenta es **opcional**. Hay un bloqueo local de 1 minuto tras 5 intentos fallidos, además del límite de Supabase. "Confirm email" debe estar **apagado** en Supabase: el correo gratis está muy limitado. Todavía no hay recuperación de PIN.
+- **Una base local por persona:** sin cuenta, `zanfit`; con cuenta, `zanfit-u-<id>`. `db` es un `let` exportado y `usarBase()` lo cambia. `ProveedorCuenta` vuelve a montar toda la app (`<Fragment key={base}>`) para que nada siga leyendo la base anterior. Al cerrar sesión se vuelve a `zanfit`.
+- **Sincronización (`db/nube.ts`):** se sube la copia completa (`crearRespaldo`) y gana lo más reciente.
+  - Los hooks de Dexie anotan en `localStorage` (`zanfit:cambio:<base>`) que hay cambios por subir, salvo durante `populate` y al restaurar desde la nube (`sinAnotarCambios`).
+  - Se sincroniza 4 s después de cada cambio, al volver la conexión, al ocultar la app con cambios pendientes y al iniciar sesión.
+  - Si la nube es más nueva que lo último conocido y aquí no hay cambios más nuevos, se baja; si no, se sube.
+  - Las **fotos y videos propios no se sincronizan** (se comparten con el archivo de Ajustes).
+- **Primer ingreso:** si la nube está vacía y hay datos sin cuenta en el teléfono, se pregunta si guardarlos en la cuenta (`copiarInvitadoAUsuario`, que copia también las fotos y videos) o empezar de cero.
+- **Supabase se carga bajo demanda (`lib/clienteNube.ts`):** son unos 215 kB en un chunk aparte. Sin sesión guardada nunca se descarga.
+- **Foto de perfil:** `ajustes.fotoPerfil`, un JPEG cuadrado de 256 px como data URL. Viaja con la sincronización y se muestra en el encabezado (`<Avatar>`).
+- **Pruebas:** el login se prueba con un Supabase **simulado** (Puppeteer intercepta `*.supabase.co`). No crear cuentas de prueba en el proyecto real.
+
+## Motivación
+
+- **Meta semanal (`<MetaSemanal>` en Entrenar):** muestra los entrenos de esta semana (lunes a domingo) contra la meta. La meta sale de los días por semana de la evaluación; si no hay evaluación, de los días del plan; si tampoco, es 3. Incluye la racha de semanas y un mensaje según el avance (`mensajeSemana`).
+- **Logros (`lib/logros.ts`, `calcularLogros`):** 17 medallas en 5 categorías: entrenos (1, 5, 10, 25, 50, 100), racha de semanas (2, 4, 8, 12), récords (1, 10, 50), toneladas levantadas (10, 50, 100, 500) y semanas con el plan completo (1, 4; solo si hay plan). **No se guardan:** se calculan recorriendo el historial en orden, así que funcionan con entrenos antiguos y después de importar un respaldo. Cada logro sabe en qué entreno se desbloqueó. Los récords se cuentan igual que `recordsDelEntreno`: la primera vez que haces un ejercicio no cuenta.
+- **Al terminar un entreno (`ResumenEntreno`):** muestra la equivalencia del peso total ("más que un auto", `equivalencia`) y los logros desbloqueados en ese entreno, con la animación `animate-aparecer`, que respeta `prefers-reduced-motion`.
+- **Progreso → pestaña Logros (`?vista=logros`):** los ganados con su fecha, los pendientes con barra de progreso y el próximo más cercano.
 
 ## Estructura de carpetas
 

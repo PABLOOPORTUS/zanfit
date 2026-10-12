@@ -5,11 +5,14 @@ import Stepper from '../../components/Stepper'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { guardarAjustes } from '../../db'
 import { crearRespaldo, leerRespaldo, nombreArchivoRespaldo, restaurarRespaldo, type Respaldo } from '../../db/respaldo'
+import Avatar from '../../components/Avatar'
 import { exportarMedios, importarMedios } from '../../db/medios'
+import { procesarFotoPerfil } from '../../lib/medios'
 import { compartirArchivo, fechaArchivo } from '../../lib/compartir'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db'
 import { useAjustes } from '../../hooks/useAjustes'
+import { useCuenta } from '../../hooks/useCuenta'
 import { useDescanso } from '../../hooks/useDescanso'
 import { formatearDescanso, formatearFecha } from '../../lib/formato'
 import type { Unidad } from '../../types'
@@ -114,6 +117,8 @@ export default function Ajustes() {
   return (
     <section className="flex flex-col gap-8">
       <h1 className="font-marca text-3xl font-bold tracking-tight">Ajustes</h1>
+
+      <SeccionCuenta />
 
       <SelectorOpciones leyenda="Unidad de peso" opciones={UNIDADES} valor={ajustes.unidad} onChange={(unidad) => guardarAjustes({ unidad })} columnas={2} />
 
@@ -238,4 +243,115 @@ export default function Ajustes() {
 
 function contar(n: number, singular: string, plural: string) {
   return `${n} ${n === 1 ? singular : plural}`
+}
+
+const TEXTO_ESTADO = {
+  sincronizado: 'Todo guardado en la nube',
+  sincronizando: 'Guardando en la nube…',
+  pendiente: 'Hay cambios por subir',
+  'sin-conexion': 'Sin conexión: se subirá al volver internet',
+  error: 'No se pudo sincronizar',
+} as const
+
+function SeccionCuenta() {
+  const cuenta = useCuenta()
+  const [saliendo, setSaliendo] = useState(false)
+  if (!cuenta.usuario) {
+    return (
+      <div className="rounded-2xl border border-lima/60 bg-superficie p-4">
+        <p className="font-marca text-xl font-bold">Guarda tu progreso en la nube</p>
+        <p className="mt-1 text-texto-suave">Con una cuenta no pierdes tus entrenos si cambias de teléfono, y cada persona lleva su propio progreso.</p>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <Link to="/cuenta?modo=registro" className="flex h-14 items-center justify-center rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
+            Crear cuenta
+          </Link>
+          <Link to="/cuenta" className="flex h-14 items-center justify-center rounded-2xl border border-borde font-semibold active:bg-borde">
+            Ingresar
+          </Link>
+        </div>
+      </div>
+    )
+  }
+  const { usuario, estado, ultimaSync } = cuenta
+  return (
+    <div className="rounded-2xl border border-borde bg-superficie p-4">
+      <div className="flex items-center gap-3">
+        <FotoPerfil />
+        <div className="min-w-0">
+          <p className="truncate font-semibold">{usuario.nombre}</p>
+          <p className="truncate text-sm text-texto-suave">{usuario.correo}</p>
+        </div>
+      </div>
+      <p className={`mt-3 text-sm ${estado === 'error' ? 'text-peligro' : estado === 'sincronizado' ? 'text-lima' : 'text-texto-suave'}`} role="status">
+        {TEXTO_ESTADO[estado]}
+        {estado === 'error' && cuenta.mensajeError ? `: ${cuenta.mensajeError}` : ''}
+        {estado === 'sincronizado' && ultimaSync ? ` · ${formatearHoraCorta(ultimaSync)}` : ''}
+      </p>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <button type="button" onClick={cuenta.sincronizarAhora} disabled={estado === 'sincronizando'} className="h-14 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50">
+          Sincronizar
+        </button>
+        <button
+          type="button"
+          disabled={saliendo}
+          onClick={async () => {
+            setSaliendo(true)
+            await cuenta.cerrarSesion()
+          }}
+          className="h-14 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50"
+        >
+          Cerrar sesión
+        </button>
+      </div>
+      <p className="mt-3 text-sm text-texto-suave">Para usar la app con otra persona en este teléfono, cierra sesión y que ella ingrese con su cuenta.</p>
+    </div>
+  )
+}
+
+function formatearHoraCorta(t: number) {
+  return new Intl.DateTimeFormat('es-CL', { hour: '2-digit', minute: '2-digit' }).format(t)
+}
+
+/** Foto de perfil: tocarla abre la cámara o la galería. Se guarda recortada (256 px) junto a los ajustes y se sincroniza. */
+function FotoPerfil() {
+  const { fotoPerfil } = useAjustes()
+  const input = useRef<HTMLInputElement>(null)
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <div className="flex shrink-0 flex-col items-center">
+      <button type="button" onClick={() => input.current?.click()} aria-label={fotoPerfil ? 'Cambiar foto de perfil' : 'Agregar foto de perfil'} className="relative rounded-full active:opacity-80">
+        <Avatar className="size-16 text-2xl" />
+        <span className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-superficie bg-lima text-fondo" aria-hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+            <circle cx="12" cy="13" r="3.5" />
+          </svg>
+        </span>
+      </button>
+      {fotoPerfil && (
+        <button type="button" onClick={() => guardarAjustes({ fotoPerfil: undefined })} className="mt-1 h-11 px-2 text-xs text-texto-suave underline underline-offset-4">
+          Quitar
+        </button>
+      )}
+      {error && <p className="mt-1 text-xs text-peligro">{error}</p>}
+      <input
+        ref={input}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-label="Elegir foto de perfil"
+        onChange={async (e) => {
+          const archivo = e.target.files?.[0]
+          e.target.value = ''
+          if (!archivo) return
+          try {
+            setError(null)
+            await guardarAjustes({ fotoPerfil: await procesarFotoPerfil(archivo) })
+          } catch (err) {
+            setError((err as Error).message || 'No se pudo usar esa foto.')
+          }
+        }}
+      />
+    </div>
+  )
 }
