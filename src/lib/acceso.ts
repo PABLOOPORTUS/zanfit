@@ -7,12 +7,15 @@ import { generarCodigo } from './codigos'
  * además rechaza guardar datos de cuentas sin acceso (RLS), así que saltarse la app no sirve de mucho.
  */
 
-export type EstadoCuenta = 'prueba' | 'activa' | 'bloqueada' | 'sin-cuenta'
+/** pendiente: reservado (cuentas que esperan activación sin prueba); hoy las cuentas nuevas parten en prueba. */
+export type EstadoCuenta = 'pendiente' | 'prueba' | 'activa' | 'bloqueada' | 'sin-cuenta'
 
 export interface Acceso {
   estado: EstadoCuenta
   /** Fin de la prueba (ms). */
   pruebaHasta: number | null
+  /** Fin del período pagado (ms); `null` = sin vencimiento. */
+  activaHasta?: number | null
   admin: boolean
   /** Cuándo se revisó con la nube (ms). */
   revisado: number
@@ -29,8 +32,9 @@ export interface Cuenta {
   user_id: string
   nombre: string
   correo: string
-  estado: 'prueba' | 'activa' | 'bloqueada'
+  estado: 'pendiente' | 'prueba' | 'activa' | 'bloqueada'
   prueba_hasta: string | null
+  activa_hasta: string | null
   codigo: string | null
   nota: string
   creada_en: string
@@ -65,9 +69,9 @@ function guardar(uid: string, acceso: Acceso) {
   }
 }
 
-/** ¿Puede usar la app? Cuenta activa o prueba vigente. */
-export const puedeUsar = (a: Pick<Acceso, 'estado' | 'pruebaHasta'>, ahora = Date.now()) =>
-  a.estado === 'activa' || (a.estado === 'prueba' && (a.pruebaHasta ?? 0) > ahora)
+/** ¿Puede usar la app? Cuenta activa (sin vencer) o prueba vigente. */
+export const puedeUsar = (a: Pick<Acceso, 'estado' | 'pruebaHasta' | 'activaHasta'>, ahora = Date.now()) =>
+  (a.estado === 'activa' && (a.activaHasta == null || a.activaHasta > ahora)) || (a.estado === 'prueba' && (a.pruebaHasta ?? 0) > ahora)
 
 export const diasRestantes = (pruebaHasta: number | null, ahora = Date.now()) => Math.max(0, Math.ceil(((pruebaHasta ?? 0) - ahora) / 86_400_000))
 
@@ -83,7 +87,7 @@ export async function revisarAcceso(uid: string): Promise<Acceso | null> {
   try {
     const sb = await cliente()
     const [cuenta, admin] = await Promise.all([
-      sb.from('cuentas').select('estado, prueba_hasta').eq('user_id', uid).maybeSingle(),
+      sb.from('cuentas').select('*').eq('user_id', uid).maybeSingle(),
       sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle(),
     ])
     if (sinTablas(cuenta.error)) {
@@ -92,10 +96,11 @@ export async function revisarAcceso(uid: string): Promise<Acceso | null> {
       return acceso
     }
     if (cuenta.error) return accesoGuardado(uid)
-    const fila = cuenta.data as { estado: Acceso['estado']; prueba_hasta: string | null } | null
+    const fila = cuenta.data as { estado: Acceso['estado']; prueba_hasta: string | null; activa_hasta?: string | null } | null
     const acceso: Acceso = {
       estado: fila?.estado ?? 'sin-cuenta',
       pruebaHasta: fila?.prueba_hasta ? new Date(fila.prueba_hasta).getTime() : null,
+      activaHasta: fila?.activa_hasta ? new Date(fila.activa_hasta).getTime() : null,
       admin: !!admin.data,
       revisado: Date.now(),
     }
@@ -129,14 +134,14 @@ const MENSAJES_REGISTRO: Record<string, string> = {
   'sin-configurar': 'El registro todavía no está habilitado. Pídele ayuda a quien te dio el código.',
 }
 
-/** Crea la cuenta en `api/registro`. Lanza un Error con un mensaje para el usuario si no se pudo. */
+/** Crea la cuenta en `api/registro` (código opcional: sin código parte en prueba). Lanza un Error con un mensaje para el usuario si no se pudo. */
 export async function registrarConCodigo(nombre: string, correo: string, pin: string, codigo: string): Promise<void> {
   let r: Response
   try {
     r = await fetch('/api/registro', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ nombre: nombre.trim(), correo: correo.trim(), pin, codigo }),
+      body: JSON.stringify({ nombre: nombre.trim(), correo: correo.trim(), pin, ...(codigo && { codigo }) }),
     })
   } catch {
     throw new Error('No hay conexión. Revisa tu internet e intenta de nuevo.')
@@ -182,9 +187,40 @@ export async function borrarCodigo(codigo: string): Promise<void> {
 
 export async function actualizarCuenta(
   uid: string,
-  cambios: Partial<Pick<Cuenta, 'estado' | 'prueba_hasta' | 'nota' | 'activada_en'>>,
+  cambios: Partial<Pick<Cuenta, 'estado' | 'prueba_hasta' | 'activa_hasta' | 'nota' | 'activada_en'>>,
 ): Promise<void> {
   revisar(await (await tabla('cuentas')).update(cambios).eq('user_id', uid))
+}
+
+/** Períodos para activar una cuenta (`dias: null` = sin vencimiento). */
+export const PERIODOS: { etiqueta: string; dias: number | null }[] = [
+  { etiqueta: '1 mes', dias: 30 },
+  { etiqueta: '3 meses', dias: 91 },
+  { etiqueta: '6 meses', dias: 182 },
+  { etiqueta: '1 año', dias: 365 },
+  { etiqueta: 'Sin vencimiento', dias: null },
+]
+
+/**
+ * Activa una cuenta por un período (al confirmar el pago). Si ya estaba activa con tiempo por delante, el período se
+ * suma desde el vencimiento actual (renovar antes de tiempo no hace perder días).
+ */
+export async function activarPor(cuenta: Pick<Cuenta, 'user_id' | 'estado' | 'activa_hasta'>, dias: number | null): Promise<void> {
+  const ahora = Date.now()
+  const base = cuenta.estado === 'activa' && cuenta.activa_hasta ? Math.max(ahora, new Date(cuenta.activa_hasta).getTime()) : ahora
+  return actualizarCuenta(cuenta.user_id, {
+    estado: 'activa',
+    activa_hasta: dias === null ? null : new Date(base + dias * 86_400_000).toISOString(),
+    activada_en: new Date().toISOString(),
+  })
+}
+
+/** Sigue esperando pago: prueba vencida, activa vencida o pendiente. */
+export function esperaPago(c: Pick<Cuenta, 'estado' | 'prueba_hasta' | 'activa_hasta'>, ahora = Date.now()): boolean {
+  if (c.estado === 'pendiente') return true
+  if (c.estado === 'prueba') return new Date(c.prueba_hasta ?? 0).getTime() <= ahora
+  if (c.estado === 'activa') return !!c.activa_hasta && new Date(c.activa_hasta).getTime() <= ahora
+  return false
 }
 
 export async function guardarDatosVenta(datos: DatosVenta): Promise<void> {

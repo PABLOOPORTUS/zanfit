@@ -12,6 +12,9 @@ import {
   guardarDatosVenta,
   listarCodigos,
   listarCuentas,
+  activarPor,
+  esperaPago,
+  PERIODOS,
   type Codigo,
   type Cuenta,
   type DatosVenta,
@@ -73,15 +76,20 @@ function Panel() {
     }
   }
   const pendientes = codigos?.filter((c) => !c.usado_por) ?? []
-  const enPrueba = cuentas?.filter((c) => c.estado === 'prueba').length ?? 0
-  const activas = cuentas?.filter((c) => c.estado === 'activa').length ?? 0
+  const lista = cuentas ?? []
+  const porConfirmar = lista.filter((c) => esperaPago(c))
+  const enPruebaLista = lista.filter((c) => c.estado === 'prueba' && !esperaPago(c))
+  const activasLista = lista.filter((c) => c.estado === 'activa' && !esperaPago(c))
+  const pausadas = lista.filter((c) => c.estado === 'bloqueada')
+  const enPrueba = enPruebaLista.length
+  const activas = activasLista.length
 
   return (
     <section className="pb-10">
       <BotonVolver to="/ajustes">Ajustes</BotonVolver>
       <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">Administración</h1>
       <p className="mt-1 text-texto-suave">
-        {activas} {activas === 1 ? 'cuenta activa' : 'cuentas activas'} · {enPrueba} en prueba
+        {activas} {activas === 1 ? 'cuenta activa' : 'cuentas activas'} · {enPrueba} en prueba · {porConfirmar.length} por activar
       </p>
       {error && (
         <p className="mt-3 rounded-xl border border-peligro/50 bg-peligro/10 p-3 text-sm" role="alert">
@@ -89,53 +97,33 @@ function Panel() {
         </p>
       )}
 
-      <NuevoCodigo onCreado={cargar} />
+      <Titulo>
+        Pendientes de activación
+        {porConfirmar.length > 0 && <span className="ml-2 rounded-full bg-lima px-2 py-0.5 text-fondo">{porConfirmar.length}</span>}
+      </Titulo>
+      <p className="mb-3 text-sm text-texto-suave">
+        Terminaron su prueba o su período. Cuando confirmes el pago, actívalos por el período que pagaron.
+      </p>
+      <ListaCuentas cuentas={cuentas && porConfirmar} vacio="No hay nadie esperando activación." onAccion={accion} />
 
-      <Titulo>Cuentas</Titulo>
-      {cuentas === null ? (
-        <p className="text-texto-suave">Cargando…</p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {cuentas.map((c) => {
-            const quedan = diasRestantes(c.prueba_hasta ? new Date(c.prueba_hasta).getTime() : null)
-            const vencida = c.estado === 'prueba' && quedan === 0
-            return (
-              <li key={c.user_id} className="rounded-2xl border border-borde bg-superficie p-4">
-                <div className="flex items-start gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{c.nombre || 'Sin nombre'}</p>
-                    <p className="truncate text-sm text-texto-suave">{c.correo}</p>
-                  </div>
-                  <Estado estado={c.estado} vencida={vencida} quedan={quedan} />
-                </div>
-                <p className="mt-1 text-xs text-texto-suave">
-                  Desde {formatearFecha(new Date(c.creada_en).getTime())}
-                  {c.codigo ? ` · ${c.codigo}` : ''}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {c.estado !== 'activa' && (
-                    <Boton principal onClick={accion(() => actualizarCuenta(c.user_id, { estado: 'activa', activada_en: new Date().toISOString() }))}>
-                      Activar (pagó)
-                    </Boton>
-                  )}
-                  {c.estado === 'prueba' && (
-                    <Boton
-                      onClick={accion(() =>
-                        actualizarCuenta(c.user_id, {
-                          prueba_hasta: new Date(Math.max(Date.now(), new Date(c.prueba_hasta ?? 0).getTime()) + 7 * DIA).toISOString(),
-                        }),
-                      )}
-                    >
-                      +7 días de prueba
-                    </Boton>
-                  )}
-                  {c.estado !== 'bloqueada' && <Boton onClick={accion(() => actualizarCuenta(c.user_id, { estado: 'bloqueada' }))}>Pausar</Boton>}
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+      <Titulo>En prueba</Titulo>
+      <ListaCuentas cuentas={cuentas && enPruebaLista} vacio="Nadie está probando la app ahora." onAccion={accion} />
+
+      <Titulo>Activas</Titulo>
+      <ListaCuentas cuentas={cuentas && activasLista} vacio="Todavía no hay cuentas activas." onAccion={accion} />
+
+      {pausadas.length > 0 && (
+        <>
+          <Titulo>Pausadas</Titulo>
+          <ListaCuentas cuentas={pausadas} vacio="" onAccion={accion} />
+        </>
       )}
+
+      <Titulo>Regalar acceso</Titulo>
+      <p className="mb-3 text-sm text-texto-suave">
+        Opcional: un código para crear una cuenta ya activa (compra) o con prueba, por ejemplo para regalar.
+      </p>
+      <NuevoCodigo onCreado={cargar} />
 
       <Titulo>Códigos sin usar</Titulo>
       {pendientes.length === 0 ? (
@@ -319,15 +307,89 @@ function DatosDeVenta() {
   )
 }
 
-function Estado({ estado, vencida, quedan }: { estado: Cuenta['estado']; vencida: boolean; quedan: number }) {
+type Accion = (fn: () => Promise<void>) => () => Promise<void>
+
+function ListaCuentas({ cuentas, vacio, onAccion }: { cuentas: Cuenta[] | null; vacio: string; onAccion: Accion }) {
+  if (cuentas === null) return <p className="text-texto-suave">Cargando…</p>
+  if (cuentas.length === 0) return <p className="text-texto-suave">{vacio}</p>
+  return (
+    <ul className="flex flex-col gap-2">
+      {cuentas.map((c) => (
+        <FilaCuenta key={c.user_id} cuenta={c} onAccion={onAccion} />
+      ))}
+    </ul>
+  )
+}
+
+/** Una cuenta con su estado y acciones: activar por un período (al confirmar el pago), extender la prueba o pausar. */
+function FilaCuenta({ cuenta: c, onAccion }: { cuenta: Cuenta; onAccion: Accion }) {
+  const [eligiendo, setEligiendo] = useState(false)
+  const espera = esperaPago(c)
+  return (
+    <li className={`rounded-2xl border bg-superficie p-4 ${espera ? 'border-lima/60' : 'border-borde'}`}>
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">{c.nombre || 'Sin nombre'}</p>
+          <p className="truncate text-sm text-texto-suave select-all">{c.correo}</p>
+        </div>
+        <Estado cuenta={c} />
+      </div>
+      <p className="mt-1 text-xs text-texto-suave">
+        Se registró el {formatearFecha(new Date(c.creada_en).getTime())}
+        {c.codigo ? ` · ${c.codigo}` : ''}
+      </p>
+      {eligiendo ? (
+        <div className="mt-3">
+          <p className="mb-2 text-sm font-semibold">¿Por cuánto tiempo pagó?</p>
+          <div className="grid grid-cols-2 gap-2">
+            {PERIODOS.map((p) => (
+              <Boton key={p.etiqueta} principal onClick={onAccion(() => activarPor(c, p.dias))}>
+                {p.etiqueta}
+              </Boton>
+            ))}
+            <Boton onClick={() => setEligiendo(false)}>Cancelar</Boton>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Boton principal onClick={() => setEligiendo(true)}>
+            {c.estado === 'activa' && !espera ? 'Renovar…' : 'Activar…'}
+          </Boton>
+          {c.estado === 'prueba' && (
+            <Boton
+              onClick={onAccion(() =>
+                actualizarCuenta(c.user_id, {
+                  prueba_hasta: new Date(Math.max(Date.now(), new Date(c.prueba_hasta ?? 0).getTime()) + 7 * DIA).toISOString(),
+                }),
+              )}
+            >
+              +7 días de prueba
+            </Boton>
+          )}
+          {c.estado !== 'bloqueada' && <Boton onClick={onAccion(() => actualizarCuenta(c.user_id, { estado: 'bloqueada' }))}>Pausar</Boton>}
+        </div>
+      )}
+    </li>
+  )
+}
+
+function Estado({ cuenta: c }: { cuenta: Cuenta }) {
+  const quedan = (hasta: string | null) => diasRestantes(hasta ? new Date(hasta).getTime() : null)
+  const dias = (n: number) => `${n} ${n === 1 ? 'día' : 'días'}`
   const [texto, clase] =
-    estado === 'activa'
-      ? ['Activa', 'border-lima bg-lima text-fondo']
-      : estado === 'bloqueada'
-        ? ['Pausada', 'border-borde text-texto-suave']
-        : vencida
-          ? ['Prueba vencida', 'border-peligro/60 text-peligro']
-          : [`Prueba · ${quedan} ${quedan === 1 ? 'día' : 'días'}`, 'border-lima/60 text-lima']
+    c.estado === 'bloqueada'
+      ? ['Pausada', 'border-borde text-texto-suave']
+      : c.estado === 'pendiente'
+        ? ['Por activar', 'border-peligro/60 text-peligro']
+        : c.estado === 'prueba'
+          ? quedan(c.prueba_hasta) === 0
+            ? ['Prueba vencida', 'border-peligro/60 text-peligro']
+            : [`Prueba · ${dias(quedan(c.prueba_hasta))}`, 'border-lima/60 text-lima']
+          : !c.activa_hasta
+            ? ['Activa', 'border-lima bg-lima text-fondo']
+            : quedan(c.activa_hasta) === 0
+              ? ['Venció', 'border-peligro/60 text-peligro']
+              : [`Activa hasta ${formatearFecha(new Date(c.activa_hasta).getTime())}`, 'border-lima bg-lima text-fondo']
   return <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-bold ${clase}`}>{texto}</span>
 }
 

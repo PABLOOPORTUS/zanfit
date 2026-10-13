@@ -1,20 +1,31 @@
 import { useEffect, useState } from 'react'
 import FondoAcceso from './FondoAcceso'
+import IconoWhatsapp from './IconoWhatsapp'
 import Marca from './Marca'
 import { useCuenta } from '../hooks/useCuenta'
 import { datosVenta, puedeUsar, type Acceso, type DatosVenta } from '../lib/acceso'
 
 const TITULOS: Record<Acceso['estado'], { titulo: string; detalle: string }> = {
-  prueba: { titulo: 'Tu prueba terminó', detalle: 'Esperamos que te haya gustado. Activa tu cuenta para seguir entrenando con ZANFIT.' },
+  prueba: { titulo: 'Tu prueba terminó', detalle: 'Esperamos que te haya gustado. Suscríbete para seguir entrenando con ZANFIT.' },
+  pendiente: { titulo: 'Tu cuenta está por activarse', detalle: 'Escríbenos para activarla y empezar a entrenar.' },
   bloqueada: { titulo: 'Tu cuenta está pausada', detalle: 'Escríbenos para reactivarla.' },
   'sin-cuenta': { titulo: 'Tu cuenta no está activa', detalle: 'Para usar ZANFIT necesitas activarla con un pago único.' },
-  activa: { titulo: '', detalle: '' },
+  activa: { titulo: 'Tu suscripción venció', detalle: 'Renueva para seguir entrenando con ZANFIT.' },
 }
 
-/** WhatsApp: si el contacto es un número, se ofrece abrir el chat (además de mostrarlo como texto). */
-function enlaceWhatsapp(contacto: string): string | null {
+/** Lo que incluye la suscripción (pantalla al terminar la prueba). */
+const INCLUYE = [
+  'Tu plan de entrenamiento personalizado, ajustado con IA',
+  'Más de 870 ejercicios con fotos y mapa muscular',
+  'Registro de entrenos, récords, niveles y logros',
+  'Tus datos guardados en la nube, en cualquier teléfono',
+]
+
+/** WhatsApp: si el contacto es un número, se ofrece abrir el chat con un mensaje listo (además de mostrarlo como texto). */
+function enlaceWhatsapp(contacto: string, correo: string | undefined): string | null {
   const numero = contacto.replace(/[^\d]/g, '')
-  return numero.length >= 8 ? `https://wa.me/${numero}` : null
+  const texto = `¡Hola! Quiero suscribirme a ZANFIT.${correo ? ` Mi correo es ${correo}.` : ''}`
+  return numero.length >= 8 ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}` : null
 }
 
 /** Pantalla cuando la cuenta no puede usar la app: datos para pagar y "Ya pagué". Los entrenos no se pierden. */
@@ -27,7 +38,7 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
     void datosVenta().then(setVenta)
   }, [])
   const textos = TITULOS[acceso.estado]
-  const whatsapp = venta?.contacto ? enlaceWhatsapp(venta.contacto) : null
+  const whatsapp = venta?.contacto ? enlaceWhatsapp(venta.contacto, cuenta.usuario?.correo) : null
 
   return (
     <main className="pt-safe pb-safe relative mx-auto min-h-dvh max-w-lg px-4">
@@ -39,11 +50,17 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
         <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">{textos.titulo}</h1>
         <p className="mt-2 text-texto-suave">{textos.detalle}</p>
 
-        {venta?.precio && (
-          <p className="mt-4 font-marca text-4xl font-bold text-lima">
-            {venta.precio} <span className="text-base font-semibold text-texto-suave">pago único</span>
-          </p>
-        )}
+        {venta?.precio && <p className="mt-4 font-marca text-4xl font-bold text-lima">{venta.precio}</p>}
+        <ul className="mt-4 flex flex-col gap-1.5 text-sm">
+          {INCLUYE.map((x) => (
+            <li key={x} className="flex gap-2">
+              <span className="font-bold text-lima" aria-hidden>
+                ✓
+              </span>
+              {x}
+            </li>
+          ))}
+        </ul>
         {venta?.datos_transferencia && (
           <div className="mt-4 rounded-2xl border border-borde bg-superficie p-4">
             <p className="text-sm font-bold tracking-wide text-texto-suave uppercase">Datos para transferir</p>
@@ -51,18 +68,21 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
           </div>
         )}
         {venta?.contacto && (
-          <p className="mt-3 text-texto-suave">
-            Después de transferir, envía el comprobante a <span className="font-semibold text-texto select-all">{venta.contacto}</span>
-            {whatsapp && (
-              <>
-                {' '}
-                <a href={whatsapp} target="_blank" rel="noreferrer" className="font-semibold text-lima underline underline-offset-4">
-                  (abrir WhatsApp)
-                </a>
-              </>
-            )}
-            .
+          <p className="mt-4 text-texto-suave">
+            Escríbeme por WhatsApp al <span className="font-semibold text-texto select-all">{venta.contacto}</span>: te cuento cómo pagar y
+            activo tu cuenta.
           </p>
+        )}
+        {whatsapp && (
+          <a
+            href={whatsapp}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-whatsapp text-lg font-bold text-fondo active:opacity-80"
+          >
+            <IconoWhatsapp className="size-7" />
+            Escríbeme por WhatsApp
+          </a>
         )}
         <p className="mt-3 text-sm text-texto-suave">
           Tus entrenos, tu plan y tus logros están guardados: al activar tu cuenta sigues donde quedaste.
@@ -83,7 +103,7 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
             setRevisando(false)
             if (!nuevo || !puedeUsar(nuevo)) setAviso('Todavía no está activa. Apenas confirmemos tu pago, se activa y podrás entrar.')
           }}
-          className="mt-5 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+          className={`mt-3 h-14 w-full rounded-2xl font-bold disabled:opacity-60 ${whatsapp ? 'border border-lima/60 text-lima active:bg-lima/10' : 'bg-lima text-fondo active:bg-lima-oscuro'}`}
         >
           {revisando ? 'Revisando…' : 'Ya pagué: revisar de nuevo'}
         </button>

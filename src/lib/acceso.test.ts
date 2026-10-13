@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { POST } from '../../api/registro'
-import { diasRestantes, puedeUsar } from './acceso'
+import { diasRestantes, esperaPago, puedeUsar } from './acceso'
 import { esCodigoValido, generarCodigo, normalizarCodigo } from './codigos'
 
 declare const process: { env: Record<string, string | undefined> }
@@ -34,6 +34,20 @@ describe('acceso', () => {
     expect(puedeUsar({ estado: 'prueba', pruebaHasta: ahora - 1000 }, ahora)).toBe(false)
     expect(puedeUsar({ estado: 'bloqueada', pruebaHasta: null }, ahora)).toBe(false)
     expect(puedeUsar({ estado: 'sin-cuenta', pruebaHasta: null }, ahora)).toBe(false)
+    expect(puedeUsar({ estado: 'pendiente', pruebaHasta: null }, ahora)).toBe(false)
+  })
+  it('una suscripción activa con fecha de término deja de servir al vencer', () => {
+    expect(puedeUsar({ estado: 'activa', pruebaHasta: null, activaHasta: ahora + 1000 }, ahora)).toBe(true)
+    expect(puedeUsar({ estado: 'activa', pruebaHasta: null, activaHasta: ahora - 1000 }, ahora)).toBe(false)
+    expect(puedeUsar({ estado: 'activa', pruebaHasta: null, activaHasta: null }, ahora)).toBe(true)
+  })
+  it('esperaPago: prueba o período vencido, o pendiente', () => {
+    const iso = (ms: number) => new Date(ms).toISOString()
+    expect(esperaPago({ estado: 'prueba', prueba_hasta: iso(ahora - 1), activa_hasta: null }, ahora)).toBe(true)
+    expect(esperaPago({ estado: 'prueba', prueba_hasta: iso(ahora + 1e6), activa_hasta: null }, ahora)).toBe(false)
+    expect(esperaPago({ estado: 'activa', prueba_hasta: null, activa_hasta: iso(ahora - 1) }, ahora)).toBe(true)
+    expect(esperaPago({ estado: 'activa', prueba_hasta: null, activa_hasta: null }, ahora)).toBe(false)
+    expect(esperaPago({ estado: 'pendiente', prueba_hasta: null, activa_hasta: null }, ahora)).toBe(true)
   })
   it('cuenta los días que quedan hacia arriba', () => {
     expect(diasRestantes(ahora + 6.2 * 86_400_000, ahora)).toBe(7)
@@ -57,6 +71,7 @@ describe('api/registro (Supabase simulado)', () => {
         return correoExiste ? new Response('{"msg":"User already registered"}', { status: 422 }) : new Response(JSON.stringify({ id: 'u-nuevo' }))
       if (url.includes('/rest/v1/codigos') && metodo === 'PATCH') return new Response(JSON.stringify(robado ? [] : [{}]))
       if (url.includes('/rest/v1/cuentas')) return new Response('', { status: 201 })
+      if (url.includes('/rest/v1/ajustes_venta')) return new Response(JSON.stringify([{ dias_prueba: 10 }]))
       if (url.includes('/auth/v1/admin/users/') && metodo === 'DELETE') return new Response('{}')
       return new Response('{}', { status: 404 })
     })
@@ -77,6 +92,17 @@ describe('api/registro (Supabase simulado)', () => {
     simular([])
     expect((await registrar({ codigo: 'ZF-AAAA-BBBB' })).status).toBe(400)
     expect((await registrar({ codigo: 'hola' })).status).toBe(400)
+  })
+  it('sin código crea la cuenta en prueba con los días de los ajustes de venta', async () => {
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'x'
+    const llamadas = simular([])
+    const r = await POST(new Request('http://x/api/registro', { method: 'POST', body: JSON.stringify({ nombre: 'Ana', correo: 'ana@correo.cl', pin: '123456' }) }))
+    expect(r.status).toBe(200)
+    const cuenta = llamadas.find((l) => l.url.includes('/rest/v1/cuentas'))!.cuerpo as { estado: string; prueba_hasta: string; codigo: null }
+    expect(cuenta.estado).toBe('prueba')
+    expect(cuenta.codigo).toBeNull()
+    expect(Math.round((new Date(cuenta.prueba_hasta).getTime() - Date.now()) / 86_400_000)).toBe(10)
+    expect(llamadas.some((l) => l.metodo === 'PATCH')).toBe(false)
   })
   it('rechaza un código ya usado sin crear el usuario', async () => {
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'x'

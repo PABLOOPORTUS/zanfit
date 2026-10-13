@@ -1,8 +1,11 @@
 /// <reference types="node" />
 /**
- * Función de Vercel: `POST /api/registro` `{ nombre, correo, pin, codigo }`. Es la ÚNICA forma de crear una cuenta:
+ * Función de Vercel: `POST /api/registro` `{ nombre, correo, pin, codigo? }`. Es la ÚNICA forma de crear una cuenta:
  * el registro público está cerrado en Supabase ("Allow new users to sign up" apagado).
  *
+ * Sin código, la cuenta parte en PRUEBA por los días de `ajustes_venta.dias_prueba` (7 por defecto). Al vencer, la app
+ * muestra los datos para pagar (WhatsApp del administrador) y el administrador la activa por un período desde la
+ * pantalla de Administración. Con código (para regalar acceso):
  * 1. Revisa que el código exista y no se haya usado.
  * 2. Crea el usuario con la API de administración de Supabase (clave `service_role`, solo en la variable de entorno
  *    SUPABASE_SERVICE_ROLE_KEY de Vercel; nunca en la app ni en git).
@@ -41,16 +44,22 @@ export async function POST(request: Request): Promise<Response> {
   const pin = typeof datos.pin === 'string' ? datos.pin : ''
   const codigo = typeof datos.codigo === 'string' ? normalizarCodigo(datos.codigo) : ''
   if (!nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo) || !/^\d{6}$/.test(pin)) return json(400, { error: 'datos-invalidos' })
-  if (!esCodigoValido(codigo)) return json(400, { error: 'codigo-invalido' })
+  if (codigo && !esCodigoValido(codigo)) return json(400, { error: 'codigo-invalido' })
 
-  // 1. El código existe y no se ha usado.
-  const filas = (await (await rest(`codigos?codigo=eq.${encodeURIComponent(codigo)}&select=codigo,tipo,dias,usado_por`)).json()) as Codigo[]
-  const c = filas[0]
-  if (!c) return json(400, { error: 'codigo-invalido' })
-  if (c.usado_por) return json(409, { error: 'codigo-usado' })
+  // 1. Si trae código: que exista y no se haya usado.
+  let c: Codigo | undefined
+  if (codigo) {
+    const filas = (await (await rest(`codigos?codigo=eq.${encodeURIComponent(codigo)}&select=codigo,tipo,dias,usado_por`)).json()) as Codigo[]
+    c = filas[0]
+    if (!c) return json(400, { error: 'codigo-invalido' })
+    if (c.usado_por) return json(409, { error: 'codigo-usado' })
+  }
 
   // 2. Crear el usuario (ya confirmado: no se manda correo de confirmación).
-  const creado = await admin('users', { method: 'POST', body: JSON.stringify({ email: correo, password: pin, email_confirm: true, user_metadata: { nombre } }) })
+  const creado = await admin('users', {
+    method: 'POST',
+    body: JSON.stringify({ email: correo, password: pin, email_confirm: true, user_metadata: { nombre } }),
+  })
   if (!creado.ok) {
     const texto = (await creado.text()).toLowerCase()
     if (creado.status === 422 || texto.includes('already')) return json(409, { error: 'correo-existe' })
@@ -60,18 +69,25 @@ export async function POST(request: Request): Promise<Response> {
   const borrarUsuario = () => admin(`users/${usuario.id}`, { method: 'DELETE' })
 
   // 3. Marcar el código como usado, solo si nadie lo usó entremedio.
-  const canje = await rest(`codigos?codigo=eq.${encodeURIComponent(codigo)}&usado_por=is.null`, {
-    method: 'PATCH',
-    headers: { prefer: 'return=representation' },
-    body: JSON.stringify({ usado_por: usuario.id, usado_en: new Date().toISOString() }),
-  })
-  if (!canje.ok || ((await canje.json()) as unknown[]).length === 0) {
+  const canje = !c
+    ? null
+    : await rest(`codigos?codigo=eq.${encodeURIComponent(codigo)}&usado_por=is.null`, {
+        method: 'PATCH',
+        headers: { prefer: 'return=representation' },
+        body: JSON.stringify({ usado_por: usuario.id, usado_en: new Date().toISOString() }),
+      })
+  if (canje && (!canje.ok || ((await canje.json()) as unknown[]).length === 0)) {
     await borrarUsuario()
     return json(409, { error: 'codigo-usado' })
   }
 
-  // 4. La cuenta: en prueba por N días, o activa si el código es de compra.
-  const estado = c.tipo === 'compra' ? 'activa' : 'prueba'
+  // 4. La cuenta: sin código, prueba con los días de los ajustes de venta; con código, prueba por N días o activa (compra).
+  const estado = c?.tipo === 'compra' ? 'activa' : 'prueba'
+  let dias = c?.dias ?? 7
+  if (!c) {
+    const ajustes = (await (await rest('ajustes_venta?id=eq.1&select=dias_prueba')).json().catch(() => [])) as { dias_prueba?: number }[]
+    dias = ajustes[0]?.dias_prueba ?? 7
+  }
   const cuenta = await rest('cuentas', {
     method: 'POST',
     body: JSON.stringify({
@@ -79,14 +95,15 @@ export async function POST(request: Request): Promise<Response> {
       nombre,
       correo,
       estado,
-      codigo,
-      prueba_hasta: estado === 'prueba' ? new Date(Date.now() + c.dias * 86_400_000).toISOString() : null,
+      codigo: codigo || null,
+      prueba_hasta: estado === 'prueba' ? new Date(Date.now() + dias * 86_400_000).toISOString() : null,
       activada_en: estado === 'activa' ? new Date().toISOString() : null,
     }),
   })
   if (!cuenta.ok) {
     await borrarUsuario()
-    await rest(`codigos?codigo=eq.${encodeURIComponent(codigo)}`, { method: 'PATCH', body: JSON.stringify({ usado_por: null, usado_en: null }) })
+    if (c)
+      await rest(`codigos?codigo=eq.${encodeURIComponent(codigo)}`, { method: 'PATCH', body: JSON.stringify({ usado_por: null, usado_en: null }) })
     return json(502, { error: 'no-se-pudo-crear' })
   }
   return json(200, { ok: true, estado })

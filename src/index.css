@@ -12,6 +12,8 @@
   --color-texto-suave: #a3a3a3;
   --color-peligro: #ff5c5c;
   --color-amarillo: #ffd23f;
+  /* Verde de WhatsApp: solo para el botón de contacto. */
+  --color-whatsapp: #25d366;
 
   --font-sans: 'Inter Variable', system-ui, sans-serif;
   --font-marca: 'Space Grotesk Variable', 'Inter Variable', system-ui, sans-serif;
