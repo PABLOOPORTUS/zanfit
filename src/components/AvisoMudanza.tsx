@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import FondoAcceso from './FondoAcceso'
 import Marca from './Marca'
 import { DIRECCION, enDireccionAntigua } from '../lib/direccion'
@@ -7,8 +7,9 @@ const CLAVE = 'zanfit:mudanza-despues'
 
 /**
  * En la dirección antigua (zanfit.vercel.app): "ZANFIT se cambió de dirección". Las cuentas y los datos están en la
- * nube, así que en la nueva solo hay que ingresar e instalar el ícono otra vez. "Seguir aquí por ahora" lo oculta en
- * esta visita (por ejemplo, para exportar antes las fotos y videos propios, que no se sincronizan).
+ * nube, así que en la nueva solo hay que ingresar e instalar el ícono otra vez. Lleva sola a la nueva en 4 segundos
+ * (nadie tiene que buscar un link). "Seguir aquí por ahora" lo evita en esta visita (por ejemplo, para exportar antes
+ * las fotos y videos propios, que no se sincronizan).
  */
 export default function AvisoMudanza() {
   const [despues, setDespues] = useState(() => {
@@ -18,8 +19,16 @@ export default function AvisoMudanza() {
       return false
     }
   })
-  if (despues || !enDireccionAntigua()) return null
+  const activo = !despues && enDireccionAntigua()
   const destino = DIRECCION + location.pathname + location.search
+  const [segundos, setSegundos] = useState(4)
+  useEffect(() => {
+    if (!activo) return
+    if (segundos === 0) return location.replace(destino)
+    const id = setTimeout(() => setSegundos((s) => s - 1), 1000)
+    return () => clearTimeout(id)
+  }, [activo, segundos, destino])
+  if (!activo) return null
 
   return (
     <div className="fixed inset-0 z-[60] overflow-y-auto bg-fondo">
@@ -43,7 +52,7 @@ export default function AvisoMudanza() {
             href={destino}
             className="mt-5 flex h-16 items-center justify-center rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
           >
-            Ir a la nueva dirección
+            {segundos > 0 ? `Te llevamos en ${segundos}…` : 'Ir a la nueva dirección'}
           </a>
           <p className="mt-4 text-xs text-texto-suave">
             Si grabaste fotos o videos de tu gimnasio en la app, expórtalos antes en Ajustes → Fotos y videos de tu gimnasio: esos no se guardan en la

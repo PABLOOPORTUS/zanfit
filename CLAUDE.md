@@ -81,6 +81,7 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 
 ## Evaluación y plan de entrenamiento
 
+- **Obligatoria al entrar:** quien no tiene perfil (cuenta nueva o que nunca se evaluó) parte directo en `/evaluacion`, sin barra inferior (`Layout`); solo puede abrir además Ajustes y `/admin`. Se espera la primera sincronización (o falta de conexión) para no mandar ahí a quien ya tiene su evaluación en la nube.
 - **`/evaluacion?paso=N`:** una pregunta por pantalla, con barra de progreso. Cada paso es una entrada del historial, así que el botón atrás vuelve a la pregunta anterior; el estado vive en el componente. Si se entra directo a un paso, redirige al primero sin responder. Los pasos salen de `pasosPara(lugar)` (`lib/evaluacion.ts`). Pregunta:
   - Inicio con el aviso de que no reemplaza a un profesional (`AVISO_SALUD`, `<AvisoSalud>`; también aparece en /plan).
   - Sexo: **obligatorio, hombre o mujer** (la guía de rediseño lo pedía opcional, pero el dueño del producto lo quiere obligatorio: las referencias de fuerza son distintas). Edad, peso y altura también son obligatorios.
