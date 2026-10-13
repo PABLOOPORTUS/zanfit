@@ -18,6 +18,12 @@ describe('códigos', () => {
     expect(normalizarCodigo('7K4MQ2PX')).toBe('ZF-7K4M-Q2PX')
     expect(normalizarCodigo(' ZF-7K4M-Q2PX ')).toBe('ZF-7K4M-Q2PX')
   })
+  it('acepta códigos personalizados creados a mano', () => {
+    expect(normalizarCodigo('zf-pablo-2026')).toBe('ZF-PABLO-2026')
+    expect(esCodigoValido('ZF-PABLO-2026')).toBe(true)
+    expect(esCodigoValido('ab')).toBe(false)
+    expect(esCodigoValido("ZF'; drop table")).toBe(false)
+  })
 })
 
 describe('acceso', () => {
