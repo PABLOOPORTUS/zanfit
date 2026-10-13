@@ -1,5 +1,7 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import BannerPerfil from '../../components/BannerPerfil'
+import HojaInstalar from '../../components/HojaInstalar'
+import { esInstalada, plataforma } from '../../lib/instalacion'
 import { useAcceso } from '../../hooks/useAcceso'
 import { Link } from 'react-router-dom'
 import SelectorOpciones from '../../components/SelectorOpciones'
@@ -272,6 +274,8 @@ export default function Ajustes() {
         </svg>
       </Link>
 
+      <FilaInstalar />
+
       {acceso?.admin && (
         <Link
           to="/admin"
@@ -401,4 +405,23 @@ function SeccionCuenta() {
 
 function formatearHoraCorta(t: number) {
   return new Intl.DateTimeFormat('es-CL', { hour: '2-digit', minute: '2-digit' }).format(t)
+}
+
+/** "Instalar en tu teléfono": solo en un teléfono donde la app todavía no está instalada. */
+function FilaInstalar() {
+  const [abierta, setAbierta] = useState(false)
+  if (plataforma() === 'computador' || esInstalada()) return null
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAbierta(true)}
+        className="flex h-14 w-full items-center justify-between rounded-2xl border border-lima/60 bg-superficie px-4 font-semibold active:bg-borde"
+      >
+        Instalar ZANFIT en tu teléfono
+        <img src="/icon-192.png" alt="" className="size-8 rounded-lg" />
+      </button>
+      {abierta && <HojaInstalar onCerrar={() => setAbierta(false)} />}
+    </>
+  )
 }

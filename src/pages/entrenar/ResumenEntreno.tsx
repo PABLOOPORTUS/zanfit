@@ -3,6 +3,7 @@ import BotonCompartir from '../../components/BotonCompartir'
 import Confeti from '../../components/Confeti'
 import DatosEntreno from '../../components/DatosEntreno'
 import Medalla from '../../components/Medalla'
+import RecordatorioInstalar from '../../components/RecordatorioInstalar'
 import NotasEntreno from '../../components/NotasEntreno'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useContador } from '../../hooks/useContador'
@@ -149,6 +150,10 @@ export default function ResumenEntreno() {
             ],
           }}
         />
+      </div>
+
+      <div className="mt-6">
+        <RecordatorioInstalar />
       </div>
 
       <div className="mt-6">

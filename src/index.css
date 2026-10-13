@@ -201,3 +201,51 @@
     }
   }
 }
+
+/* Demo animada de "Agregar a pantalla de inicio" en Safari (ver <DemoSafari>): 3 pantallas de 2,5 s en loop. */
+@keyframes demo-pantalla {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  34%,
+  96% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@utility animate-demo-pantalla {
+  animation: demo-pantalla 7.5s infinite both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+/* El dedo: aparece, "toca" (se achica) y se va, dentro de su pantalla. */
+@keyframes demo-dedo {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+  14% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  26%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@utility animate-demo-dedo {
+  animation: demo-dedo 7.5s infinite both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: 1;
+  }
+}
