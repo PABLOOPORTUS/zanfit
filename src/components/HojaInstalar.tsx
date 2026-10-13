@@ -74,7 +74,7 @@ export default function HojaInstalar({ onCerrar }: { onCerrar: () => void }) {
           )}
 
           <button type="button" onClick={cerrar} className="mt-4 h-12 w-full text-texto-suave underline underline-offset-4">
-            {donde === 'android' ? 'Ahora no' : 'Cerrar'}
+            Ahora no
           </button>
         </div>
       </div>

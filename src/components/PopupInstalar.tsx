@@ -12,13 +12,13 @@ const leerCerrado = () => {
 }
 
 /**
- * Sobre el login, solo en Android y si la app no está instalada: ahí instalar es un toque. En iPhone no se muestra al
- * entrar (son 3 pasos en Safari): pueden usarla en Safari y se les ofrece después del primer entreno
- * (`<RecordatorioInstalar>`). "Ahora no" lo oculta hasta la próxima visita.
+ * Sobre el login, en cualquier teléfono donde la app no está instalada: Android con el botón de un toque, iPhone con
+ * la animación de Safari y, dentro de WhatsApp/Instagram, "Copiar link". "Ahora no" lo oculta hasta la próxima visita;
+ * después de entrenar (`<RecordatorioInstalar>`) y en Ajustes se puede volver a abrir.
  */
 export default function PopupInstalar() {
   const [cerrado, setCerrado] = useState(leerCerrado)
-  if (cerrado || plataforma() !== 'android' || esInstalada()) return null
+  if (cerrado || plataforma() === 'computador' || esInstalada()) return null
   return (
     <HojaInstalar
       onCerrar={() => {
