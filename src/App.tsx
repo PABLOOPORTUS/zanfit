@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProveedorAjustes from './components/ProveedorAjustes'
 import AvisoActualizacion from './components/AvisoActualizacion'
+import AvisoMudanza from './components/AvisoMudanza'
 import ProveedorCuenta from './components/ProveedorCuenta'
 import ConSesion from './components/ConSesion'
 import Cuenta from './pages/cuenta/Cuenta'
@@ -33,6 +34,7 @@ export default function App() {
   return (
     <ProveedorCuenta>
       <AvisoActualizacion />
+      <AvisoMudanza />
       <ProveedorAjustes>
         <ProveedorDescanso>
           <Routes>

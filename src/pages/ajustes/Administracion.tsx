@@ -14,6 +14,7 @@ import {
   listarCodigos,
   listarCuentas,
   activarPor,
+  espacioUsado,
   esperaPago,
   PERIODOS,
   type Codigo,
@@ -92,6 +93,7 @@ function Panel() {
       <p className="mt-1 text-texto-suave">
         {activas} {activas === 1 ? 'cuenta activa' : 'cuentas activas'} · {enPrueba} en prueba · {porConfirmar.length} por activar
       </p>
+      <MedidorEspacio />
       {error && (
         <p className="mt-3 rounded-xl border border-peligro/50 bg-peligro/10 p-3 text-sm" role="alert">
           {error}
@@ -416,5 +418,38 @@ function Boton({ children, onClick, principal = false }: { children: ReactNode; 
     >
       {children}
     </button>
+  )
+}
+
+/** Límite del plan gratuito de Supabase (base de datos). Sobre el 70% conviene dejar de vender hasta pasar a pagado. */
+const LIMITE_MB = 500
+const AVISO = 0.7
+
+function MedidorEspacio() {
+  const [bytes, setBytes] = useState<number | null>(null)
+  useEffect(() => {
+    void espacioUsado().then(setBytes)
+  }, [])
+  if (bytes === null) return null
+  const mb = bytes / 1024 / 1024
+  const uso = mb / LIMITE_MB
+  const alto = uso >= AVISO
+  return (
+    <div className={`mt-4 rounded-2xl border p-4 ${alto ? 'border-peligro/60 bg-peligro/10' : 'border-borde bg-superficie'}`}>
+      <div className="flex items-baseline justify-between text-sm">
+        <span className="font-semibold">Espacio usado</span>
+        <span className="tabular-nums">
+          {mb < 10 ? mb.toFixed(1).replace('.', ',') : Math.round(mb)} MB de {LIMITE_MB} MB ({Math.round(uso * 100)}%)
+        </span>
+      </div>
+      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-borde">
+        <div className={`h-full rounded-full ${alto ? 'bg-peligro' : 'bg-lima'}`} style={{ width: `${Math.min(100, Math.max(uso * 100, 1))}%` }} />
+      </div>
+      <p className="mt-2 text-xs text-texto-suave">
+        {alto
+          ? 'Pasaste el 70%: deja de sumar usuarios nuevos hasta pasar Supabase a un plan pagado.'
+          : 'Plan gratuito de Supabase. Sobre el 70%, deja de vender hasta pasar a un plan pagado.'}
+      </p>
+    </div>
   )
 }

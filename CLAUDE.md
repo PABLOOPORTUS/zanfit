@@ -248,6 +248,9 @@ Orden en la ficha y en la guía: **fotos y videos propios** (si hay) → **foto 
 
 ## Despliegue
 
-- **Vercel:** `vercel.json` (Vite, `dist/`, todo a `index.html`, sin caché para `sw.js`, `index.html` y el manifest; `assets/` inmutable).
-- **Netlify:** `netlify.toml` (lo mismo) y `public/_redirects`, que sirve si se publica arrastrando `dist/` a Netlify Drop.
-- La PWA necesita HTTPS (los dos lo dan). Con `autoUpdate`, una versión nueva se activa la próxima vez que se abre la app.
+- **Cloudflare Pages (oficial, `zanfit.pages.dev`):** gratis y **permite uso comercial** (Vercel Hobby no). Se conecta al repo de GitHub y publica cada push: build `npm run build`, salida `dist`, Node 22 (`.node-version`). Sirve la app como SPA sin configuración (no hay `404.html`; **no usar** `/* /index.html 200` en `_redirects`, que en Cloudflare provoca un bucle). Cabeceras en `public/_headers` (sin caché para `sw.js`, `index.html` y el manifest; `assets/` inmutable).
+- **Funciones del servidor en Cloudflare (`functions/api/*.ts`):** adaptan los manejadores de `api/` (escritos con `POST(request)` y `process.env`): `functions/api/_entorno.ts` copia `context.env` a `process.env` y **después** importa el manejador (hay módulos que leen variables al cargarse). Variables en Cloudflare → Settings → Variables and Secrets: `GEMINI_API_KEY` y `SUPABASE_SERVICE_ROLE_KEY` (como secretos). Probar en local con `npx wrangler pages dev dist`.
+- **Vercel (`zanfit.vercel.app`, antiguo):** sigue publicando, pero `<AvisoMudanza>` (con `MUDANZA_ACTIVA` en `lib/direccion.ts`) invita a ir a la dirección nueva. Las cuentas y los datos están en Supabase, así que en la nueva basta con ingresar e instalar el ícono otra vez; las fotos y videos propios hay que exportarlos/importarlos.
+- **Netlify:** `netlify.toml` (lo mismo; la regla SPA está ahí).
+- La PWA necesita HTTPS (todos lo dan). Con `autoUpdate`, una versión nueva se activa la próxima vez que se abre la app.
+- **Capacidad del plan gratuito de Supabase (500 MB):** cada usuario ocupa ~0,2–0,4 MB al año; máximo recomendado ~800 usuarios. Administración muestra el medidor (`espacio_usado()`, `supabase/espacio.sql`); sobre el 70%, dejar de sumar usuarios hasta pasar a un plan pagado.

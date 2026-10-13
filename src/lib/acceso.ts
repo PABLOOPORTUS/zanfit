@@ -250,6 +250,16 @@ export function esperaPago(c: Pick<Cuenta, 'estado' | 'prueba_hasta' | 'activa_h
   return false
 }
 
+/** Bytes que ocupa la base de datos (solo admin). `null` si la función no existe todavía o no se pudo consultar. */
+export async function espacioUsado(): Promise<number | null> {
+  try {
+    const { data, error } = await (await cliente()).rpc('espacio_usado')
+    return error || data == null ? null : Number(data)
+  } catch {
+    return null
+  }
+}
+
 export async function guardarDatosVenta(datos: DatosVenta): Promise<void> {
   revisar(await (await tabla('ajustes_venta')).update(datos).eq('id', 1))
 }
