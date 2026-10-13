@@ -239,6 +239,8 @@ Orden en la ficha y en la guía: **fotos y videos propios** (si hay) → **foto 
 
 ## Íconos y PWA
 
+- **Instalar desde el login (`<PopupInstalar>`, `lib/instalacion.ts`):** en el teléfono y si la app no está instalada (`display-mode: standalone`), el login muestra un popup: en Android, el botón "Instalar ZANFIT" usa el `beforeinstallprompt` de Chrome (se escucha desde `main.tsx`, porque llega una sola vez y muy temprano); sin ese evento, los pasos del menú ⋮. En iPhone con Safari, los 3 toques de "Agregar a pantalla de inicio" (no hay forma de instalar sin el usuario). En iPhone dentro de otro navegador (WhatsApp, Instagram, Chrome…), "Copiar link" para abrirlo en Safari. "Ahora no" lo oculta hasta la próxima visita (`sessionStorage`). En Administración, "Compartir ZANFIT" con el link y un código QR (`qrcode`, cargado solo ahí).
+
 - Íconos en `public/`: `icon-192.png`, `icon-512.png` (purpose `any`, "ZF" grande), `icon-maskable-512.png` (texto más chico, dentro de la zona segura del 80%), `apple-touch-icon.png` (180) y `favicon-64.png`.
 - **Cómo regenerarlos:** se renderiza un HTML con Chrome headless a 512×512 (`--window-size=512,512 --screenshot`, con la fuente desde `node_modules/@fontsource-variable/space-grotesk`) y se reduce a los otros tamaños con `sips -z`. Chrome no permite ventanas de menos de unos 500px, así que nunca se renderiza directo a 192.
 - `index.html` tiene los meta de iOS (`apple-mobile-web-app-capable`, título y `status-bar-style: black-translucent`).

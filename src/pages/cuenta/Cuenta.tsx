@@ -2,6 +2,7 @@ import { esCodigoValido, normalizarCodigo } from '../../lib/codigos'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import FondoAcceso from '../../components/FondoAcceso'
+import PopupInstalar from '../../components/PopupInstalar'
 import FraseMotivadora from '../../components/FraseMotivadora'
 import Marca from '../../components/Marca'
 import { useCuenta } from '../../hooks/useCuenta'
@@ -255,6 +256,7 @@ function Pantalla({ children, compacto = false }: { children: ReactNode; compact
   return (
     <main className="pt-safe pb-safe relative mx-auto min-h-dvh max-w-lg px-4">
       <FondoAcceso />
+      <PopupInstalar />
       <div className={`text-center ${compacto ? 'pt-6 pb-4' : 'pt-10 pb-8'}`}>
         <Marca className={`${compacto ? 'text-4xl' : 'text-5xl'} drop-shadow-lg`} />
         <FraseMotivadora />

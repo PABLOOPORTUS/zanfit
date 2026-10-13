@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
+import CompartirApp from '../../components/CompartirApp'
 import SelectorOpciones from '../../components/SelectorOpciones'
 import { useAcceso } from '../../hooks/useAcceso'
 import {
@@ -118,6 +119,9 @@ function Panel() {
           <ListaCuentas cuentas={pausadas} vacio="" onAccion={accion} />
         </>
       )}
+
+      <Titulo>Compartir ZANFIT</Titulo>
+      <CompartirApp />
 
       <Titulo>Regalar acceso</Titulo>
       <p className="mb-3 text-sm text-texto-suave">

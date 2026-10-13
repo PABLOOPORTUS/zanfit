@@ -14,6 +14,8 @@
   --color-amarillo: #ffd23f;
   /* Verde de WhatsApp: solo para el botón de contacto. */
   --color-whatsapp: #25d366;
+  /* Azul de los íconos de Safari (guía para instalar en iPhone). */
+  --color-azul-ios: #0a84ff;
 
   --font-sans: 'Inter Variable', system-ui, sans-serif;
   --font-marca: 'Space Grotesk Variable', 'Inter Variable', system-ui, sans-serif;
