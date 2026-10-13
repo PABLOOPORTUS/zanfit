@@ -3,7 +3,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type React
 import { CuentaContext, type CuentaApi, type EstadoSync, type Usuario } from '../contexts/CuentaContext'
 import { BASE_INVITADO, db, nombreBase, ultimoCambio, usarBase } from '../db'
 import { copiarInvitadoAUsuario, ErrorNube, hayDatosDeInvitado, hayDatosEnLaNube, sincronizar, subir } from '../db/nube'
-import { registrarConCodigo } from '../lib/acceso'
+import { registrarConCodigo, usarEsteDispositivo } from '../lib/acceso'
 import { cliente, mensajeErrorNube, usuarioGuardado } from '../lib/clienteNube'
 
 const ESPERA_SUBIDA_MS = 4000
@@ -129,6 +129,8 @@ export default function ProveedorCuenta({ children }: { children: ReactNode }) {
       ingresar: async (correo, pin) => {
         const { data, error } = await (await cliente()).auth.signInWithPassword({ email: correo.trim(), password: pin })
         if (error || !data.user) throw new Error(await mensajeErrorNube(error))
+        // Ingresar en un teléfono lo deja como el de la cuenta (el anterior queda fuera).
+        await usarEsteDispositivo()
         return trasAutenticar(data.user)
       },
       registrar: async (nombre, correo, pin, codigo) => {
@@ -136,6 +138,7 @@ export default function ProveedorCuenta({ children }: { children: ReactNode }) {
         await registrarConCodigo(nombre, correo, pin, codigo)
         const { data, error } = await (await cliente()).auth.signInWithPassword({ email: correo.trim(), password: pin })
         if (error || !data.user) throw new Error(await mensajeErrorNube(error))
+        await usarEsteDispositivo()
         return trasAutenticar(data.user)
       },
       elegirDatos: async (opcion) => {
@@ -161,9 +164,7 @@ export default function ProveedorCuenta({ children }: { children: ReactNode }) {
   if (!listo) return null
   return (
     <CuentaContext.Provider value={api}>
-      <Fragment key={base}>
-        {children}
-      </Fragment>
+      <Fragment key={base}>{children}</Fragment>
     </CuentaContext.Provider>
   )
 }

@@ -1,8 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { CLAVE_ANON, URL } from './configNube'
+import { idDispositivo } from './dispositivo'
 
 export const supabase = createClient(URL, CLAVE_ANON, {
   auth: { persistSession: true, autoRefreshToken: true, storageKey: 'zanfit:sesion' },
+  // La nube solo acepta guardar datos desde el teléfono activo de la cuenta (ver supabase/dispositivo.sql).
+  global: { headers: { 'x-dispositivo': idDispositivo() } },
 })
 
 /** Traduce los errores de Supabase Auth a mensajes para el usuario. */

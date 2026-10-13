@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import PantallaBloqueo from './PantallaBloqueo'
+import PantallaOtroDispositivo from './PantallaOtroDispositivo'
 import { AccesoContext } from '../contexts/AccesoContext'
-import { accesoGuardado, puedeUsar, revisarAcceso, type Acceso } from '../lib/acceso'
+import { accesoGuardado, puedeUsar, revisarAcceso, usarEsteDispositivo, type Acceso } from '../lib/acceso'
 
 const CADA = 6 * 3_600_000
 
 /**
- * Deja usar la app solo con la cuenta activa o en prueba vigente. Parte con lo guardado en el teléfono (sirve sin
+ * Deja usar la app solo con la cuenta activa o en prueba vigente, y en un solo teléfono a la vez. Parte con lo guardado en el teléfono (sirve sin
  * internet) y lo revisa con la nube al abrir, al volver a la app y cada 6 horas. Si nunca se pudo revisar, deja pasar.
  */
 export default function ConAcceso({ uid, children }: { uid: string; children: ReactNode }) {
@@ -28,6 +29,15 @@ export default function ConAcceso({ uid, children }: { uid: string; children: Re
     }
   }, [revisar])
 
+  if (acceso?.otroDispositivo)
+    return (
+      <PantallaOtroDispositivo
+        onUsarAqui={async () => {
+          await usarEsteDispositivo()
+          await revisar()
+        }}
+      />
+    )
   if (acceso && !puedeUsar(acceso)) return <PantallaBloqueo acceso={acceso} onRevisar={revisar} />
   return <AccesoContext.Provider value={acceso}>{children}</AccesoContext.Provider>
 }

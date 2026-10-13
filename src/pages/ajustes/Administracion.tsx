@@ -338,6 +338,12 @@ function FilaCuenta({ cuenta: c, onAccion }: { cuenta: Cuenta; onAccion: Accion 
         Se registró el {formatearFecha(new Date(c.creada_en).getTime())}
         {c.codigo ? ` · ${c.codigo}` : ''}
       </p>
+      {!!c.cambios_dispositivo && (
+        <p className={`mt-1 text-xs ${c.cambios_dispositivo >= 5 ? 'font-semibold text-peligro' : 'text-texto-suave'}`}>
+          Cambió de teléfono {c.cambios_dispositivo} {c.cambios_dispositivo === 1 ? 'vez' : 'veces'}
+          {c.cambios_dispositivo >= 5 && ': puede que la estén compartiendo'}
+        </p>
+      )}
       {eligiendo ? (
         <div className="mt-3">
           <p className="mb-2 text-sm font-semibold">¿Por cuánto tiempo pagó?</p>

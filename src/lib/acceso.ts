@@ -1,5 +1,6 @@
 import { cliente } from './clienteNube'
 import { generarCodigo } from './codigos'
+import { idDispositivo } from './dispositivo'
 
 /**
  * Acceso pagado (ver supabase/acceso.sql y api/registro.ts). Cada cuenta está en prueba (hasta una fecha), activa
@@ -16,6 +17,8 @@ export interface Acceso {
   pruebaHasta: number | null
   /** Fin del período pagado (ms); `null` = sin vencimiento. */
   activaHasta?: number | null
+  /** La cuenta se está usando en otro teléfono (una cuenta, un teléfono a la vez). */
+  otroDispositivo?: boolean
   admin: boolean
   /** Cuándo se revisó con la nube (ms). */
   revisado: number
@@ -35,6 +38,10 @@ export interface Cuenta {
   estado: 'pendiente' | 'prueba' | 'activa' | 'bloqueada'
   prueba_hasta: string | null
   activa_hasta: string | null
+  dispositivo_id?: string | null
+  dispositivo_desde?: string | null
+  /** Cuántas veces la cuenta pasó de un teléfono a otro (muchas en poco tiempo = la están compartiendo). */
+  cambios_dispositivo?: number
   codigo: string | null
   nota: string
   creada_en: string
@@ -96,11 +103,19 @@ export async function revisarAcceso(uid: string): Promise<Acceso | null> {
       return acceso
     }
     if (cuenta.error) return accesoGuardado(uid)
-    const fila = cuenta.data as { estado: Acceso['estado']; prueba_hasta: string | null; activa_hasta?: string | null } | null
+    const fila = cuenta.data as {
+      estado: Acceso['estado']
+      prueba_hasta: string | null
+      activa_hasta?: string | null
+      dispositivo_id?: string | null
+    } | null
+    // Cuentas sin teléfono asignado (de antes de esta regla): este teléfono pasa a ser el suyo, sin preguntar.
+    if (fila && fila.dispositivo_id === null) await usarEsteDispositivo()
     const acceso: Acceso = {
       estado: fila?.estado ?? 'sin-cuenta',
       pruebaHasta: fila?.prueba_hasta ? new Date(fila.prueba_hasta).getTime() : null,
       activaHasta: fila?.activa_hasta ? new Date(fila.activa_hasta).getTime() : null,
+      otroDispositivo: !!fila?.dispositivo_id && fila.dispositivo_id !== idDispositivo(),
       admin: !!admin.data,
       revisado: Date.now(),
     }
@@ -108,6 +123,18 @@ export async function revisarAcceso(uid: string): Promise<Acceso | null> {
     return acceso
   } catch {
     return accesoGuardado(uid)
+  }
+}
+
+/**
+ * Deja este teléfono como el de la cuenta (al ingresar o al tocar "Usar aquí"): el que estaba antes queda fuera la
+ * próxima vez que revise. Si la base todavía no tiene esta función (antes de supabase/dispositivo.sql), no hace nada.
+ */
+export async function usarEsteDispositivo(): Promise<void> {
+  try {
+    await (await cliente()).rpc('usar_este_dispositivo', { p_id: idDispositivo() })
+  } catch {
+    // Sin conexión: se intenta de nuevo la próxima vez.
   }
 }
 
