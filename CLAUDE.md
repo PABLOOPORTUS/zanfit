@@ -83,7 +83,7 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 
 ## Evaluación y plan de entrenamiento
 
-- **Obligatoria al entrar:** quien no tiene perfil (cuenta nueva o que nunca se evaluó) parte directo en `/evaluacion`, sin barra inferior (`Layout`); solo puede abrir además Ajustes y `/admin`. Se espera la primera sincronización (o falta de conexión) para no mandar ahí a quien ya tiene su evaluación en la nube.
+- **Obligatoria al entrar:** quien no tiene perfil (cuenta nueva o que nunca se evaluó) parte directo en `/evaluacion`, sin barra inferior (`Layout`); solo puede abrir además Ajustes y `/admin`. Se espera una sincronización que funcione (no basta con estar sin señal) para no mandar ahí a quien ya tiene su evaluación en la nube.
 - **`/evaluacion?paso=N`:** una pregunta por pantalla, con barra de progreso. Cada paso es una entrada del historial, así que el botón atrás vuelve a la pregunta anterior; el estado vive en el componente. Si se entra directo a un paso, redirige al primero sin responder. Los pasos salen de `pasosPara(lugar)` (`lib/evaluacion.ts`). Pregunta:
   - Inicio con el aviso de que no reemplaza a un profesional (`AVISO_SALUD`, `<AvisoSalud>`; también aparece en /plan).
   - Sexo: **obligatorio, hombre o mujer** (la guía de rediseño lo pedía opcional, pero el dueño del producto lo quiere obligatorio: las referencias de fuerza son distintas). Edad, peso y altura también son obligatorios.
@@ -132,7 +132,8 @@ Historial de versiones: v1 eran tablas de prueba en español, que se eliminaron.
 - **Sincronización (`db/nube.ts`):** se sube la copia completa (`crearRespaldo`) y gana lo más reciente.
   - Los hooks de Dexie anotan en `localStorage` (`zanfit:cambio:<base>`) que hay cambios por subir, salvo durante `populate` y al restaurar desde la nube (`sinAnotarCambios`).
   - Se sincroniza 4 s después de cada cambio, al volver la conexión, al ocultar la app con cambios pendientes y al iniciar sesión.
-  - Si la nube es más nueva que lo último conocido y aquí no hay cambios más nuevos, se baja; si no, se sube.
+  - Si la nube es más nueva que lo último conocido y aquí no hay cambios más nuevos, se baja; si no, se sube. **Un teléfono que nunca bajó la copia de la nube** (recién instalado, otra dirección) **siempre baja primero**, aunque tenga cambios locales: así una base nueva nunca pisa los datos de la cuenta.
+  - La evaluación obligatoria (`Layout`) solo se exige después de una sincronización que funcionó (`ultimaSync`), nunca por falta de señal o un error: la evaluación puede estar en la nube.
   - Las **fotos y videos propios no se sincronizan** (se comparten con el archivo de Ajustes).
 - **El catálogo se completa solo (`completarCatalogo`):** una copia de la nube o un respaldo hechos con una versión anterior traen menos ejercicios, y restaurarlos reemplaza la tabla `exercises`. Por eso, después de cada `restaurarRespaldo` y al abrir la base (`on('ready')`) se agregan los del catálogo que falten, sin anotarlo como cambio local (para no pisar la nube). Pasó de verdad al publicar el catálogo de 873: el teléfono bajaba la copia vieja y quedaba con 79.
 - **Primer ingreso:** si la nube está vacía y hay datos sin cuenta en el teléfono (de antes de que la cuenta fuera obligatoria), se pregunta si guardarlos en la cuenta (`copiarInvitadoAUsuario`, que copia también las fotos y videos) o empezar de cero.

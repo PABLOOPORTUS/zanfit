@@ -81,7 +81,10 @@ async function bajar(uid: string): Promise<void> {
 export async function sincronizar(uid: string): Promise<ResultadoSync> {
   const remoto = await momentoRemoto(uid)
   const local = ultimoCambio(db.name)
-  if (remoto !== null && remoto > remotoConocido(uid) && (local === null || remoto >= local)) {
+  // Un teléfono que nunca bajó la copia de la nube (recién instalado, otra dirección) siempre baja primero: lo que tenga
+  // aquí es de antes de conocer la nube y no puede pisar los datos de la cuenta.
+  const nuncaBajo = remotoConocido(uid) === 0
+  if (remoto !== null && remoto > remotoConocido(uid) && (nuncaBajo || local === null || remoto >= local)) {
     await bajar(uid)
     return 'bajado'
   }

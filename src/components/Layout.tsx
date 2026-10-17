@@ -10,11 +10,11 @@ const SIN_EVALUACION = ['/evaluacion', '/ajustes', '/admin']
 
 export default function Layout() {
   const { pathname } = useLocation()
-  const { estado, ultimaSync } = useCuenta()
+  const { ultimaSync } = useCuenta()
   const perfil = usePerfil()
-  // Quien todavía no se evalúa parte directo en la evaluación, sin barra inferior. Se espera la primera
-  // sincronización (o que no haya conexión) para no mandar ahí a quien ya tiene su evaluación en la nube.
-  const sinEvaluar = perfil === null && (ultimaSync !== null || estado === 'sin-conexion' || estado === 'error')
+  // Quien todavía no se evalúa parte directo en la evaluación, sin barra inferior. Solo después de una sincronización
+  // que funcionó: si la nube no respondió (sin señal, error), puede que la evaluación esté allá y todavía no baje.
+  const sinEvaluar = perfil === null && ultimaSync !== null
   if (sinEvaluar && !SIN_EVALUACION.some((r) => pathname.startsWith(r))) return <Navigate to="/evaluacion" replace />
   const primeraEvaluacion = sinEvaluar && pathname.startsWith('/evaluacion')
   return (
