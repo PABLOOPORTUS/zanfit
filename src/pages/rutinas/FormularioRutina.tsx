@@ -1,13 +1,16 @@
 import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
+import CambiarEjercicio from '../../components/CambiarEjercicio'
 import SelectorEjercicios from '../../components/SelectorEjercicios'
 import Stepper from '../../components/Stepper'
 import { actualizarRutina, crearRutina, type DatosRutina } from '../../db/routines'
 import { useAjustes } from '../../hooks/useAjustes'
 import { useExercises } from '../../hooks/useExercises'
 import { usePanel } from '../../hooks/usePanel'
+import { usePerfil } from '../../hooks/usePlan'
 import { formatearDescanso } from '../../lib/formato'
+import { reemplazoEnRutina } from '../../lib/plan'
 import type { RoutineExercise } from '../../types'
 
 /** Formulario compartido por NuevaRutina (sin `id`) y EditarRutina (con `id`). */
@@ -16,13 +19,16 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
   const location = useLocation()
   const selector = usePanel('selectorEjercicios')
   const ejercicios = useExercises()
+  const perfil = usePerfil()
+  const cambio = usePanel('cambiarEjercicio')
+  const [cambiando, setCambiando] = useState<number | null>(null)
   const { descansoPorDefectoSeg } = useAjustes()
   const esNueva = id === undefined
   const [nombre, setNombre] = useState(inicial.nombre)
   const [items, setItems] = useState<RoutineExercise[]>(inicial.ejercicios)
   const [error, setError] = useState<string | null>(null)
 
-  const nombres = new Map((ejercicios ?? []).map((e) => [e.id!, e.nombre]))
+  const porId = new Map((ejercicios ?? []).map((e) => [e.id!, e]))
 
   type Campo = 'seriesObjetivo' | 'repsObjetivo' | 'descansoSeg'
   function cambiar(i: number, campo: Campo, actualizar: (anterior: number) => number) {
@@ -81,10 +87,42 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
               <li key={item.exerciseId} className="rounded-2xl border border-borde bg-superficie p-3">
                 <div className="flex items-start gap-1">
                   <span className="w-6 shrink-0 pt-3 font-marca text-lg font-bold text-texto-suave">{i + 1}</span>
-                  <p className="min-w-0 flex-1 pt-2.5 text-lg leading-snug font-semibold">{nombres.get(item.exerciseId) ?? 'Ejercicio eliminado'}</p>
-                  <BotonIcono etiqueta="Quitar" onClick={() => setItems((actual) => actual.filter((_, j) => j !== i))} d="M6 6l12 12M18 6 6 18" peligro />
+                  <p className="min-w-0 flex-1 pt-2.5 text-lg leading-snug font-semibold">
+                    {porId.get(item.exerciseId)?.nombre ?? 'Ejercicio eliminado'}
+                  </p>
+                  <BotonIcono
+                    etiqueta="Quitar"
+                    onClick={() => setItems((actual) => actual.filter((_, j) => j !== i))}
+                    d="M6 6l12 12M18 6 6 18"
+                    peligro
+                  />
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-3">
+                {porId.has(item.exerciseId) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCambiando(item.exerciseId)
+                      cambio.abrir()
+                    }}
+                    className="mt-1 ml-6 flex h-11 items-center gap-1.5 rounded-xl px-1 font-semibold text-lima active:bg-lima/10"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
+                    </svg>
+                    Cambiar por otro
+                  </button>
+                )}
+                <div className="mt-2 grid grid-cols-2 gap-3">
                   <Stepper etiqueta="Series" valor={item.seriesObjetivo} min={1} max={10} onChange={(f) => cambiar(i, 'seriesObjetivo', f)} />
                   <Stepper etiqueta="Reps" valor={item.repsObjetivo} min={1} max={50} onChange={(f) => cambiar(i, 'repsObjetivo', f)} />
                 </div>
@@ -134,12 +172,29 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
         </button>
       </form>
 
+      {cambio.abierto && cambiando !== null && porId.get(cambiando) && (
+        <CambiarEjercicio
+          exercise={porId.get(cambiando)!}
+          excluir={items.map((i) => i.exerciseId)}
+          onCerrar={cambio.cerrar}
+          onElegir={(nuevo) => {
+            const ejercicio = porId.get(nuevo)
+            if (ejercicio)
+              setItems((actual) => actual.map((item) => (item.exerciseId === cambiando ? reemplazoEnRutina(item, ejercicio, perfil) : item)))
+            cambio.cerrar()
+          }}
+        />
+      )}
+
       {selector.abierto && (
         <SelectorEjercicios
           excluir={items.map((i) => i.exerciseId)}
           onCerrar={selector.cerrar}
           onAgregar={(ids) => {
-            setItems((actual) => [...actual, ...ids.map((exerciseId) => ({ exerciseId, seriesObjetivo: 3, repsObjetivo: 10, descansoSeg: descansoPorDefectoSeg }))])
+            setItems((actual) => [
+              ...actual,
+              ...ids.map((exerciseId) => ({ exerciseId, seriesObjetivo: 3, repsObjetivo: 10, descansoSeg: descansoPorDefectoSeg })),
+            ])
             selector.cerrar()
           }}
         />
@@ -148,7 +203,19 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
   )
 }
 
-function BotonIcono({ etiqueta, onClick, disabled, d, peligro }: { etiqueta: string; onClick: () => void; disabled?: boolean; d: string; peligro?: boolean }) {
+function BotonIcono({
+  etiqueta,
+  onClick,
+  disabled,
+  d,
+  peligro,
+}: {
+  etiqueta: string
+  onClick: () => void
+  disabled?: boolean
+  d: string
+  peligro?: boolean
+}) {
   return (
     <button
       type="button"
@@ -157,7 +224,17 @@ function BotonIcono({ etiqueta, onClick, disabled, d, peligro }: { etiqueta: str
       aria-label={etiqueta}
       className={`flex size-12 shrink-0 items-center justify-center rounded-xl active:bg-borde disabled:opacity-25 ${peligro ? 'text-peligro' : 'text-texto'}`}
     >
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
         <path d={d} />
       </svg>
     </button>

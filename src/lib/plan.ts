@@ -405,6 +405,22 @@ export function alternativas(ejercicio: Exercise, catalogo: Exercise[], perfil: 
     .map(({ e }) => e)
 }
 
+/**
+ * El ejercicio de una rutina reemplazado por otro: mantiene series, reps y descanso; quita la nota del anterior y, si
+ * tenía peso sugerido (rutinas del plan), lo recalcula para el nuevo.
+ */
+export function reemplazoEnRutina(item: RoutineExercise, nuevo: Exercise, perfil: Perfil | null | undefined): RoutineExercise {
+  const patron = clasificar(nuevo)?.patron
+  const peso = item.pesoSugerido !== undefined && perfil && patron ? pesoSugerido(perfil, nuevo, patron) : undefined
+  return {
+    exerciseId: nuevo.id!,
+    seriesObjetivo: item.seriesObjetivo,
+    repsObjetivo: item.repsObjetivo,
+    descansoSeg: item.descansoSeg,
+    ...(peso !== undefined && { pesoSugerido: peso }),
+  }
+}
+
 // --- IA (ver lib/planIa.ts y api/plan-ia.ts) -------------------------------------------------------------------
 
 /** Rangos de la guía por objetivo, para compuestos principales y para aislamiento o accesorios. */

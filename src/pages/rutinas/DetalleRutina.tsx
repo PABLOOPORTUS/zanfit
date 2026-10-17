@@ -1,13 +1,15 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
+import CambiarEjercicio from '../../components/CambiarEjercicio'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
-import { duplicarRutina, eliminarRutina } from '../../db/routines'
+import { duplicarRutina, eliminarRutina, reemplazarEnRutina } from '../../db/routines'
 import { iniciarEntreno } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useExercises } from '../../hooks/useExercises'
 import { usePerfil } from '../../hooks/usePlan'
 import { useRoutine } from '../../hooks/useRoutines'
+import { usePanel } from '../../hooks/usePanel'
 import { useEntrenoActivo } from '../../hooks/useWorkouts'
 import { formatearDescanso } from '../../lib/formato'
 import { caloriasRutina, PESO_POR_DEFECTO } from '../../lib/calorias'
@@ -68,12 +70,21 @@ export default function DetalleRutina() {
         className={`${rutina.calentamiento?.length ? '' : 'mt-6'} divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie`}
       >
         {rutina.ejercicios.map((e, i) => (
-          <li key={e.exerciseId}>
-            <FilaEjercicio
-              numero={i + 1}
-              ejercicio={porId.get(e.exerciseId)}
-              detalle={`${e.seriesObjetivo} × ${e.repsObjetivo} reps${e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso ${formatearDescanso(e.descansoSeg)}${e.nota ? ` · ${e.nota}` : ''}`}
-            />
+          <li key={e.exerciseId} className="flex items-center">
+            <div className="min-w-0 flex-1">
+              <FilaEjercicio
+                numero={i + 1}
+                ejercicio={porId.get(e.exerciseId)}
+                detalle={`${e.seriesObjetivo} × ${e.repsObjetivo} reps${e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso ${formatearDescanso(e.descansoSeg)}${e.nota ? ` · ${e.nota}` : ''}`}
+              />
+            </div>
+            {porId.get(e.exerciseId) && (
+              <BotonCambiar
+                ejercicio={porId.get(e.exerciseId)!}
+                excluir={rutina.ejercicios.map((x) => x.exerciseId)}
+                onElegir={(nuevo) => reemplazarEnRutina(id, e.exerciseId, nuevo)}
+              />
+            )}
           </li>
         ))}
         {rutina.ejercicios.length === 0 && <li className="p-4 text-texto-suave">Esta rutina no tiene ejercicios.</li>}
@@ -121,6 +132,47 @@ export default function DetalleRutina() {
         />
       </div>
     </section>
+  )
+}
+
+/** "Cambiar" en cada ejercicio de la rutina: abre las alternativas y guarda el cambio al tiro. */
+function BotonCambiar({ ejercicio, excluir, onElegir }: { ejercicio: Exercise; excluir: number[]; onElegir: (id: number) => Promise<void> }) {
+  const panel = usePanel(`cambiar-${ejercicio.id}`)
+  return (
+    <>
+      <button
+        type="button"
+        onClick={panel.abrir}
+        aria-label={`Cambiar ${ejercicio.nombre} por otro ejercicio`}
+        className="flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-0.5 self-stretch border-l border-borde text-xs font-semibold text-texto-suave active:bg-borde"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
+        </svg>
+        Cambiar
+      </button>
+      {panel.abierto && (
+        <CambiarEjercicio
+          exercise={ejercicio}
+          excluir={excluir}
+          onCerrar={panel.cerrar}
+          onElegir={async (nuevo) => {
+            await onElegir(nuevo)
+            panel.cerrar()
+          }}
+        />
+      )}
+    </>
   )
 }
 

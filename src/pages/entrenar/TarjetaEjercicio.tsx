@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import GuiaEjercicio from '../../components/GuiaEjercicio'
 import ImagenEjercicio from '../../components/ImagenEjercicio'
-import CambiarEjercicio from './CambiarEjercicio'
+import CambiarEjercicio from '../../components/CambiarEjercicio'
 import { mediosDe } from '../../db/mediosEjercicios'
 import { nombresMusculos } from '../../lib/musculos'
 import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie, reemplazarEjercicio } from '../../db/workouts'
@@ -143,7 +143,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
       {selector.abierto && (
         <CambiarEjercicio
           exercise={exercise}
-          idsEnEntreno={idsEnEntreno}
+          excluir={idsEnEntreno}
           onCerrar={selector.cerrar}
           onElegir={async (nuevo) => {
             await reemplazarEjercicio(workoutId, exercise.id!, nuevo)

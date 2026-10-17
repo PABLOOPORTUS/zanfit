@@ -1,30 +1,30 @@
 import { useState } from 'react'
-import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
-import SelectorEjercicios from '../../components/SelectorEjercicios'
-import { mediosDe } from '../../db/mediosEjercicios'
-import { useExercises } from '../../hooks/useExercises'
-import { usePerfil } from '../../hooks/usePlan'
-import { etiquetaEquipo } from '../../lib/catalogos'
-import { nombresMusculos } from '../../lib/musculos'
-import { alternativas } from '../../lib/plan'
-import type { Equipo, Exercise } from '../../types'
+import MiniaturaEjercicio from './MiniaturaEjercicio'
+import SelectorEjercicios from './SelectorEjercicios'
+import { mediosDe } from '../db/mediosEjercicios'
+import { useExercises } from '../hooks/useExercises'
+import { usePerfil } from '../hooks/usePlan'
+import { etiquetaEquipo } from '../lib/catalogos'
+import { nombresMusculos } from '../lib/musculos'
+import { alternativas } from '../lib/plan'
+import type { Equipo, Exercise } from '../types'
 
 /** Cuántos se muestran por equipo (el resto se encuentra en "Buscar en todos"). */
 const POR_EQUIPO = 5
 
 type Props = {
   exercise: Exercise
-  idsEnEntreno: number[]
+  excluir: number[]
   onCerrar: () => void
   onElegir: (id: number) => void
 }
 
 /**
- * Reemplazar un ejercicio en el entreno (máquina ocupada, no le acomoda…): solo los que de verdad lo reemplazan
- * (`alternativas`), agrupados por equipo para elegir rápido otra cosa cuando el aparato está ocupado. Abajo se puede
- * buscar en toda la biblioteca.
+ * Reemplazar un ejercicio en el entreno o en una rutina (máquina ocupada, no le acomoda…): solo los que de verdad lo
+ * reemplazan (`alternativas`), agrupados por equipo para elegir rápido otra cosa cuando el aparato está ocupado. Abajo
+ * se puede buscar en toda la biblioteca.
  */
-export default function CambiarEjercicio({ exercise, idsEnEntreno, onCerrar, onElegir }: Props) {
+export default function CambiarEjercicio({ exercise, excluir, onCerrar, onElegir }: Props) {
   const ejercicios = useExercises()
   const perfil = usePerfil()
   const [buscarTodo, setBuscarTodo] = useState(false)
@@ -35,14 +35,14 @@ export default function CambiarEjercicio({ exercise, idsEnEntreno, onCerrar, onE
         titulo="Cambiar ejercicio"
         unico
         grupoInicial={exercise.grupoMuscular}
-        excluir={idsEnEntreno}
+        excluir={excluir}
         onCerrar={() => setBuscarTodo(false)}
         onAgregar={([nuevo]) => onElegir(nuevo)}
       />
     )
 
   const cargando = !ejercicios || perfil === undefined
-  const opciones = cargando ? [] : alternativas(exercise, ejercicios, perfil).filter((e) => !idsEnEntreno.includes(e.id!))
+  const opciones = cargando ? [] : alternativas(exercise, ejercicios, perfil).filter((e) => !excluir.includes(e.id!))
   // Agrupados por equipo: primero el mismo equipo y después en el orden de las mejores opciones.
   const grupos = new Map<Equipo, Exercise[]>()
   for (const e of opciones) grupos.set(e.equipo, [...(grupos.get(e.equipo) ?? []), e])
@@ -60,7 +60,7 @@ export default function CambiarEjercicio({ exercise, idsEnEntreno, onCerrar, onE
         </div>
         <p className="text-texto-suave">
           En vez de <span className="font-semibold text-texto">{exercise.nombre}</span>
-          {musculos && <>, estos trabajan lo mismo ({musculos})</>}. Tus series se mantienen.
+          {musculos && <>, estos trabajan lo mismo ({musculos})</>}. Se mantienen tus series y repeticiones.
         </p>
       </div>
 

@@ -1,4 +1,5 @@
 import { db } from '.'
+import { reemplazoEnRutina } from '../lib/plan'
 import { normalizar } from '../lib/texto'
 import type { Routine } from '../types'
 
@@ -14,6 +15,17 @@ export async function crearRutina(datos: DatosRutina): Promise<number> {
 
 export async function actualizarRutina(id: number, datos: DatosRutina): Promise<void> {
   await db.routines.update(id, limpiar(datos))
+}
+
+/** Cambia un ejercicio de la rutina por otro en la misma posición (ver `reemplazoEnRutina`). */
+export async function reemplazarEnRutina(id: number, anterior: number, nuevo: number): Promise<void> {
+  await db.transaction('rw', db.routines, db.exercises, db.perfil, async () => {
+    const [rutina, ejercicio, perfil] = await Promise.all([db.routines.get(id), db.exercises.get(nuevo), db.perfil.get('general')])
+    if (!rutina || !ejercicio) return
+    await db.routines.update(id, {
+      ejercicios: rutina.ejercicios.map((e) => (e.exerciseId === anterior ? reemplazoEnRutina(e, ejercicio, perfil) : e)),
+    })
+  })
 }
 
 /** Crea "Push (copia)", "Push (copia 2)"… y devuelve el id de la copia. */
