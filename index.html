@@ -13,8 +13,90 @@
     <meta name="apple-mobile-web-app-title" content="ZANFIT" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>ZANFIT</title>
+    <style>
+      /* Intro (igual que ESCENA): el ícono ZF aparece al centro y explota en chispas lima, una vez por apertura de la app. */
+      #intro {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: rgba(10, 10, 10, 1);
+        animation: intro-fondo 0.4s ease 0.9s forwards;
+        pointer-events: none;
+      }
+      #intro .intro-logo {
+        width: 112px;
+        height: 112px;
+        border-radius: 26px;
+        box-shadow: 0 14px 40px rgba(198, 255, 61, 0.3);
+        animation: intro-entra 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both, intro-explota 0.45s cubic-bezier(0.4, 0, 0.9, 0.6) 0.85s forwards;
+      }
+      #intro .chispa {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        margin: -8px 0 0 -8px;
+        border-radius: 50%;
+        background: #c6ff3d;
+        opacity: 0;
+        animation: intro-chispa 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) 0.85s forwards;
+      }
+      #intro .chispa:nth-child(even) {
+        background: #f5f5f5;
+        width: 10px;
+        height: 10px;
+        margin: -5px 0 0 -5px;
+      }
+      @keyframes intro-entra {
+        from { transform: scale(0.4); opacity: 0; }
+      }
+      @keyframes intro-explota {
+        to { transform: scale(2.4); opacity: 0; filter: blur(6px); }
+      }
+      @keyframes intro-chispa {
+        0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); }
+        100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(0.4); }
+      }
+      /* Solo se desvanece el fondo: las chispas siguen volando sobre la app. */
+      @keyframes intro-fondo {
+        to { background: rgba(10, 10, 10, 0); }
+      }
+      @keyframes intro-fondo-suave {
+        to { opacity: 0; visibility: hidden; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #intro .intro-logo, #intro .chispa { animation: none; }
+        #intro .chispa { display: none; }
+        #intro { animation: intro-fondo-suave 0.4s ease 0.4s forwards; }
+      }
+    </style>
   </head>
   <body>
+    <div id="intro" aria-hidden="true">
+      <img class="intro-logo" src="/icon-192.png" alt="" width="112" height="112" />
+    </div>
+    <script>
+      // Una vez por apertura de la app (no al recargar dentro de la misma sesión).
+      (function () {
+        var intro = document.getElementById('intro');
+        try {
+          if (sessionStorage.getItem('zanfit:intro')) { intro.remove(); return; }
+          sessionStorage.setItem('zanfit:intro', '1');
+        } catch (e) {}
+        var n = 14;
+        for (var i = 0; i < n; i++) {
+          var c = document.createElement('span');
+          c.className = 'chispa';
+          c.style.setProperty('--a', (i * 360) / n + (i % 2 ? 12 : 0) + 'deg');
+          c.style.setProperty('--d', 120 + (i % 3) * 55 + 'px');
+          intro.appendChild(c);
+        }
+        setTimeout(function () { intro.remove(); }, 1600);
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
