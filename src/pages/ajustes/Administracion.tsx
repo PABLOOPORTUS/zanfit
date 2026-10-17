@@ -279,7 +279,7 @@ function DatosDeVenta() {
           </span>
         </label>
         <label className="flex flex-col gap-2">
-          <span className="font-semibold">{datos.aporte_voluntario ? 'Aporte sugerido (opcional)' : 'Precio'}</span>
+          <span className="font-semibold">{datos.aporte_voluntario ? 'Precio (solo si vuelves a cobrar)' : 'Precio'}</span>
           <input
             value={datos.precio}
             onChange={(e) => cambiar({ precio: e.target.value })}

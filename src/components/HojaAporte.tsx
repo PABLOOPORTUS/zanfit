@@ -4,8 +4,8 @@ import { useCuenta } from '../hooks/useCuenta'
 import { datosVenta, enlaceWhatsapp, type DatosVenta } from '../lib/acceso'
 
 /**
- * "Apoya ZANFIT" (modo aporte voluntario): la app es gratis y quien quiera aporta por transferencia lo que quiera. Muestra
- * el aporte sugerido, los datos para transferir (con "Copiar") y un botón para avisar por WhatsApp. Sin presión.
+ * "Apoya ZANFIT" (modo aporte voluntario): la app es gratis y quien quiera aporta por transferencia lo que quiera, sin
+ * monto sugerido (pedido del dueño). Muestra los datos para transferir (con "Copiar") y un botón para avisar por WhatsApp. Sin presión.
  */
 export default function HojaAporte({ onCerrar }: { onCerrar: () => void }) {
   const { usuario } = useCuenta()
@@ -38,7 +38,6 @@ export default function HojaAporte({ onCerrar }: { onCerrar: () => void }) {
           <p className="mt-2 text-center text-texto-suave">
             ZANFIT es gratis y lo seguirá siendo. Si te sirve y quieres que siga creciendo, puedes hacer un aporte voluntario, del monto que quieras.
           </p>
-          {venta?.precio && <p className="mt-3 text-center text-sm text-texto-suave">Aporte sugerido: {venta.precio}</p>}
 
           {venta?.datos_transferencia && (
             <div className="mt-5 rounded-2xl bg-fondo p-4">
