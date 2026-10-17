@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>ZANFIT · afiche historia</title>
+<style>
+  /* Historia de Instagram 1080×1920 (mismo formato que el afiche de ESCENA). Contenido dentro de la zona segura (≈250 px
+     arriba y abajo). Las fuentes salen de node_modules (Space Grotesk e Inter, las de la app). */
+  @font-face { font-family: 'SG'; src: url('../node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2') format('woff2'); font-weight: 300 700; }
+  @font-face { font-family: 'Inter'; src: url('../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; }
+  @page { size: 1080px 1920px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; }
+  body {
+    position: relative;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: #f5f5f5;
+    font-family: 'Inter', sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Fondo: un brillo lima suave y una gran "ZF" de marca de agua */
+  .brillo { position: absolute; width: 1100px; height: 1100px; right: -520px; top: -420px; border-radius: 50%; background: radial-gradient(circle, rgba(198, 255, 61, 0.22), rgba(198, 255, 61, 0) 65%); }
+  .brillo2 { position: absolute; width: 900px; height: 900px; left: -480px; bottom: -200px; border-radius: 50%; background: radial-gradient(circle, rgba(198, 255, 61, 0.1), rgba(198, 255, 61, 0) 65%); }
+  .marca-agua { position: absolute; right: -70px; top: 520px; font-family: 'SG'; font-weight: 700; font-size: 640px; line-height: 1; color: rgba(198, 255, 61, 0.05); letter-spacing: -0.05em; }
+
+  .contenido { position: absolute; inset: 250px 90px 250px; display: flex; flex-direction: column; }
+  .logo { display: flex; align-items: center; gap: 30px; }
+  .icono { width: 150px; height: 150px; border-radius: 34px; background: #c6ff3d; color: #0a0a0a; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'SG'; }
+  .icono b { font-size: 70px; font-weight: 700; letter-spacing: -0.04em; line-height: 0.8; margin-top: 4px; }
+  .icono span { font-size: 13px; font-weight: 600; letter-spacing: 0.2em; padding-left: 0.2em; margin-top: 11px; }
+  .nombre { font-family: 'SG'; font-weight: 600; font-size: 64px; letter-spacing: 0.22em; }
+  .lema { margin-top: 44px; font-family: 'SG'; font-weight: 600; font-size: 62px; line-height: 1.06; letter-spacing: -0.02em; max-width: 860px; }
+  .lema em { font-style: normal; color: #c6ff3d; }
+  .lista { margin-top: 40px; display: flex; flex-direction: column; gap: 18px; font-size: 34px; font-weight: 500; }
+  .lista div { display: flex; gap: 20px; align-items: center; }
+  .lista b { display: grid; place-items: center; width: 64px; height: 64px; flex: none; border-radius: 18px; background: rgba(198, 255, 61, 0.12); font-size: 34px; }
+
+  .tarjeta {
+    margin-top: auto;
+    align-self: center;
+    width: 560px;
+    padding: 34px 34px 30px;
+    border-radius: 44px;
+    background: #fff;
+    color: #0a0a0a;
+    text-align: center;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(198, 255, 61, 0.35);
+  }
+  .tarjeta .qr { width: 380px; height: 380px; margin: 0 auto; }
+  .tarjeta .qr svg { width: 100%; height: 100%; display: block; }
+  .tarjeta h2 { margin-top: 22px; font-family: 'SG'; font-weight: 700; font-size: 46px; line-height: 1; letter-spacing: -0.01em; }
+  .tarjeta p { margin-top: 12px; font-size: 32px; font-weight: 700; color: #4d7a00; }
+  .pie { margin-top: 30px; text-align: center; font-size: 30px; font-weight: 500; color: #d4d4d4; }
+  .pie strong { font-weight: 700; color: #c6ff3d; }
+  .pie-web { margin-top: 10px; text-align: center; font-size: 26px; font-weight: 700; letter-spacing: 0.06em; color: #a3a3a3; }
+</style>
+</head>
+<body>
+  <div class="brillo"></div>
+  <div class="brillo2"></div>
+  <div class="marca-agua">ZF</div>
+
+  <main class="contenido">
+    <div class="logo">
+      <div class="icono"><b>ZF</b><span>ZANFIT</span></div>
+      <div class="nombre">ZANFIT</div>
+    </div>
+    <p class="lema">Tu plan de entrenamiento<br /><em>a tu medida</em></p>
+    <div class="lista">
+      <div><b>🎯</b>Plan personalizado según tu objetivo</div>
+      <div><b>🏋️</b>Más de 870 ejercicios con fotos</div>
+      <div><b>📈</b>Registra tus entrenos y récords</div>
+      <div><b>🦁</b>Sube de nivel y gana logros</div>
+    </div>
+
+    <section class="tarjeta">
+      <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" shape-rendering="crispEdges"><path fill="#FFFFFF" d="M0 0h33v33H0z"/><path stroke="#0A0A0A" d="M0 0.5h7m1 0h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h3m2 0h7M0 1.5h1m5 0h1m3 0h5m3 0h5m3 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h1m2 0h5m1 0h1m2 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m1 0h4m4 0h2m1 0h1m1 0h2m3 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m1 0h1m3 0h2m2 0h1m2 0h1m3 0h1m2 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h1m1 0h1m2 0h1m1 0h1m4 0h1m1 0h1m1 0h1m1 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h3m1 0h1m4 0h1m1 0h4M0 8.5h1m3 0h1m1 0h5m1 0h1m2 0h1m1 0h1m2 0h2m2 0h6m2 0h1M1 9.5h1m2 0h2m2 0h1m1 0h3m1 0h5m1 0h2m1 0h1m1 0h1m3 0h3M0 10.5h1m2 0h1m2 0h3m1 0h1m1 0h4m2 0h1m1 0h1m2 0h1m1 0h1m3 0h1m1 0h1M0 11.5h1m1 0h3m2 0h1m1 0h2m1 0h2m1 0h1m3 0h1m2 0h1m1 0h2m5 0h1M1 12.5h2m3 0h2m1 0h2m2 0h1m2 0h1m2 0h1m2 0h1m3 0h1m1 0h2M1 13.5h2m1 0h2m1 0h2m2 0h1m2 0h1m3 0h4m1 0h1m1 0h1m1 0h1m1 0h1M2 14.5h2m2 0h1m2 0h7m1 0h2m1 0h1m2 0h1m1 0h3m2 0h2M1 15.5h2m6 0h1m2 0h1m2 0h4m2 0h8M1 16.5h3m2 0h4m3 0h1m3 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m2 0h1M0 17.5h1m1 0h1m2 0h1m1 0h1m1 0h2m3 0h3m5 0h2m5 0h3M0 18.5h4m2 0h1m1 0h2m5 0h1m1 0h1m2 0h4m1 0h1m1 0h1m1 0h1m1 0h1M0 19.5h1m6 0h1m1 0h2m2 0h3m1 0h2m1 0h2m2 0h4m3 0h2M1 20.5h1m1 0h2m1 0h1m2 0h1m1 0h1m6 0h3m2 0h1m2 0h4M0 21.5h2m2 0h2m1 0h3m2 0h2m2 0h1m2 0h1m2 0h2m1 0h1m1 0h1m1 0h3M2 22.5h1m1 0h1m1 0h5m1 0h1m1 0h1m1 0h1m1 0h2m1 0h4m1 0h1m1 0h2m1 0h1M2 23.5h2m1 0h1m5 0h1m1 0h1m3 0h1m1 0h4m3 0h1m4 0h1M0 24.5h3m3 0h1m3 0h4m1 0h4m1 0h3m1 0h5M8 25.5h1m1 0h1m2 0h6m2 0h1m2 0h1m3 0h1m1 0h1M0 26.5h7m1 0h3m1 0h2m1 0h1m2 0h1m1 0h1m3 0h1m1 0h1m1 0h2M0 27.5h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h2m1 0h1m1 0h1m3 0h1m2 0h1M0 28.5h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h6m1 0h2M0 29.5h1m1 0h3m1 0h1m3 0h4m3 0h4m2 0h2m1 0h4m1 0h1M0 30.5h1m1 0h3m1 0h1m2 0h1m1 0h1m3 0h1m2 0h1m1 0h4m2 0h3m1 0h1M0 31.5h1m5 0h1m2 0h2m1 0h1m1 0h5m2 0h1m2 0h1m1 0h1m2 0h1M0 32.5h7m1 0h3m2 0h2m2 0h1m1 0h6m1 0h1m2 0h1m2 0h1"/></svg></div>
+      <h2>Escanéame y entrena</h2>
+      <p>zanfit.pages.dev</p>
+    </section>
+    <p class="pie"><strong>3 meses gratis</strong> · Para gimnasio, casa o aire libre</p>
+    <p class="pie-web">zanfit.pages.dev</p>
+  </main>
+</body>
+</html>
