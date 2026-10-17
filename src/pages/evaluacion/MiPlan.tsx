@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AvisoSalud from '../../components/AvisoSalud'
+import BotonCambiarEjercicio from '../../components/BotonCambiarEjercicio'
 import CuerpoMusculos from '../../components/CuerpoMusculos'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import ZonaEliminar from '../../components/ZonaEliminar'
 import { mediosDe } from '../../db/mediosEjercicios'
 import { eliminarPlan, guardarEvaluacion } from '../../db/plan'
+import { reemplazarEnRutina } from '../../db/routines'
 import { iniciarEntreno } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { useExercises } from '../../hooks/useExercises'
@@ -116,8 +118,11 @@ export default function MiPlan() {
                 {r.ejercicios.map((e) => {
                   const ejercicio = porId.get(e.exerciseId)
                   return (
-                    <li key={e.exerciseId}>
-                      <Link to={ejercicio ? `/ejercicios/${ejercicio.id}` : '#'} className="flex items-center gap-3 rounded-xl active:bg-borde">
+                    <li key={e.exerciseId} className="flex items-center gap-1">
+                      <Link
+                        to={ejercicio ? `/ejercicios/${ejercicio.id}` : '#'}
+                        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl active:bg-borde"
+                      >
                         {ejercicio && <MiniaturaEjercicio ejercicio={ejercicio} className="h-12 w-16" />}
                         <span className="min-w-0 flex-1">
                           <span className="block leading-snug font-semibold">{ejercicio?.nombre ?? 'Ejercicio eliminado'}</span>
@@ -134,6 +139,15 @@ export default function MiPlan() {
                           />
                         )}
                       </Link>
+                      {ejercicio && (
+                        <BotonCambiarEjercicio
+                          ejercicio={ejercicio}
+                          excluir={r.ejercicios.map((x) => x.exerciseId)}
+                          onElegir={(nuevo) => reemplazarEnRutina(r.id!, e.exerciseId, nuevo)}
+                          rutinaId={r.id}
+                          className="h-14 w-14 rounded-xl"
+                        />
+                      )}
                     </li>
                   )
                 })}
