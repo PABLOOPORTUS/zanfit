@@ -24,14 +24,14 @@ export default function RecordatorioInstalar() {
       <div className="flex items-center gap-3">
         <img src="/icon-192.png" alt="" className="size-12 shrink-0 rounded-xl" />
         <div>
-          <p className="font-marca text-lg leading-tight font-bold">¿Te gustó? Agrégala a tu pantalla de inicio</p>
+          <p className="font-marca text-lg leading-tight font-semibold">¿Te gustó? Agrégala a tu pantalla de inicio</p>
           <p className="text-sm text-texto-suave">Se abre como una app, a pantalla completa.</p>
         </div>
       </div>
       <button
         type="button"
         onClick={() => setAbierta(true)}
-        className="mt-3 h-12 w-full rounded-xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+        className="mt-3 h-12 w-full rounded-xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
       >
         Ver cómo (10 segundos)
       </button>

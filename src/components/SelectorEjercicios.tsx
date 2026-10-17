@@ -80,7 +80,7 @@ export default function SelectorEjercicios({
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="3"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -106,7 +106,7 @@ export default function SelectorEjercicios({
     <div className="fixed inset-0 z-40 flex flex-col bg-fondo" role="dialog" aria-modal="true" aria-label={titulo}>
       <div className="pt-safe mx-auto w-full max-w-lg border-b border-borde px-4 pb-3">
         <div className="flex h-12 items-center justify-between">
-          <h2 className="font-marca text-xl font-bold">{titulo}</h2>
+          <h2 className="font-marca text-xl font-semibold">{titulo}</h2>
           <button type="button" onClick={onCerrar} className="-mr-3 h-12 rounded-xl px-3 font-semibold text-texto-suave active:bg-superficie">
             Cancelar
           </button>
@@ -128,7 +128,7 @@ export default function SelectorEjercicios({
               onClick={() => setGrupo(g.valor)}
               aria-pressed={grupo === g.valor}
               className={`h-11 shrink-0 rounded-full border px-4 font-semibold ${
-                grupo === g.valor ? 'border-lima bg-lima text-fondo' : 'border-borde bg-superficie active:bg-borde'
+                grupo === g.valor ? 'border-lima/70 bg-lima/10 text-lima' : 'border-borde bg-superficie active:bg-borde'
               }`}
             >
               {g.etiqueta}
@@ -143,7 +143,7 @@ export default function SelectorEjercicios({
               onClick={() => setEquipo(q.valor)}
               aria-pressed={equipo === q.valor}
               className={`h-11 shrink-0 rounded-full border px-4 font-semibold ${
-                equipo === q.valor ? 'border-lima bg-lima text-fondo' : 'border-borde bg-superficie active:bg-borde'
+                equipo === q.valor ? 'border-lima/70 bg-lima/10 text-lima' : 'border-borde bg-superficie active:bg-borde'
               }`}
             >
               {q.etiqueta}
@@ -155,9 +155,9 @@ export default function SelectorEjercicios({
       <ul className="mx-auto w-full max-w-lg flex-1 divide-y divide-borde overflow-y-auto px-4 pb-4">
         {mostrarSugeridos && (
           <>
-            <li className="pt-4 pb-2 text-sm font-bold tracking-wide text-lima uppercase">Alternativas parecidas</li>
+            <li className="pt-4 pb-2 text-sm font-semibold tracking-wide text-lima uppercase">Alternativas parecidas</li>
             {sugeridos.map((e) => fila(e, `s${e.id}`))}
-            <li className="pt-6 pb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Todos</li>
+            <li className="pt-6 pb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Todos</li>
           </>
         )}
         {filtrados.slice(0, limite).map((e) => fila(e))}
@@ -183,7 +183,7 @@ export default function SelectorEjercicios({
             type="button"
             disabled={elegidos.length === 0}
             onClick={() => onAgregar(elegidos)}
-            className="h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
+            className="h-13 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
           >
             {elegidos.length === 0 ? 'Elige ejercicios' : `Agregar ${elegidos.length} ${elegidos.length === 1 ? 'ejercicio' : 'ejercicios'}`}
           </button>

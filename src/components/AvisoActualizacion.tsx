@@ -39,7 +39,7 @@ export default function AvisoActualizacion() {
         <button
           type="button"
           onClick={() => location.reload()}
-          className="h-12 shrink-0 rounded-xl bg-lima px-4 font-bold text-fondo active:bg-lima-oscuro"
+          className="h-12 shrink-0 rounded-xl bg-lima px-4 font-semibold text-fondo active:bg-lima-oscuro"
         >
           Actualizar
         </button>

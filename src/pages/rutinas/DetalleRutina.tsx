@@ -43,7 +43,7 @@ export default function DetalleRutina() {
   return (
     <section>
       <BotonVolver to="/rutinas">Rutinas</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">{rutina.nombre}</h1>
+      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">{rutina.nombre}</h1>
       {rutina.foco && (
         <p className="mt-1 text-texto-suave">
           {rutina.foco} · ~{duracionEstimada(rutina)} min · ~
@@ -54,7 +54,7 @@ export default function DetalleRutina() {
 
       {rutina.calentamiento && rutina.calentamiento.length > 0 && (
         <>
-          <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Calentamiento sugerido</h2>
+          <h2 className="mt-6 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Calentamiento sugerido</h2>
           <ol className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
             {rutina.calentamiento.map((c) => (
               <li key={c.exerciseId}>
@@ -62,7 +62,7 @@ export default function DetalleRutina() {
               </li>
             ))}
           </ol>
-          <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Ejercicios</h2>
+          <h2 className="mt-6 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Ejercicios</h2>
         </>
       )}
 
@@ -93,7 +93,7 @@ export default function DetalleRutina() {
       {activo ? (
         <Link
           to="/entrenar"
-          className="mt-6 flex h-13 items-center justify-center rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+          className="mt-6 flex h-13 items-center justify-center rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
         >
           Continuar entreno en curso
         </Link>
@@ -102,7 +102,7 @@ export default function DetalleRutina() {
           type="button"
           onClick={empezar}
           disabled={rutina.ejercicios.length === 0}
-          className="mt-6 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-50"
+          className="mt-6 h-13 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro disabled:opacity-50"
         >
           Empezar entreno
         </button>
@@ -138,7 +138,7 @@ export default function DetalleRutina() {
 function FilaEjercicio({ numero, ejercicio, detalle }: { numero?: number; ejercicio?: Exercise; detalle: string }) {
   const contenido = (
     <>
-      {numero !== undefined && <span className="w-5 shrink-0 font-marca text-lg font-bold text-texto-suave">{numero}</span>}
+      {numero !== undefined && <span className="w-5 shrink-0 font-marca text-lg font-semibold text-texto-suave">{numero}</span>}
       {ejercicio && <MiniaturaEjercicio ejercicio={ejercicio} className="h-14 w-20" />}
       <div className="min-w-0 flex-1">
         <p className="text-lg leading-snug font-semibold">{ejercicio?.nombre ?? 'Ejercicio eliminado'}</p>

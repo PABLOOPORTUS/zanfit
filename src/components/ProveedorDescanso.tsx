@@ -97,16 +97,16 @@ export default function ProveedorDescanso({ children }: { children: ReactNode })
                       {formatearCronometro(Math.ceil((descanso.fin - ahora) / 1000) * 1000)}
                     </p>
                   </div>
-                  <button type="button" onClick={() => api.sumar(15)} className="h-12 rounded-xl bg-borde px-4 font-bold active:bg-texto-suave/40">
+                  <button type="button" onClick={() => api.sumar(15)} className="h-12 rounded-xl bg-borde px-4 font-semibold active:bg-texto-suave/40">
                     +15s
                   </button>
-                  <button type="button" onClick={api.saltar} className="h-12 rounded-xl bg-lima px-4 font-bold text-fondo active:bg-lima-oscuro">
+                  <button type="button" onClick={api.saltar} className="h-12 rounded-xl bg-lima px-4 font-semibold text-fondo active:bg-lima-oscuro">
                     Saltar
                   </button>
                 </div>
               </>
             ) : (
-              <button type="button" onClick={() => setTerminado(false)} className="flex h-13 w-full items-center justify-center bg-lima text-lg font-bold text-fondo">
+              <button type="button" onClick={() => setTerminado(false)} className="flex h-13 w-full items-center justify-center bg-lima text-lg font-semibold text-fondo">
                 ¡Descanso terminado! A la siguiente serie
               </button>
             )}

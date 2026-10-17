@@ -49,7 +49,7 @@ export default function FormularioEjercicio({ id, inicial }: { id?: number; inic
       ) : (
         <BotonVolver to={`/ejercicios/${id}`}>{inicial.nombre}</BotonVolver>
       )}
-      <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">{esNuevo ? 'Nuevo ejercicio' : 'Editar ejercicio'}</h1>
+      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">{esNuevo ? 'Nuevo ejercicio' : 'Editar ejercicio'}</h1>
 
       <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-6" noValidate>
         <label className="flex flex-col gap-2">
@@ -95,7 +95,7 @@ export default function FormularioEjercicio({ id, inicial }: { id?: number; inic
         <button
           type="submit"
           disabled={guardando}
-          className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+          className="h-13 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro disabled:opacity-60"
         >
           {esNuevo ? 'Crear ejercicio' : 'Guardar cambios'}
         </button>

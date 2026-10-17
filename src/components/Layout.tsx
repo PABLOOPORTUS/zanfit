@@ -21,7 +21,10 @@ export default function Layout() {
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col">
       <header className="pt-safe sticky top-0 z-10 border-b border-borde bg-fondo/90 backdrop-blur">
         <div className="flex h-14 items-center justify-between pl-4 pr-1">
-          <Marca />
+          <span className="flex items-center gap-2.5">
+            <Marca tamano={30} />
+            <span className="font-marca text-sm font-semibold tracking-[0.2em] text-texto">ZANFIT</span>
+          </span>
           <Link to="/ajustes" aria-label="Perfil y ajustes" className="flex size-12 items-center justify-center rounded-xl active:bg-superficie">
             <Avatar className="size-9 text-base" />
           </Link>

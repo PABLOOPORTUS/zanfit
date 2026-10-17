@@ -30,7 +30,7 @@ export default function DatosEntreno({ resumen }: { resumen: ResumenEntreno }) {
 
       {resumen.records.length > 0 && (
         <div className="mt-4 rounded-2xl border border-lima/50 bg-lima/10 p-4">
-          <p className="font-marca text-lg font-bold text-lima">
+          <p className="font-marca text-lg font-semibold text-lima">
             {resumen.records.length === 1 ? '1 récord nuevo' : `${resumen.records.length} récords nuevos`}
           </p>
           <ul className="mt-2 flex flex-col gap-2">
@@ -54,7 +54,7 @@ function Dato({ titulo, valor }: { titulo: string; valor: string }) {
   return (
     <div className="rounded-2xl bg-superficie p-3">
       <dt className="text-xs text-texto-suave">{titulo}</dt>
-      <dd className="mt-1 font-marca text-lg leading-tight font-bold">{valor}</dd>
+      <dd className="mt-1 font-marca text-lg leading-tight font-semibold">{valor}</dd>
     </div>
   )
 }

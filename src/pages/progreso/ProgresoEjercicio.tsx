@@ -29,7 +29,7 @@ export default function ProgresoEjercicio() {
   return (
     <section>
       <BotonVolver to="/progreso?vista=records">Récords</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl leading-tight font-bold tracking-tight">{ejercicio.nombre}</h1>
+      <h1 className="mt-2 font-marca text-3xl leading-tight font-semibold tracking-tight">{ejercicio.nombre}</h1>
       <Link to={`/ejercicios/${id}`} className="mt-1 inline-flex h-12 items-center font-semibold text-lima">
         Ver cómo se hace
       </Link>
@@ -46,17 +46,17 @@ export default function ProgresoEjercicio() {
             <Dato titulo="Sesiones" valor={String(puntos.length)} />
           </dl>
 
-          <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Peso máximo por sesión</h2>
+          <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Peso máximo por sesión</h2>
           <div className="rounded-2xl bg-superficie p-3">
             <GraficoProgreso datos={puntos} campo="pesoMaximo" tipo="linea" />
           </div>
 
-          <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Volumen por sesión</h2>
+          <h2 className="mt-6 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Volumen por sesión</h2>
           <div className="rounded-2xl bg-superficie p-3">
             <GraficoProgreso datos={puntos} campo="volumen" tipo="barras" />
           </div>
 
-          <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Sesiones</h2>
+          <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Sesiones</h2>
           <div className="overflow-x-auto rounded-2xl bg-superficie">
             <table className="w-full text-left text-sm whitespace-nowrap tabular-nums">
               <thead className="text-xs text-texto-suave">
@@ -96,7 +96,7 @@ function Dato({ titulo, valor }: { titulo: string; valor: string }) {
   return (
     <div className="rounded-2xl bg-superficie p-3">
       <dt className="text-xs text-texto-suave">{titulo}</dt>
-      <dd className="mt-1 font-marca text-lg font-bold">{valor}</dd>
+      <dd className="mt-1 font-marca text-lg font-semibold">{valor}</dd>
     </div>
   )
 }

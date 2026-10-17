@@ -7,7 +7,7 @@ export default function Creditos() {
   return (
     <section>
       <BotonVolver to="/ajustes">Ajustes</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">Créditos</h1>
+      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">Créditos</h1>
       <p className="mt-2 text-texto-suave">Recursos de terceros que usa ZANFIT. Gracias a sus autores.</p>
 
       <Bloque titulo="Fotos de los ejercicios">

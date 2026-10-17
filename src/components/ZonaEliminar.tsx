@@ -54,7 +54,7 @@ export default function ZonaEliminar({
         >
           Cancelar
         </button>
-        <button type="button" onClick={onEliminar} className="h-12 rounded-2xl bg-peligro font-bold text-fondo active:opacity-80">
+        <button type="button" onClick={onEliminar} className="h-12 rounded-2xl bg-peligro font-semibold text-fondo active:opacity-80">
           {textoConfirmar}
         </button>
       </div>

@@ -46,7 +46,7 @@ export default function CalentamientoEntreno({ workoutId, pasos }: { workoutId: 
 
   return (
     <section className="rounded-2xl border border-lima/40 bg-superficie p-4" aria-label="Calentamiento">
-      <p className="font-marca text-xl font-bold">Primero, calienta</p>
+      <p className="font-marca text-xl font-semibold">Primero, calienta</p>
       <p className="text-sm text-texto-suave">Unos minutos para preparar el cuerpo y evitar lesiones.</p>
       <ul className="mt-3 flex flex-col gap-2">
         {pasos.map((p) => {
@@ -77,7 +77,7 @@ export default function CalentamientoEntreno({ workoutId, pasos }: { workoutId: 
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="3"
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
@@ -93,7 +93,7 @@ export default function CalentamientoEntreno({ workoutId, pasos }: { workoutId: 
       <button
         type="button"
         onClick={() => terminar(true)}
-        className="mt-4 h-12 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+        className="mt-4 h-12 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
       >
         Listo, a entrenar
       </button>

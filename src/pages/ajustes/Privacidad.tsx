@@ -7,7 +7,7 @@ export default function Privacidad() {
   return (
     <section>
       <BotonVolver to="/ajustes">Ajustes</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">Privacidad</h1>
+      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">Privacidad</h1>
       <p className="mt-2 text-texto-suave">Qué datos usa ZANFIT, dónde se guardan y con quién se comparten.</p>
 
       <Bloque titulo="Qué guardamos">

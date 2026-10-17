@@ -46,11 +46,11 @@ export default function MiPlan() {
   if (perfil === null || datos === null) {
     return (
       <section>
-        <h1 className="font-marca text-3xl font-bold tracking-tight">Tu plan</h1>
+        <h1 className="font-marca text-3xl font-semibold tracking-tight">Tu plan</h1>
         <p className="mt-4 rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">
           Todavía no tienes un plan. Responde la evaluación y te armamos uno a tu medida.
         </p>
-        <Link to="/evaluacion" className="mt-4 flex h-13 items-center justify-center rounded-2xl bg-lima font-bold text-fondo">
+        <Link to="/evaluacion" className="mt-4 flex h-13 items-center justify-center rounded-2xl bg-lima font-semibold text-fondo">
           Hacer la evaluación
         </Link>
       </section>
@@ -69,7 +69,7 @@ export default function MiPlan() {
   return (
     <section>
       <p className="font-semibold text-lima">Tu plan personalizado</p>
-      <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">
+      <h1 className="font-marca text-3xl leading-tight font-semibold tracking-tight">
         {rutinas.length} {rutinas.length === 1 ? 'día' : 'días'} por semana
       </h1>
       <p className="mt-2 text-texto-suave">{DESCRIPCION_DIVISION[plan.division]}</p>
@@ -98,7 +98,7 @@ export default function MiPlan() {
         </div>
       </div>
 
-      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tu semana</h2>
+      <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Tu semana</h2>
       <ol className="flex flex-col gap-3">
         {rutinas.map((r) => {
           const toca = r.id === siguienteId
@@ -106,14 +106,14 @@ export default function MiPlan() {
             <li key={r.id} className={`rounded-2xl border bg-superficie p-4 ${toca ? 'border-lima' : 'border-borde'}`}>
               <div className="flex items-start gap-2">
                 <Link to={`/rutinas/${r.id}`} className="min-w-0 flex-1">
-                  <p className="font-marca text-xl leading-tight font-bold">{r.nombre.replace(/^Plan · /, '')}</p>
+                  <p className="font-marca text-xl leading-tight font-semibold">{r.nombre.replace(/^Plan · /, '')}</p>
                   {r.foco && <p className="text-texto-suave">{r.foco}</p>}
                   <p className="text-sm text-texto-suave">
                     {r.ejercicios.length} ejercicios · ~{duracionEstimada(r)} min · ~{caloriasRutina(r, duracionEstimada(r), porId, perfil.pesoKg)}{' '}
                     kcal
                   </p>
                 </Link>
-                {toca && <span className="shrink-0 rounded-full bg-lima px-2 py-0.5 text-xs font-bold text-fondo">Hoy</span>}
+                {toca && <span className="shrink-0 rounded-full bg-lima px-2 py-0.5 text-xs font-semibold text-fondo">Hoy</span>}
               </div>
               <ul className="mt-3 flex flex-col gap-2">
                 {r.ejercicios.map((e) => {
@@ -159,7 +159,7 @@ export default function MiPlan() {
                 <button
                   type="button"
                   onClick={() => empezar(r.id!)}
-                  className="mt-4 h-12 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+                  className="mt-4 h-12 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
                 >
                   Empezar este día
                 </button>
@@ -169,7 +169,7 @@ export default function MiPlan() {
         })}
       </ol>
 
-      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Recomendaciones</h2>
+      <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Recomendaciones</h2>
       <ul className="flex flex-col gap-2">
         {recomendaciones(perfil).map((r) => (
           <li
@@ -237,7 +237,7 @@ function Respuestas({ perfil }: { perfil: Perfil }) {
   ]
   return (
     <>
-      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tus respuestas</h2>
+      <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Tus respuestas</h2>
       <ul className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
         {filas.map(([paso, titulo, valor]) => (
           <li key={paso}>

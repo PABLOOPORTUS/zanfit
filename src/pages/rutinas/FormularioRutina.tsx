@@ -66,7 +66,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
   return (
     <section>
       {esNueva ? <BotonVolver to="/rutinas">Rutinas</BotonVolver> : <BotonVolver to={`/rutinas/${id}`}>{inicial.nombre}</BotonVolver>}
-      <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">{esNueva ? 'Nueva rutina' : 'Editar rutina'}</h1>
+      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">{esNueva ? 'Nueva rutina' : 'Editar rutina'}</h1>
 
       <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-6" noValidate>
         <label className="flex flex-col gap-2">
@@ -91,7 +91,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
             {items.map((item, i) => (
               <li key={item.exerciseId} className="rounded-2xl bg-superficie p-3">
                 <div className="flex items-start gap-1">
-                  <span className="w-6 shrink-0 pt-3 font-marca text-lg font-bold text-texto-suave">{i + 1}</span>
+                  <span className="w-6 shrink-0 pt-3 font-marca text-lg font-semibold text-texto-suave">{i + 1}</span>
                   <p className="min-w-0 flex-1 pt-2.5 text-lg leading-snug font-semibold">
                     {porId.get(item.exerciseId)?.nombre ?? 'Ejercicio eliminado'}
                   </p>
@@ -117,7 +117,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2.5"
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       aria-hidden
@@ -176,7 +176,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
             }}
             className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-lima/60 font-semibold text-lima active:bg-lima/10"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
               <path d="M12 5v14M5 12h14" />
             </svg>
             Agregar ejercicios
@@ -189,7 +189,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
           </p>
         )}
 
-        <button type="submit" className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
+        <button type="submit" className="h-13 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro">
           {esNueva ? 'Crear rutina' : 'Guardar cambios'}
         </button>
       </form>
@@ -254,7 +254,7 @@ function BotonIcono({
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden

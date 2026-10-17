@@ -14,7 +14,7 @@ export default function ListaRutinas() {
 
   return (
     <section className="pb-20">
-      <h1 className="font-marca text-3xl font-bold tracking-tight">Rutinas</h1>
+      <h1 className="font-marca text-3xl font-semibold tracking-tight">Rutinas</h1>
 
       {rutinas.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">
@@ -27,8 +27,8 @@ export default function ListaRutinas() {
             return (
               <li key={r.id}>
                 <Link to={`/rutinas/${r.id}`} className="block rounded-2xl bg-superficie p-4 active:bg-borde">
-                  {delPlan.has(r.id!) && <p className="text-xs font-bold tracking-wide text-lima uppercase">Tu plan</p>}
-                  <p className="font-marca text-lg leading-tight font-bold break-words">{r.nombre}</p>
+                  {delPlan.has(r.id!) && <p className="text-xs font-semibold tracking-wide text-lima uppercase">Tu plan</p>}
+                  <p className="font-marca text-lg leading-tight font-semibold break-words">{r.nombre}</p>
                   <p className="mt-0.5 text-sm text-texto-suave">
                     {r.ejercicios.length} {r.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'} · {series} series
                   </p>

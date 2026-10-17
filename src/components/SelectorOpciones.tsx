@@ -19,7 +19,7 @@ export default function SelectorOpciones<T extends string>({ leyenda, opciones, 
             onClick={() => onChange(o.valor)}
             aria-pressed={valor === o.valor}
             className={`h-12 rounded-2xl border px-2 font-semibold transition-colors ${
-              valor === o.valor ? 'border-lima bg-lima text-fondo' : 'border-borde bg-superficie active:bg-borde'
+              valor === o.valor ? 'border-lima/70 bg-lima/10 text-lima' : 'border-borde bg-superficie active:bg-borde'
             }`}
           >
             {o.etiqueta}

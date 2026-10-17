@@ -56,8 +56,8 @@ export default function ElegirEntreno() {
 
       {hoy ? (
         <div className="mt-4 animate-entrar rounded-2xl border border-lima bg-lima/10 p-4 [animation-delay:240ms]">
-          <p className="text-sm font-bold tracking-wide text-lima uppercase">Tu plan · Hoy te toca</p>
-          <p className="mt-1 font-marca text-xl leading-tight font-bold">{hoy.nombre.replace(/^Plan · /, '')}</p>
+          <p className="text-sm font-semibold tracking-wide text-lima uppercase">Tu plan · Hoy te toca</p>
+          <p className="mt-1 font-marca text-xl leading-tight font-semibold">{hoy.nombre.replace(/^Plan · /, '')}</p>
           <p className="text-sm text-texto-suave">
             {hoy.ejercicios.length} ejercicios · ~{duracionEstimada(hoy)} min · ~
             {caloriasRutina(hoy, duracionEstimada(hoy), porId, perfil?.pesoKg ?? PESO_POR_DEFECTO)} kcal
@@ -78,7 +78,7 @@ export default function ElegirEntreno() {
           <button
             type="button"
             onClick={() => iniciarEntreno(hoy.id)}
-            className="mt-4 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+            className="mt-4 h-13 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
           >
             Empezar
           </button>
@@ -89,14 +89,14 @@ export default function ElegirEntreno() {
       ) : (
         perfil === null && (
           <Link to="/evaluacion" className="mt-6 block rounded-2xl border border-lima/60 bg-superficie p-4 active:bg-borde">
-            <p className="font-marca text-xl font-bold">Arma tu plan personalizado</p>
+            <p className="font-marca text-xl font-semibold">Arma tu plan personalizado</p>
             <p className="mt-1 text-texto-suave">Responde 9 preguntas y te armamos un plan según tu objetivo, tu experiencia y tu tiempo.</p>
-            <span className="mt-3 inline-flex h-12 items-center rounded-xl bg-lima px-5 font-bold text-fondo">Empezar evaluación</span>
+            <span className="mt-3 inline-flex h-12 items-center rounded-xl bg-lima px-5 font-semibold text-fondo">Empezar evaluación</span>
           </Link>
         )
       )}
 
-      <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">{hoy ? 'Otras rutinas' : 'Elige una rutina'}</h2>
+      <h2 className="mt-6 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">{hoy ? 'Otras rutinas' : 'Elige una rutina'}</h2>
       {rutinas.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center">
           <p className="text-texto-suave">Todavía no tienes rutinas.</p>
@@ -120,13 +120,13 @@ export default function ElegirEntreno() {
                   className="flex min-h-20 w-full items-center gap-3 rounded-2xl bg-superficie p-4 text-left active:bg-borde disabled:opacity-50"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="line-clamp-2 font-marca text-lg leading-tight font-bold break-words">{r.nombre}</span>
+                    <span className="line-clamp-2 font-marca text-lg leading-tight font-semibold break-words">{r.nombre}</span>
                     <span className="text-sm text-texto-suave">
                       {delPlan.has(r.id!) && <span className="font-semibold text-lima">Plan · </span>}
                       {r.ejercicios.length} {r.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'}
                     </span>
                   </span>
-                  <span className="flex h-12 items-center gap-1 rounded-full bg-lima pr-4 pl-3 font-bold text-fondo">
+                  <span className="flex h-12 items-center gap-1 rounded-full bg-lima pr-4 pl-3 font-semibold text-fondo">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                       <path d="M8 5v14l11-7z" />
                     </svg>

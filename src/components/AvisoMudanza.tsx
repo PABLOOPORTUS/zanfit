@@ -35,10 +35,10 @@ export default function AvisoMudanza() {
       <main className="pt-safe pb-safe relative mx-auto min-h-dvh max-w-lg px-4">
         <FondoAcceso />
         <div className="pt-10 pb-6 text-center">
-          <Marca className="text-5xl drop-shadow-lg" />
+          <Marca tamano={88} />
         </div>
         <section className="animate-entrar rounded-2xl border border-lima/50 bg-fondo/85 p-5 backdrop-blur">
-          <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">ZANFIT se cambió de dirección</h1>
+          <h1 className="font-marca text-3xl leading-tight font-semibold tracking-tight">ZANFIT se cambió de dirección</h1>
           <p className="mt-2 text-texto-suave">
             Ahora estamos en <span className="font-semibold text-texto select-all">{DIRECCION.replace('https://', '')}</span>. Tu cuenta, tus entrenos
             y tu plan te esperan allá: solo ingresa con tu correo y tu PIN.
@@ -50,7 +50,7 @@ export default function AvisoMudanza() {
           </ol>
           <a
             href={destino}
-            className="mt-5 flex h-13 items-center justify-center rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+            className="mt-5 flex h-13 items-center justify-center rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
           >
             {segundos > 0 ? `Te llevamos en ${segundos}…` : 'Ir a la nueva dirección'}
           </a>

@@ -21,7 +21,7 @@ export default function MiniaturaEjercicio({ ejercicio, className = 'size-16' }:
     return (
       <span className={marco} aria-hidden>
         <img src={propia} alt="" className="size-full object-cover" />
-        {propios?.[0]?.tipo === 'video' && <span className="absolute right-1 bottom-0.5 text-xs font-bold text-white drop-shadow">▶</span>}
+        {propios?.[0]?.tipo === 'video' && <span className="absolute right-1 bottom-0.5 text-xs font-semibold text-white drop-shadow">▶</span>}
       </span>
     )
   }

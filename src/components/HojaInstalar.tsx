@@ -30,7 +30,7 @@ export default function HojaInstalar({ onCerrar }: { onCerrar: () => void }) {
         <div className="px-5 pt-3 pb-5">
           <div className="mx-auto h-1.5 w-12 rounded-full bg-borde" aria-hidden />
           <img src="/icon-192.png" alt="" className="mx-auto mt-5 size-16 rounded-2xl shadow-lg shadow-lima/30" />
-          <h2 id="titulo-instalar" className="mt-4 text-center font-marca text-2xl leading-tight font-bold tracking-tight">
+          <h2 id="titulo-instalar" className="mt-4 text-center font-marca text-2xl leading-tight font-semibold tracking-tight">
             Lleva <span className="text-lima">ZANFIT</span> en tu celular
           </h2>
           <p className="mt-2 text-center text-texto-suave">
@@ -66,7 +66,7 @@ export default function HojaInstalar({ onCerrar }: { onCerrar: () => void }) {
                     role="tab"
                     aria-selected={vista === v}
                     onClick={() => setVista(v)}
-                    className={`h-11 rounded-xl font-semibold ${vista === v ? 'bg-lima text-fondo' : 'text-texto-suave active:bg-borde'}`}
+                    className={`h-11 rounded-xl font-semibold ${vista === v ? 'bg-borde text-lima shadow-sm shadow-black/40' : 'text-texto-suave active:bg-borde'}`}
                   >
                     {v === 'iphone' ? 'iPhone' : 'Android'}
                   </button>
@@ -91,7 +91,7 @@ export default function HojaInstalar({ onCerrar }: { onCerrar: () => void }) {
                   onClick={async () => {
                     if (await instalar()) listo()
                   }}
-                  className="mt-5 h-13 w-full rounded-2xl bg-lima text-xl font-bold text-fondo active:bg-lima-oscuro"
+                  className="mt-5 h-13 w-full rounded-2xl bg-lima text-xl font-semibold text-fondo active:bg-lima-oscuro"
                 >
                   Instalar ZANFIT
                 </button>
@@ -115,7 +115,7 @@ export default function HojaInstalar({ onCerrar }: { onCerrar: () => void }) {
             <button type="button" onClick={onCerrar} className="h-12 rounded-2xl border border-borde font-semibold active:bg-borde">
               Ahora no
             </button>
-            <button type="button" onClick={listo} className="h-12 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
+            <button type="button" onClick={listo} className="h-12 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro">
               Ya la instalé
             </button>
           </div>
@@ -133,7 +133,7 @@ function Pasos({ children }: { children: ReactNode }) {
 function Paso({ n, children }: { n: number; children: ReactNode }) {
   return (
     <li className="flex items-start gap-3 leading-snug">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-lima font-marca font-bold text-fondo">{n}</span>
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-lima font-marca font-semibold text-fondo">{n}</span>
       <span className="pt-1">{children}</span>
     </li>
   )

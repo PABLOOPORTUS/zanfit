@@ -12,8 +12,8 @@ export default function MetaSemanal() {
     <div className={`rounded-2xl p-4 ${cumplida ? 'bg-lima/10 ring-1 ring-lima/60' : 'bg-superficie'}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold tracking-wider text-texto-suave uppercase">Esta semana</p>
-          <p className="font-marca text-2xl leading-tight font-bold">
+          <p className="text-xs font-semibold tracking-wider text-texto-suave uppercase">Esta semana</p>
+          <p className="font-marca text-2xl leading-tight font-semibold">
             {hechos} <span className="text-base font-semibold text-texto-suave">de {meta} entrenos</span>
           </p>
         </div>
@@ -24,7 +24,7 @@ export default function MetaSemanal() {
           >
             <span className="flex items-center gap-0.5">
               <img src="/medios/animales/fuego.webp" alt="" className="size-6" />
-              <span className="font-marca text-lg leading-none font-bold text-lima">{racha}</span>
+              <span className="font-marca text-lg leading-none font-semibold text-lima">{racha}</span>
             </span>
             <span className="text-[11px] leading-tight text-texto-suave">{racha === 1 ? 'semana' : 'semanas'} de racha</span>
           </Link>

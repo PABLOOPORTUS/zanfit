@@ -12,7 +12,7 @@ export default function FraseMotivadora() {
     return () => clearInterval(id)
   }, [])
   return (
-    <p key={indice} className="mt-2 animate-subir-frase font-marca text-xl font-bold text-white drop-shadow-lg">
+    <p key={indice} className="mt-2 animate-subir-frase font-marca text-xl font-semibold text-white drop-shadow-lg">
       {FRASES[indice % FRASES.length]}
     </p>
   )

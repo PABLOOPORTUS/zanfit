@@ -89,7 +89,7 @@ function Panel() {
   return (
     <section className="pb-10">
       <BotonVolver to="/ajustes">Ajustes</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">Administración</h1>
+      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">Administración</h1>
       <p className="mt-1 text-texto-suave">
         {activas} {activas === 1 ? 'cuenta activa' : 'cuentas activas'} · {enPrueba} en prueba · {porConfirmar.length} por activar
       </p>
@@ -138,7 +138,7 @@ function Panel() {
         <ul className="flex flex-col gap-2">
           {pendientes.map((c) => (
             <li key={c.codigo} className="rounded-2xl bg-superficie p-4">
-              <p className="font-marca text-xl font-bold tracking-wider select-all">{c.codigo}</p>
+              <p className="font-marca text-xl font-semibold tracking-wider select-all">{c.codigo}</p>
               <p className="text-sm text-texto-suave">
                 {c.tipo === 'prueba' ? `Prueba de ${c.dias} días` : 'Compra'} · {formatearFecha(new Date(c.creado_en).getTime())}
                 {c.nota ? ` · ${c.nota}` : ''}
@@ -172,7 +172,7 @@ function NuevoCodigo({ onCreado }: { onCreado: () => Promise<void> }) {
 
   return (
     <div className="mt-6 rounded-2xl border border-lima/50 bg-superficie p-4">
-      <p className="font-marca text-xl font-bold">Nuevo código</p>
+      <p className="font-marca text-xl font-semibold">Nuevo código</p>
       <div className="mt-3">
         <SelectorOpciones
           leyenda="Tipo"
@@ -212,18 +212,18 @@ function NuevoCodigo({ onCreado }: { onCreado: () => Promise<void> }) {
             setCreando(false)
           }
         }}
-        className="mt-4 h-12 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+        className="mt-4 h-12 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro disabled:opacity-60"
       >
         {creando ? 'Creando…' : 'Generar código'}
       </button>
       {creado && (
         <div className="mt-4 animate-aparecer rounded-2xl border border-lima bg-lima/10 p-4 text-center">
           <p className="text-sm text-texto-suave">{creado.tipo === 'prueba' ? `Código de prueba (${creado.dias} días)` : 'Código de compra'}</p>
-          <p className="mt-1 font-marca text-3xl font-bold tracking-wider text-lima select-all">{creado.codigo}</p>
+          <p className="mt-1 font-marca text-3xl font-semibold tracking-wider text-lima select-all">{creado.codigo}</p>
           <button
             type="button"
             onClick={() => void compartirCodigo(creado)}
-            className="mt-3 h-12 w-full rounded-xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+            className="mt-3 h-12 w-full rounded-xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
           >
             Enviar por WhatsApp u otra app
           </button>
@@ -304,7 +304,7 @@ function DatosDeVenta() {
               setError((e as Error).message)
             }
           }}
-          className="h-12 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+          className="h-12 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
         >
           {guardado ? 'Guardado ✓' : 'Guardar'}
         </button>
@@ -402,11 +402,11 @@ function Estado({ cuenta: c }: { cuenta: Cuenta }) {
             : quedan(c.activa_hasta) === 0
               ? ['Venció', 'border-peligro/60 text-peligro']
               : [`Activa hasta ${formatearFecha(new Date(c.activa_hasta).getTime())}`, 'border-lima bg-lima text-fondo']
-  return <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-bold ${clase}`}>{texto}</span>
+  return <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${clase}`}>{texto}</span>
 }
 
 function Titulo({ children }: { children: ReactNode }) {
-  return <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">{children}</h2>
+  return <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">{children}</h2>
 }
 
 function Boton({ children, onClick, principal = false }: { children: ReactNode; onClick: () => void; principal?: boolean }) {

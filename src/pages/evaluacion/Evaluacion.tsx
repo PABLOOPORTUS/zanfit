@@ -150,7 +150,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.5"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden
@@ -373,7 +373,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
                       type="button"
                       aria-pressed={b.salud[i] === si}
                       onClick={() => cambiar({ salud: b.salud.map((r, j) => (j === i ? si : r)) })}
-                      className={`h-12 rounded-xl border font-semibold ${b.salud[i] === si ? 'border-lima bg-lima text-fondo' : 'border-borde active:bg-borde'}`}
+                      className={`h-12 rounded-xl border font-semibold ${b.salud[i] === si ? 'border-lima/70 bg-lima/10 text-lima' : 'border-borde active:bg-borde'}`}
                     >
                       {si ? 'Sí' : 'No'}
                     </button>
@@ -389,7 +389,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         type="button"
         onClick={siguiente}
         disabled={!valido[paso] || guardando}
-        className="mt-8 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
+        className="mt-8 h-13 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
       >
         {guardando
           ? 'Armando tu plan…'
@@ -410,7 +410,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
 function Pregunta({ titulo, detalle, children }: { titulo: string; detalle?: string; children: ReactNode }) {
   return (
     <div>
-      <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">{titulo}</h1>
+      <h1 className="font-marca text-3xl leading-tight font-semibold tracking-tight">{titulo}</h1>
       {detalle && <p className="mt-2 text-texto-suave">{detalle}</p>}
       <div className="mt-6 flex flex-col gap-3">{children}</div>
     </div>
@@ -437,7 +437,7 @@ function Campo({ etiqueta, sufijo, valor, onChange, error, modo }: PropsCampo) {
           value={valor}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={Boolean(error)}
-          className={`h-12 w-full rounded-2xl border bg-superficie pr-16 pl-4 font-marca text-xl font-bold focus:outline-none ${error ? 'border-peligro' : 'border-borde focus:border-lima'}`}
+          className={`h-12 w-full rounded-2xl border bg-superficie pr-16 pl-4 font-marca text-xl font-semibold focus:outline-none ${error ? 'border-peligro' : 'border-borde focus:border-lima'}`}
         />
         <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-texto-suave">{sufijo}</span>
       </span>

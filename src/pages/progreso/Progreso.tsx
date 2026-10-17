@@ -20,7 +20,7 @@ export default function Progreso() {
 
   return (
     <section>
-      <h1 className="font-marca text-3xl font-bold tracking-tight">Progreso</h1>
+      <h1 className="font-marca text-3xl font-semibold tracking-tight">Progreso</h1>
 
       <div className="mt-4">
         <CalendarioEntrenos fechas={fechas} />
@@ -34,7 +34,7 @@ export default function Progreso() {
             role="tab"
             aria-selected={vista === v}
             onClick={() => setParams(v === 'historial' ? {} : { vista: v }, { replace: true })}
-            className={`h-12 rounded-xl font-semibold ${vista === v ? 'bg-lima text-fondo' : 'text-texto-suave active:bg-borde'}`}
+            className={`h-12 rounded-xl font-semibold ${vista === v ? 'bg-borde text-lima shadow-sm shadow-black/40' : 'text-texto-suave active:bg-borde'}`}
           >
             {{ historial: 'Historial', records: 'Récords', logros: 'Logros' }[v]}
           </button>
@@ -62,14 +62,14 @@ function Historial() {
     <div className="flex flex-col gap-6">
       {[...porMes.entries()].map(([titulo, filasMes]) => (
         <div key={titulo}>
-          <h2 className="mb-2 px-1 text-sm font-bold tracking-wide text-texto-suave uppercase">{titulo}</h2>
+          <h2 className="mb-2 px-1 text-sm font-semibold tracking-wide text-texto-suave uppercase">{titulo}</h2>
           <ul className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
             {filasMes.map((f) => (
               <li key={f.workout.id}>
                 <Link to={`/progreso/entrenos/${f.workout.id}`} className="flex min-h-13 items-center gap-4 px-4 py-3 active:bg-borde">
                   <div className="w-11 shrink-0 text-center">
                     <p className="text-xs text-texto-suave uppercase">{diaSemana.format(f.workout.fechaInicio).replace('.', '')}</p>
-                    <p className="font-marca text-2xl leading-none font-bold">{new Date(f.workout.fechaInicio).getDate()}</p>
+                    <p className="font-marca text-2xl leading-none font-semibold">{new Date(f.workout.fechaInicio).getDate()}</p>
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 text-lg leading-snug font-semibold">{f.workout.nombre}</p>
@@ -106,7 +106,7 @@ function Records() {
                 <p className="text-sm text-texto-suave">Último: {formatearFecha(r.ultimaVez)}</p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="font-marca text-lg leading-tight font-bold">
+                <p className="font-marca text-lg leading-tight font-semibold">
                   {u.peso(r.pesoMaximo)} <span className="text-sm font-normal text-texto-suave">× {r.repsPesoMaximo}</span>
                 </p>
                 <p className="text-sm text-texto-suave">1RM {u.peso(r.mejor1RM, 1)}</p>
@@ -131,7 +131,7 @@ function Logros() {
   return (
     <div>
       <Niveles />
-      <h2 className="mt-6 mb-2 px-1 text-sm font-bold tracking-wide text-texto-suave uppercase">Medallas</h2>
+      <h2 className="mt-6 mb-2 px-1 text-sm font-semibold tracking-wide text-texto-suave uppercase">Medallas</h2>
       <p className="px-1 text-texto-suave">
         Tienes <span className="font-semibold text-texto">{ganados.length}</span> de {logros.length} logros.
         {siguiente && (
@@ -175,7 +175,7 @@ function Niveles() {
   if (!juego) return null
   return (
     <div>
-      <h2 className="mb-2 px-1 text-sm font-bold tracking-wide text-texto-suave uppercase">Niveles</h2>
+      <h2 className="mb-2 px-1 text-sm font-semibold tracking-wide text-texto-suave uppercase">Niveles</h2>
       <p className="px-1 text-texto-suave">
         Tienes <span className="font-semibold text-lima">{juego.puntos.toLocaleString('es-CL')} puntos</span>. Ganas puntos al terminar entrenos,
         completar series y días del plan, y romper récords.

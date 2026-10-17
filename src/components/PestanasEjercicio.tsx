@@ -37,7 +37,7 @@ export default function PestanasEjercicio({ ejercicio, pestana, onCambiar }: Pro
             role="tab"
             aria-selected={actual === p.valor}
             onClick={() => cambiar(p.valor)}
-            className={`h-12 rounded-xl text-sm font-semibold ${actual === p.valor ? 'bg-lima text-fondo' : 'text-texto-suave active:bg-borde'}`}
+            className={`h-12 rounded-xl text-sm font-semibold ${actual === p.valor ? 'bg-borde text-lima shadow-sm shadow-black/40' : 'text-texto-suave active:bg-borde'}`}
           >
             {p.etiqueta}
           </button>

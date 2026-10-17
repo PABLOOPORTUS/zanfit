@@ -26,7 +26,7 @@ export default function CompartirApp() {
             await navigator.clipboard?.writeText(`${TEXTO}\n${link}`).catch(() => undefined)
           }
         }}
-        className="mt-3 h-12 w-full rounded-xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+        className="mt-3 h-12 w-full rounded-xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
       >
         Compartir link
       </button>

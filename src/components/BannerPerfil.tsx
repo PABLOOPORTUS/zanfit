@@ -31,7 +31,7 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
         <img src={fotoPerfil} alt="" className="absolute inset-0 size-full object-cover object-[center_30%]" />
       ) : (
         <span className="absolute inset-0 bg-gradient-to-br from-lima/40 via-superficie to-fondo" aria-hidden>
-          <span className="absolute -top-6 -right-4 font-marca text-[7rem] leading-none font-bold text-lima/20">
+          <span className="absolute -top-6 -right-4 font-marca text-[7rem] leading-none font-semibold text-lima/20">
             {nombre.charAt(0).toUpperCase()}
           </span>
         </span>
@@ -40,7 +40,7 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
       <span className="absolute inset-0 bg-gradient-to-t from-fondo via-fondo/50 to-transparent" aria-hidden />
       <span className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-4">
         <span className="min-w-0 flex-1">
-          <span className="block font-marca text-2xl leading-tight font-bold tracking-tight drop-shadow-lg">
+          <span className="block font-marca text-2xl leading-tight font-semibold tracking-tight drop-shadow-lg">
             {editable ? nombre : nombre ? `Hola, ${nombre}` : 'Hola'}
           </span>
           {detalle && <span className="block text-sm text-texto/80 drop-shadow">{detalle}</span>}
@@ -49,7 +49,7 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
           <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-lima/50 bg-fondo/70 py-1 pr-3 pl-1 backdrop-blur">
             <img src={`/medios/animales/${juego.nivel.archivo}-quieto.webp`} alt="" className="size-8" />
             <span className="text-left leading-tight">
-              <span className="block text-[11px] font-bold text-lima uppercase">Nivel {juego.nivel.numero}</span>
+              <span className="block text-[11px] font-semibold text-lima uppercase">Nivel {juego.nivel.numero}</span>
               <span className="block text-sm font-semibold">{juego.nivel.animal}</span>
             </span>
           </span>

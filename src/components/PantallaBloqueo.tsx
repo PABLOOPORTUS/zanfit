@@ -44,17 +44,17 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
     <main className="pt-safe pb-safe relative mx-auto min-h-dvh max-w-lg px-4">
       <FondoAcceso />
       <div className="pt-8 pb-6 text-center">
-        <Marca className="text-4xl drop-shadow-lg" />
+        <Marca tamano={72} />
       </div>
       <section className="animate-entrar rounded-2xl border border-borde bg-fondo/80 p-5 backdrop-blur">
-        <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">{textos.titulo}</h1>
+        <h1 className="font-marca text-3xl leading-tight font-semibold tracking-tight">{textos.titulo}</h1>
         <p className="mt-2 text-texto-suave">{textos.detalle}</p>
 
-        {venta?.precio && <p className="mt-4 font-marca text-4xl font-bold text-lima">{venta.precio}</p>}
+        {venta?.precio && <p className="mt-4 font-marca text-4xl font-semibold text-lima">{venta.precio}</p>}
         <ul className="mt-4 flex flex-col gap-1.5 text-sm">
           {INCLUYE.map((x) => (
             <li key={x} className="flex gap-2">
-              <span className="font-bold text-lima" aria-hidden>
+              <span className="font-semibold text-lima" aria-hidden>
                 ✓
               </span>
               {x}
@@ -63,7 +63,7 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
         </ul>
         {venta?.datos_transferencia && (
           <div className="mt-4 rounded-2xl bg-superficie p-4">
-            <p className="text-sm font-bold tracking-wide text-texto-suave uppercase">Datos para transferir</p>
+            <p className="text-sm font-semibold tracking-wide text-texto-suave uppercase">Datos para transferir</p>
             <p className="mt-2 leading-relaxed whitespace-pre-line select-all">{venta.datos_transferencia}</p>
           </div>
         )}
@@ -78,7 +78,7 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
             href={whatsapp}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-whatsapp font-bold text-fondo active:opacity-80"
+            className="mt-4 flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-whatsapp font-semibold text-fondo active:opacity-80"
           >
             <IconoWhatsapp className="size-7" />
             Escríbeme por WhatsApp
@@ -103,7 +103,7 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
             setRevisando(false)
             if (!nuevo || !puedeUsar(nuevo)) setAviso('Todavía no está activa. Apenas confirmemos tu pago, se activa y podrás entrar.')
           }}
-          className={`mt-3 h-12 w-full rounded-2xl font-bold disabled:opacity-60 ${whatsapp ? 'border border-lima/60 text-lima active:bg-lima/10' : 'bg-lima text-fondo active:bg-lima-oscuro'}`}
+          className={`mt-3 h-12 w-full rounded-2xl font-semibold disabled:opacity-60 ${whatsapp ? 'border border-lima/60 text-lima active:bg-lima/10' : 'bg-lima text-fondo active:bg-lima-oscuro'}`}
         >
           {revisando ? 'Revisando…' : 'Ya pagué: revisar de nuevo'}
         </button>

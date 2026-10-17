@@ -93,14 +93,14 @@ export default function Cuenta() {
   if (eligiendo) {
     return (
       <Pantalla>
-        <h1 className="font-marca text-3xl leading-tight font-bold tracking-tight">¡Bienvenido a tu cuenta!</h1>
+        <h1 className="font-marca text-3xl leading-tight font-semibold tracking-tight">¡Bienvenido a tu cuenta!</h1>
         <p className="mt-2 text-texto-suave">En este teléfono ya tienes entrenos guardados sin cuenta. ¿Qué hacemos con ellos?</p>
         <div className="mt-6 flex flex-col gap-3">
           <button
             type="button"
             disabled={enviando}
             onClick={() => elegir('subir')}
-            className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+            className="h-13 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro disabled:opacity-60"
           >
             Guardarlos en mi cuenta
           </button>
@@ -123,7 +123,7 @@ export default function Cuenta() {
   return (
     // Crear cuenta tiene más campos: se compacta para que quepa en la pantalla igual que Ingresar.
     <Pantalla compacto={registro}>
-      <h1 className="font-marca text-3xl font-bold tracking-tight">{registro ? 'Crea tu cuenta' : 'Ingresa a tu cuenta'}</h1>
+      <h1 className="font-marca text-3xl font-semibold tracking-tight">{registro ? 'Crea tu cuenta' : 'Ingresa a tu cuenta'}</h1>
       <p className="mt-2 text-texto-suave">
         {registro
           ? 'Pruébala gratis por 7 días. Sin tarjeta ni compromiso.'
@@ -149,7 +149,7 @@ export default function Cuenta() {
               setParams(t.valor ? { modo: 'registro' } : {}, { replace: true })
               setError(null)
             }}
-            className={`h-12 rounded-xl font-semibold ${registro === t.valor ? 'bg-lima text-fondo' : 'text-texto-suave active:bg-borde'}`}
+            className={`h-12 rounded-xl font-semibold ${registro === t.valor ? 'bg-borde text-lima shadow-sm shadow-black/40' : 'text-texto-suave active:bg-borde'}`}
           >
             {t.texto}
           </button>
@@ -165,7 +165,7 @@ export default function Cuenta() {
               autoCapitalize="characters"
               autoComplete="off"
               spellCheck={false}
-              className={`${claseInput} font-marca font-bold tracking-wider`}
+              className={`${claseInput} font-marca font-semibold tracking-wider`}
               placeholder="ZF-XXXX-XXXX"
             />
           </Campo>
@@ -236,7 +236,7 @@ export default function Cuenta() {
         <button
           type="submit"
           disabled={enviando}
-          className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+          className="h-13 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro disabled:opacity-60"
         >
           {enviando ? 'Un momento…' : registro ? 'Crear cuenta' : 'Ingresar'}
         </button>
@@ -258,7 +258,7 @@ function Pantalla({ children, compacto = false }: { children: ReactNode; compact
       <FondoAcceso />
       <PopupInstalar />
       <div className={`text-center ${compacto ? 'pt-6 pb-4' : 'pt-10 pb-8'}`}>
-        <Marca className={`${compacto ? 'text-4xl' : 'text-5xl'} drop-shadow-lg`} />
+        <Marca tamano={compacto ? 64 : 88} />
         <FraseMotivadora />
       </div>
       <section className="pb-10">{children}</section>
@@ -301,7 +301,7 @@ function InputPin({
       autoComplete={nuevo ? 'new-password' : 'current-password'}
       value={valor}
       onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
-      className={`${claseInput} font-marca font-bold ${angosto ? 'px-3 text-xl tracking-[0.2em]' : 'text-2xl tracking-[0.5em]'}`}
+      className={`${claseInput} font-marca font-semibold ${angosto ? 'px-3 text-xl tracking-[0.2em]' : 'text-2xl tracking-[0.5em]'}`}
       placeholder="••••••"
     />
   )

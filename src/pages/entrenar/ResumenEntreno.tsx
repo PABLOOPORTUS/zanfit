@@ -33,7 +33,7 @@ export default function ResumenEntreno() {
     return (
       <section>
         <p className="rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">No encontramos este entreno.</p>
-        <Link to="/entrenar" className="mt-4 flex h-12 items-center justify-center rounded-2xl bg-lima font-bold text-fondo">
+        <Link to="/entrenar" className="mt-4 flex h-12 items-center justify-center rounded-2xl bg-lima font-semibold text-fondo">
           Volver a Entrenar
         </Link>
       </section>
@@ -66,7 +66,7 @@ export default function ResumenEntreno() {
       <Confeti cantidad={subio ? 110 : 60} />
 
       <p className="animate-entrar font-semibold text-lima">Entreno terminado</p>
-      <h1 className="animate-entrar font-marca text-4xl font-bold tracking-tight [animation-delay:80ms]">¡Buen trabajo!</h1>
+      <h1 className="animate-entrar font-marca text-4xl font-semibold tracking-tight [animation-delay:80ms]">¡Buen trabajo!</h1>
       <p className="mt-1 animate-entrar text-texto-suave [animation-delay:120ms]">
         {resumen.workout.nombre} · {formatearFechaLarga(resumen.workout.fechaInicio)}
       </p>
@@ -74,8 +74,8 @@ export default function ResumenEntreno() {
       {subio && (
         <div className="mt-5 animate-aparecer rounded-2xl border-2 border-lima bg-lima/10 p-5 text-center">
           <img src={`/medios/animales/${ahora.archivo}.webp`} alt="" className="mx-auto size-32 animate-flotar" />
-          <p className="mt-2 text-sm font-bold tracking-wide text-lima uppercase">¡Subiste de nivel!</p>
-          <p className="font-marca text-3xl font-bold">
+          <p className="mt-2 text-sm font-semibold tracking-wide text-lima uppercase">¡Subiste de nivel!</p>
+          <p className="font-marca text-3xl font-semibold">
             Nivel {ahora.numero}: {ahora.animal}
           </p>
           <p className="mt-1 text-texto-suave">{ahora.frase}</p>
@@ -108,13 +108,13 @@ export default function ResumenEntreno() {
 
       {cosa && (
         <p className="mt-4 animate-entrar rounded-2xl bg-superficie p-4 text-lg leading-snug [animation-delay:300ms]">
-          Levantaste <span className="font-bold text-lima">{u.volumen(resumen.volumen)}</span> en total: más que {cosa}.
+          Levantaste <span className="font-semibold text-lima">{u.volumen(resumen.volumen)}</span> en total: más que {cosa}.
         </p>
       )}
 
       {nuevos.length > 0 && (
         <div className="mt-4 rounded-2xl border border-lima bg-lima/10 p-4">
-          <p className="font-marca text-xl font-bold text-lima">
+          <p className="font-marca text-xl font-semibold text-lima">
             {nuevos.length === 1 ? '¡Logro desbloqueado!' : `¡${nuevos.length} logros desbloqueados!`}
           </p>
           <ul className="mt-3 flex flex-col gap-3">
@@ -167,7 +167,7 @@ export default function ResumenEntreno() {
       <Link
         to="/entrenar"
         replace
-        className="mt-6 flex h-13 items-center justify-center rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+        className="mt-6 flex h-13 items-center justify-center rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
       >
         Listo
       </Link>

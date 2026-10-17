@@ -23,7 +23,7 @@ export default function ImagenEjercicio({ ejercicio, className = 'h-48 w-full' }
       <span className={`${marco} bg-fondo`}>
         <img src={propia} alt="" className="size-full object-cover" />
         {propios?.[0]?.tipo === 'video' && (
-          <span className="absolute top-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-bold text-white">▶ Tu video</span>
+          <span className="absolute top-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">▶ Tu video</span>
         )}
       </span>
     )

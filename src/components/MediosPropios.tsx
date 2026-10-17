@@ -84,7 +84,7 @@ export default function MediosPropios({ ejercicio }: { ejercicio: Exercise }) {
                   setConfirmando(false)
                   setIndice(0)
                 }}
-                className="h-12 rounded-xl bg-peligro font-bold text-fondo"
+                className="h-12 rounded-xl bg-peligro font-semibold text-fondo"
               >
                 Sí, eliminar
               </button>
@@ -127,7 +127,7 @@ function BotonMiniatura({ medio, activo, onClick }: { medio: MedioPropio; activo
       className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${activo ? 'border-lima' : 'border-transparent'}`}
     >
       {url && <img src={url} alt="" className="size-full object-cover" />}
-      {medio.tipo === 'video' && <span className="absolute right-1 bottom-0.5 text-xs font-bold text-white drop-shadow">▶</span>}
+      {medio.tipo === 'video' && <span className="absolute right-1 bottom-0.5 text-xs font-semibold text-white drop-shadow">▶</span>}
     </button>
   )
 }

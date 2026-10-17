@@ -58,7 +58,7 @@ export default function ListaEjercicios() {
   return (
     <section className="pb-20">
       <div className="flex items-baseline justify-between">
-        <h1 className="font-marca text-3xl font-bold tracking-tight">Ejercicios</h1>
+        <h1 className="font-marca text-3xl font-semibold tracking-tight">Ejercicios</h1>
         {ejercicios && <span className="text-sm text-texto-suave">{ejercicios.length} en total</span>}
       </div>
 
@@ -79,7 +79,7 @@ export default function ListaEjercicios() {
             aria-label="Borrar búsqueda"
             className="absolute top-1 right-1 flex size-12 items-center justify-center rounded-xl text-texto-suave active:bg-borde"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
           </button>
@@ -126,7 +126,7 @@ export default function ListaEjercicios() {
         <>
           {secciones.map((s) => (
             <div key={s.valor} className="mt-6">
-              <h2 className="mb-2 flex items-baseline gap-2 px-1 text-sm font-bold tracking-wide text-texto-suave uppercase">
+              <h2 className="mb-2 flex items-baseline gap-2 px-1 text-sm font-semibold tracking-wide text-texto-suave uppercase">
                 {s.etiqueta}
                 <span className="font-normal">{s.total}</span>
               </h2>
@@ -178,7 +178,7 @@ export default function ListaEjercicios() {
           {nombreBuscado && (
             <Link
               to={`/ejercicios/nuevo?${new URLSearchParams({ nombre: nombreBuscado, ...(grupo && { grupo }) })}`}
-              className="mt-4 inline-flex h-12 items-center justify-center rounded-2xl bg-lima px-6 font-bold text-fondo active:bg-lima-oscuro"
+              className="mt-4 inline-flex h-12 items-center justify-center rounded-2xl bg-lima px-6 font-semibold text-fondo active:bg-lima-oscuro"
             >
               Crear «{nombreBuscado}»
             </Link>
@@ -198,7 +198,7 @@ function Chip({ activo, onClick, children }: { activo: boolean; onClick: () => v
       onClick={onClick}
       aria-pressed={activo}
       className={`h-11 shrink-0 rounded-full border px-4 font-semibold transition-colors ${
-        activo ? 'border-lima bg-lima text-fondo' : 'border-borde bg-superficie text-texto active:bg-borde'
+        activo ? 'border-lima/70 bg-lima/10 text-lima' : 'border-borde bg-superficie text-texto active:bg-borde'
       }`}
     >
       {children}

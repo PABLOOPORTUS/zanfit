@@ -33,7 +33,7 @@ export default function DetalleEntreno() {
   return (
     <section>
       <BotonVolver to="/progreso">Progreso</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl font-bold tracking-tight">{workout.nombre}</h1>
+      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">{workout.nombre}</h1>
       <p className="mt-1 text-texto-suave">
         {formatearFechaLarga(workout.fechaInicio)} · {formatearHora(workout.fechaInicio)}
         {workout.fechaFin && `–${formatearHora(workout.fechaFin)}`}
@@ -43,13 +43,13 @@ export default function DetalleEntreno() {
         <DatosEntreno resumen={resumen} />
       </div>
 
-      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Ejercicios</h2>
+      <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Ejercicios</h2>
       <div className="flex flex-col gap-3">
         {resumen.bloques.map((b) => (
           <div key={b.exercise.id} className="rounded-2xl bg-superficie p-4">
             <p className="flex items-center gap-2 text-lg font-semibold">
               {b.exercise.nombre}
-              {conRecord.has(b.exercise.id!) && <span className="rounded-full bg-lima px-2 py-0.5 text-xs font-bold text-fondo">Récord</span>}
+              {conRecord.has(b.exercise.id!) && <span className="rounded-full bg-lima px-2 py-0.5 text-xs font-semibold text-fondo">Récord</span>}
             </p>
             <ol className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
               {b.sets.map((s, i) => (

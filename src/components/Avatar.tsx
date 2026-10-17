@@ -9,7 +9,7 @@ export default function Avatar({ className = 'size-10 text-lg' }: { className?: 
   if (fotoPerfil) return <img src={fotoPerfil} alt="" className={`${base} object-cover`} />
   if (usuario)
     return (
-      <span className={`${base} bg-lima font-marca font-bold text-fondo`} aria-hidden>
+      <span className={`${base} bg-lima font-marca font-semibold text-fondo`} aria-hidden>
         {usuario.nombre.charAt(0).toUpperCase()}
       </span>
     )

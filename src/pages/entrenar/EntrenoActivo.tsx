@@ -80,12 +80,12 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
     <section className="pb-28">
       <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-10 -mx-4 -mt-4 flex items-center gap-3 border-b border-borde bg-fondo/95 px-4 py-3 backdrop-blur">
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 font-marca text-xl leading-tight font-bold tracking-tight">{workout.nombre}</p>
+          <p className="line-clamp-2 font-marca text-xl leading-tight font-semibold tracking-tight">{workout.nombre}</p>
           <p className="text-sm text-texto-suave tabular-nums">
             <span className="font-semibold text-lima">{formatearCronometro(ahora - workout.fechaInicio)}</span> · {completadas}/{total} series
           </p>
         </div>
-        <button type="button" onClick={finalizar.abrir} className="h-12 rounded-xl bg-lima px-5 font-bold text-fondo active:bg-lima-oscuro">
+        <button type="button" onClick={finalizar.abrir} className="h-12 rounded-xl bg-lima px-5 font-semibold text-fondo active:bg-lima-oscuro">
           Finalizar
         </button>
       </div>
@@ -115,7 +115,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
               type="button"
               aria-pressed={modo === valor}
               onClick={() => setModo(valor)}
-              className={`h-11 rounded-xl text-sm font-semibold ${modo === valor ? 'bg-lima text-fondo' : 'text-texto-suave active:bg-borde'}`}
+              className={`h-11 rounded-xl text-sm font-semibold ${modo === valor ? 'bg-borde text-lima shadow-sm shadow-black/40' : 'text-texto-suave active:bg-borde'}`}
             >
               {etiqueta}
             </button>
@@ -175,12 +175,12 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
             <button
               type="button"
               onClick={() => ir(indice + 1)}
-              className={`h-12 rounded-2xl font-bold ${actualCompleto ? 'bg-lima text-fondo active:bg-lima-oscuro' : 'bg-superficie active:bg-borde'}`}
+              className={`h-12 rounded-2xl font-semibold ${actualCompleto ? 'bg-lima text-fondo active:bg-lima-oscuro' : 'bg-superficie active:bg-borde'}`}
             >
               Siguiente ›
             </button>
           ) : (
-            <button type="button" onClick={finalizar.abrir} className="h-12 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
+            <button type="button" onClick={finalizar.abrir} className="h-12 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro">
               Finalizar
             </button>
           )}
@@ -192,7 +192,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
         onClick={selector.abrir}
         className="mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-lima/60 font-semibold text-lima active:bg-lima/10"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
           <path d="M12 5v14M5 12h14" />
         </svg>
         Agregar ejercicio
@@ -231,7 +231,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
             <div className="p-5">
               {completadas > 0 ? (
                 <>
-                  <p className="font-marca text-2xl font-bold">¿Terminaste?</p>
+                  <p className="font-marca text-2xl font-semibold">¿Terminaste?</p>
                   <p className="mt-1 text-texto-suave">
                     Completaste {completadas} de {total} series.
                     {completadas < total && ' Las series sin marcar no se guardan.'}
@@ -239,19 +239,19 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
                   <button
                     type="button"
                     onClick={confirmarFinalizar}
-                    className="mt-5 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
+                    className="mt-5 h-13 w-full rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro"
                   >
                     Finalizar entreno
                   </button>
                 </>
               ) : (
                 <>
-                  <p className="font-marca text-2xl font-bold">No has marcado ninguna serie</p>
+                  <p className="font-marca text-2xl font-semibold">No has marcado ninguna serie</p>
                   <p className="mt-1 text-texto-suave">Un entreno sin series no se guarda. ¿Quieres descartarlo?</p>
                   <button
                     type="button"
                     onClick={descartar}
-                    className="mt-5 h-13 w-full rounded-2xl bg-peligro font-bold text-fondo active:opacity-80"
+                    className="mt-5 h-13 w-full rounded-2xl bg-peligro font-semibold text-fondo active:opacity-80"
                   >
                     Descartar entreno
                   </button>

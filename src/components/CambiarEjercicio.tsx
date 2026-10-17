@@ -53,7 +53,7 @@ export default function CambiarEjercicio({ exercise, excluir, onCerrar, onElegir
     <div className="fixed inset-0 z-40 flex flex-col bg-fondo" role="dialog" aria-modal="true" aria-label="Cambiar ejercicio">
       <div className="pt-safe mx-auto w-full max-w-lg border-b border-borde px-4 pb-3">
         <div className="flex h-12 items-center justify-between">
-          <h2 className="font-marca text-xl font-bold">Cambiar ejercicio</h2>
+          <h2 className="font-marca text-xl font-semibold">Cambiar ejercicio</h2>
           <button type="button" onClick={onCerrar} className="-mr-3 h-12 rounded-xl px-3 font-semibold text-texto-suave active:bg-superficie">
             Cancelar
           </button>
@@ -70,7 +70,7 @@ export default function CambiarEjercicio({ exercise, excluir, onCerrar, onElegir
         )}
         {orden.map((equipo) => (
           <section key={equipo}>
-            <h3 className="pt-5 pb-1 text-sm font-bold tracking-wide text-lima uppercase">
+            <h3 className="pt-5 pb-1 text-sm font-semibold tracking-wide text-lima uppercase">
               {etiquetaEquipo(equipo)}
               {equipo === exercise.equipo && <span className="text-texto-suave"> · mismo equipo</span>}
             </h3>

@@ -13,10 +13,10 @@ export default function GuiaEjercicio({ ejercicio, onCerrar }: { ejercicio: Exer
       <div className="pt-safe border-b border-borde">
         <div className="mx-auto flex min-h-12 max-w-lg items-center gap-2 px-4 py-2">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold tracking-wide text-texto-suave uppercase">Cómo se hace</p>
-            <h2 className="font-marca text-xl leading-tight font-bold">{ejercicio.nombre}</h2>
+            <p className="text-xs font-semibold tracking-wide text-texto-suave uppercase">Cómo se hace</p>
+            <h2 className="font-marca text-xl leading-tight font-semibold">{ejercicio.nombre}</h2>
           </div>
-          <button type="button" onClick={onCerrar} className="h-12 shrink-0 rounded-xl bg-lima px-5 font-bold text-fondo active:bg-lima-oscuro">
+          <button type="button" onClick={onCerrar} className="h-12 shrink-0 rounded-xl bg-lima px-5 font-semibold text-fondo active:bg-lima-oscuro">
             Listo
           </button>
         </div>

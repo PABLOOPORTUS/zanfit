@@ -62,7 +62,7 @@ function Globo({ active, payload, formato }: PropsGlobo) {
   return (
     <div className="rounded-xl border border-borde bg-fondo px-3 py-2 shadow-lg">
       <p className="text-xs text-texto-suave">{formatearFecha((punto.payload as PuntoProgreso).fecha)}</p>
-      <p className="font-marca text-lg font-bold">{formato(Number(punto.value))}</p>
+      <p className="font-marca text-lg font-semibold">{formato(Number(punto.value))}</p>
     </div>
   )
 }

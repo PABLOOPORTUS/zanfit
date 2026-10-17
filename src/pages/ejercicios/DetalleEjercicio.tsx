@@ -30,7 +30,7 @@ export default function DetalleEjercicio() {
   return (
     <section>
       <BotonVolver to="/ejercicios">Ejercicios</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl leading-tight font-bold tracking-tight">{ejercicio.nombre}</h1>
+      <h1 className="mt-2 font-marca text-3xl leading-tight font-semibold tracking-tight">{ejercicio.nombre}</h1>
 
       <div className="mt-3 flex flex-wrap gap-2">
         <Etiqueta>{etiquetaGrupo(ejercicio.grupoMuscular)}</Etiqueta>
@@ -46,14 +46,14 @@ export default function DetalleEjercicio() {
         </div>
       )}
 
-      <h2 className="mt-6 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">En tu gimnasio</h2>
+      <h2 className="mt-6 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">En tu gimnasio</h2>
       <MediosPropios ejercicio={ejercicio} />
 
       <div className="mt-8">
         <PestanasEjercicio ejercicio={ejercicio} pestana={pestana} onCambiar={setPestana} />
       </div>
 
-      <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tu registro</h2>
+      <h2 className="mt-8 mb-2 text-sm font-semibold tracking-wide text-texto-suave uppercase">Tu registro</h2>
       <Registro id={id} cardio={esCardio(ejercicio)} />
 
       {ejercicio.propio ? (
@@ -116,7 +116,7 @@ function Dato({ titulo, valor }: { titulo: string; valor: string }) {
   return (
     <div className="rounded-2xl bg-superficie p-3">
       <dt className="text-xs text-texto-suave">{titulo}</dt>
-      <dd className="mt-1 font-marca text-xl font-bold">{valor}</dd>
+      <dd className="mt-1 font-marca text-xl font-semibold">{valor}</dd>
     </div>
   )
 }

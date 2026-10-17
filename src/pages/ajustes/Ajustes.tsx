@@ -122,7 +122,7 @@ export default function Ajustes() {
 
   return (
     <section className="flex flex-col gap-8">
-      <h1 className="font-marca text-3xl font-bold tracking-tight">Ajustes</h1>
+      <h1 className="font-marca text-3xl font-semibold tracking-tight">Ajustes</h1>
 
       <SeccionCuenta />
 
@@ -164,7 +164,7 @@ export default function Ajustes() {
         </p>
 
         <div className="mt-4 flex flex-col gap-3">
-          <button type="button" onClick={exportar} className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
+          <button type="button" onClick={exportar} className="h-13 rounded-2xl bg-lima font-semibold text-fondo active:bg-lima-oscuro">
             Exportar respaldo
           </button>
           <button

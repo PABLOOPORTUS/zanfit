@@ -77,7 +77,7 @@ function Dato({ titulo, valor, destacado = false }: { titulo: string; valor: str
   return (
     <div className="rounded-2xl bg-superficie p-3">
       <dt className="text-xs text-texto-suave">{titulo}</dt>
-      <dd className={`mt-1 font-marca text-xl font-bold ${destacado ? 'text-lima' : ''}`}>{valor}</dd>
+      <dd className={`mt-1 font-marca text-xl font-semibold ${destacado ? 'text-lima' : ''}`}>{valor}</dd>
     </div>
   )
 }

@@ -45,7 +45,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
     <article className="rounded-2xl bg-superficie">
       <header className="flex items-center gap-2 p-4 pb-2">
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl leading-tight font-bold">{exercise.nombre}</h2>
+          <h2 className="text-xl leading-tight font-semibold">{exercise.nombre}</h2>
           <p className="text-sm text-texto-suave">
             {cardio
               ? `Cardio · ${sets.reduce((t, s) => t + (s.minutos ?? 0), 0)} min${sets.length > 1 ? ` en ${sets.length} tramos` : ''}`
@@ -84,7 +84,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           <ImagenEjercicio ejercicio={exercise} className="h-52 w-full" />
           <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black via-black/80 to-transparent px-3 pt-8 pb-2.5">
             <span className="min-w-0 text-sm text-white/80">Trabaja: {principales}</span>
-            <span className="flex shrink-0 items-center gap-1 rounded-full bg-lima px-3 py-1.5 text-sm font-bold text-fondo">
+            <span className="flex shrink-0 items-center gap-1 rounded-full bg-lima px-3 py-1.5 text-sm font-semibold text-fondo">
               Ver cómo se hace
               <svg
                 width="16"
@@ -92,7 +92,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="3"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden
@@ -106,7 +106,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           type="button"
           onClick={selector.abrir}
           aria-label={`Cambiar ${exercise.nombre} por otro ejercicio`}
-          className="absolute top-2 right-2 flex h-11 items-center gap-1.5 rounded-full bg-fondo/85 px-4 font-bold text-texto backdrop-blur active:bg-borde"
+          className="absolute top-2 right-2 flex h-11 items-center gap-1.5 rounded-full bg-fondo/85 px-4 font-semibold text-texto backdrop-blur active:bg-borde"
         >
           <svg
             width="18"
@@ -114,7 +114,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden
@@ -176,7 +176,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
             <button
               type="button"
               onClick={() => quitarEjercicio(workoutId, exercise.id!)}
-              className="h-12 rounded-xl bg-peligro font-bold text-fondo"
+              className="h-12 rounded-xl bg-peligro font-semibold text-fondo"
             >
               Sí, quitar
             </button>
@@ -250,7 +250,7 @@ function FilaCardio({ serie, campos, columnas }: { serie: WorkoutSet; campos: Ca
   }`
   return (
     <li className={`grid ${columnas} items-center gap-2`}>
-      <span className="text-center font-marca text-lg font-bold text-texto-suave">{serie.numeroSerie}</span>
+      <span className="text-center font-marca text-lg font-semibold text-texto-suave">{serie.numeroSerie}</span>
       {campos.map((c) => (
         <input
           key={c}
@@ -297,7 +297,7 @@ function FilaSerie({ serie, descansoSeg }: { serie: WorkoutSet; descansoSeg: num
 
   return (
     <li className="grid grid-cols-[2rem_1fr_1fr_3.5rem] items-center gap-2">
-      <span className="text-center font-marca text-lg font-bold text-texto-suave">{serie.numeroSerie}</span>
+      <span className="text-center font-marca text-lg font-semibold text-texto-suave">{serie.numeroSerie}</span>
       <input
         type="text"
         inputMode="decimal"
@@ -349,7 +349,7 @@ function BotonListo({ serie, onAlternar }: { serie: WorkoutSet; onAlternar: () =
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="3"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden

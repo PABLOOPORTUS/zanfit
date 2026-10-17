@@ -7,7 +7,7 @@ export default function OpcionGrande({ titulo, detalle, activo, onClick, multipl
       type="button"
       onClick={onClick}
       aria-pressed={activo}
-      className={`flex min-h-13 w-full items-center gap-3 rounded-2xl border p-4 text-left transition-colors ${
+      className={`flex min-h-13 w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors ${
         activo ? 'border-lima bg-lima/10' : 'border-borde bg-superficie active:bg-borde'
       }`}
     >
@@ -24,7 +24,7 @@ export default function OpcionGrande({ titulo, detalle, activo, onClick, multipl
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-lg leading-snug font-semibold">{titulo}</span>
+        <span className="block leading-snug font-semibold">{titulo}</span>
         {detalle && <span className="mt-0.5 block text-sm text-texto-suave">{detalle}</span>}
       </span>
     </button>

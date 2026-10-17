@@ -21,8 +21,8 @@ export default function TarjetaNivel() {
       <div className="flex items-center gap-3">
         <img src={`/medios/animales/${nivel.archivo}.webp`} alt="" className="size-12 shrink-0 animate-flotar" />
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold tracking-wider text-lima uppercase">Nivel {nivel.numero}</p>
-          <p className="font-marca text-lg leading-tight font-bold">{nivel.animal}</p>
+          <p className="text-xs font-semibold tracking-wider text-lima uppercase">Nivel {nivel.numero}</p>
+          <p className="font-marca text-lg leading-tight font-semibold">{nivel.animal}</p>
           <p className="line-clamp-1 text-sm text-texto-suave">{nivel.frase}</p>
         </div>
       </div>
