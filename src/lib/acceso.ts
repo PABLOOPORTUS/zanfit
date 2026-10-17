@@ -19,6 +19,8 @@ export interface Acceso {
   activaHasta?: number | null
   /** La cuenta se está usando en otro teléfono (una cuenta, un teléfono a la vez). */
   otroDispositivo?: boolean
+  /** Modo aporte voluntario (`ajustes_venta.aporte_voluntario`): nadie se bloquea por la fecha, solo las pausadas. */
+  voluntario?: boolean
   admin: boolean
   /** Cuándo se revisó con la nube (ms). */
   revisado: number
@@ -29,6 +31,8 @@ export interface DatosVenta {
   datos_transferencia: string
   contacto: string
   dias_prueba: number
+  /** Si está activo, la app es gratis y el pago es un aporte voluntario (ver supabase/aporte-voluntario.sql). */
+  aporte_voluntario?: boolean
 }
 
 export interface Cuenta {
@@ -76,9 +80,11 @@ function guardar(uid: string, acceso: Acceso) {
   }
 }
 
-/** ¿Puede usar la app? Cuenta activa (sin vencer) o prueba vigente. */
-export const puedeUsar = (a: Pick<Acceso, 'estado' | 'pruebaHasta' | 'activaHasta'>, ahora = Date.now()) =>
-  (a.estado === 'activa' && (a.activaHasta == null || a.activaHasta > ahora)) || (a.estado === 'prueba' && (a.pruebaHasta ?? 0) > ahora)
+/** ¿Puede usar la app? Cuenta activa (sin vencer) o prueba vigente; en modo aporte voluntario, cualquiera no pausada. */
+export const puedeUsar = (a: Pick<Acceso, 'estado' | 'pruebaHasta' | 'activaHasta' | 'voluntario'>, ahora = Date.now()) =>
+  (a.voluntario === true && a.estado !== 'bloqueada' && a.estado !== 'sin-cuenta') ||
+  (a.estado === 'activa' && (a.activaHasta == null || a.activaHasta > ahora)) ||
+  (a.estado === 'prueba' && (a.pruebaHasta ?? 0) > ahora)
 
 export const diasRestantes = (pruebaHasta: number | null, ahora = Date.now()) => Math.max(0, Math.ceil(((pruebaHasta ?? 0) - ahora) / 86_400_000))
 
@@ -93,9 +99,11 @@ const sinTablas = (error: { code?: string; message?: string } | null) =>
 export async function revisarAcceso(uid: string): Promise<Acceso | null> {
   try {
     const sb = await cliente()
-    const [cuenta, admin] = await Promise.all([
+    const [cuenta, admin, venta] = await Promise.all([
       sb.from('cuentas').select('*').eq('user_id', uid).maybeSingle(),
       sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle(),
+      // `*` para no fallar si la columna aporte_voluntario todavía no existe.
+      sb.from('ajustes_venta').select('*').eq('id', 1).maybeSingle(),
     ])
     if (sinTablas(cuenta.error)) {
       const acceso: Acceso = { estado: 'activa', pruebaHasta: null, admin: false, revisado: Date.now() }
@@ -117,6 +125,7 @@ export async function revisarAcceso(uid: string): Promise<Acceso | null> {
       activaHasta: fila?.activa_hasta ? new Date(fila.activa_hasta).getTime() : null,
       otroDispositivo: !!fila?.dispositivo_id && fila.dispositivo_id !== idDispositivo(),
       admin: !!admin.data,
+      voluntario: !!(venta.data as DatosVenta | null)?.aporte_voluntario,
       revisado: Date.now(),
     }
     guardar(uid, acceso)
@@ -138,15 +147,15 @@ export async function usarEsteDispositivo(): Promise<void> {
   }
 }
 
+/** Link de WhatsApp con un mensaje listo, si el contacto es un número (si no, `null` y se muestra como texto). */
+export function enlaceWhatsapp(contacto: string, texto: string): string | null {
+  const numero = contacto.replace(/[^\d]/g, '')
+  return numero.length >= 8 ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}` : null
+}
+
 export async function datosVenta(): Promise<DatosVenta | null> {
   try {
-    const { data } = await (
-      await cliente()
-    )
-      .from('ajustes_venta')
-      .select('precio, datos_transferencia, contacto, dias_prueba')
-      .eq('id', 1)
-      .maybeSingle()
+    const { data } = await (await cliente()).from('ajustes_venta').select('*').eq('id', 1).maybeSingle()
     return (data as DatosVenta | null) ?? null
   } catch {
     return null
@@ -242,8 +251,9 @@ export async function activarPor(cuenta: Pick<Cuenta, 'user_id' | 'estado' | 'ac
   })
 }
 
-/** Sigue esperando pago: prueba vencida, activa vencida o pendiente. */
-export function esperaPago(c: Pick<Cuenta, 'estado' | 'prueba_hasta' | 'activa_hasta'>, ahora = Date.now()): boolean {
+/** Sigue esperando pago: prueba vencida, activa vencida o pendiente (en modo aporte voluntario, nadie). */
+export function esperaPago(c: Pick<Cuenta, 'estado' | 'prueba_hasta' | 'activa_hasta'>, ahora = Date.now(), voluntario = false): boolean {
+  if (voluntario) return false
   if (c.estado === 'pendiente') return true
   if (c.estado === 'prueba') return new Date(c.prueba_hasta ?? 0).getTime() <= ahora
   if (c.estado === 'activa') return !!c.activa_hasta && new Date(c.activa_hasta).getTime() <= ahora

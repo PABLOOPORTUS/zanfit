@@ -3,7 +3,7 @@ import FondoAcceso from './FondoAcceso'
 import IconoWhatsapp from './IconoWhatsapp'
 import Marca from './Marca'
 import { useCuenta } from '../hooks/useCuenta'
-import { datosVenta, puedeUsar, type Acceso, type DatosVenta } from '../lib/acceso'
+import { datosVenta, enlaceWhatsapp, puedeUsar, type Acceso, type DatosVenta } from '../lib/acceso'
 
 const TITULOS: Record<Acceso['estado'], { titulo: string; detalle: string }> = {
   prueba: { titulo: 'Tu prueba terminó', detalle: 'Esperamos que te haya gustado. Suscríbete para seguir entrenando con ZANFIT.' },
@@ -21,13 +21,6 @@ const INCLUYE = [
   'Tus datos guardados en la nube, en cualquier teléfono',
 ]
 
-/** WhatsApp: si el contacto es un número, se ofrece abrir el chat con un mensaje listo (además de mostrarlo como texto). */
-function enlaceWhatsapp(contacto: string, correo: string | undefined): string | null {
-  const numero = contacto.replace(/[^\d]/g, '')
-  const texto = `¡Hola! Quiero suscribirme a ZANFIT.${correo ? ` Mi correo es ${correo}.` : ''}`
-  return numero.length >= 8 ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}` : null
-}
-
 /** Pantalla cuando la cuenta no puede usar la app: datos para pagar y "Ya pagué". Los entrenos no se pierden. */
 export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso; onRevisar: () => Promise<Acceso | null> }) {
   const cuenta = useCuenta()
@@ -38,7 +31,9 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
     void datosVenta().then(setVenta)
   }, [])
   const textos = TITULOS[acceso.estado]
-  const whatsapp = venta?.contacto ? enlaceWhatsapp(venta.contacto, cuenta.usuario?.correo) : null
+  const whatsapp = venta?.contacto
+    ? enlaceWhatsapp(venta.contacto, `¡Hola! Quiero suscribirme a ZANFIT.${cuenta.usuario?.correo ? ` Mi correo es ${cuenta.usuario.correo}.` : ''}`)
+    : null
 
   return (
     <main className="pt-safe pb-safe relative mx-auto min-h-dvh max-w-lg px-4">
@@ -69,8 +64,8 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
         )}
         {venta?.contacto && (
           <p className="mt-4 text-texto-suave">
-            Escríbeme por WhatsApp al <span className="font-semibold text-texto select-all">{venta.contacto}</span>: te cuento cómo pagar y
-            activo tu cuenta.
+            Escríbeme por WhatsApp al <span className="font-semibold text-texto select-all">{venta.contacto}</span>: te cuento cómo pagar y activo tu
+            cuenta.
           </p>
         )}
         {whatsapp && (

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import BannerInstalar from '../../components/BannerInstalar'
 import BannerPerfil from '../../components/BannerPerfil'
 import MetaSemanal from '../../components/MetaSemanal'
+import TarjetaAporte from '../../components/TarjetaAporte'
 import TarjetaNivel from '../../components/TarjetaNivel'
 import MiniaturaEjercicio from '../../components/MiniaturaEjercicio'
 import { iniciarEntreno } from '../../db/workouts'
@@ -39,12 +40,14 @@ export default function ElegirEntreno() {
         />
       </div>
 
-      {acceso?.estado === 'prueba' && (
+      {acceso?.estado === 'prueba' && !acceso.voluntario && (
         <p className="mt-3 rounded-xl border border-lima/50 bg-lima/10 px-4 py-2 text-sm">
           <span className="font-semibold text-lima">Prueba gratis:</span> te{' '}
           {diasRestantes(acceso.pruebaHasta) === 1 ? 'queda 1 día' : `quedan ${diasRestantes(acceso.pruebaHasta)} días`}.
         </p>
       )}
+
+      <TarjetaAporte className="mt-3" />
 
       <div className="mt-4 animate-entrar [animation-delay:80ms]">
         <TarjetaNivel />
@@ -138,11 +141,7 @@ export default function ElegirEntreno() {
         </ul>
       )}
 
-      <button
-        type="button"
-        onClick={() => iniciarEntreno()}
-        className="mt-4 h-13 w-full rounded-2xl bg-superficie font-semibold active:bg-borde"
-      >
+      <button type="button" onClick={() => iniciarEntreno()} className="mt-4 h-13 w-full rounded-2xl bg-superficie font-semibold active:bg-borde">
         Entreno libre
       </button>
       <p className="mt-2 text-center text-sm text-texto-suave">Sin rutina: agregas los ejercicios sobre la marcha.</p>

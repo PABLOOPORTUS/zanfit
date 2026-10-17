@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import BannerPerfil from '../../components/BannerPerfil'
+import HojaAporte from '../../components/HojaAporte'
 import HojaInstalar from '../../components/HojaInstalar'
 import { esInstalada, plataforma } from '../../lib/instalacion'
 import { useAcceso } from '../../hooks/useAcceso'
@@ -253,10 +254,7 @@ export default function Ajustes() {
         )}
       </div>
 
-      <Link
-        to="/plan"
-        className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde"
-      >
+      <Link to="/plan" className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde">
         Mi evaluación y plan
         <svg
           width="22"
@@ -275,6 +273,7 @@ export default function Ajustes() {
       </Link>
 
       <FilaInstalar />
+      <FilaAporte />
 
       {acceso?.admin && (
         <Link
@@ -299,10 +298,7 @@ export default function Ajustes() {
         </Link>
       )}
 
-      <Link
-        to="/ajustes/privacidad"
-        className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde"
-      >
+      <Link to="/ajustes/privacidad" className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde">
         Privacidad
         <svg
           width="22"
@@ -320,10 +316,7 @@ export default function Ajustes() {
         </svg>
       </Link>
 
-      <Link
-        to="/ajustes/creditos"
-        className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde"
-      >
+      <Link to="/ajustes/creditos" className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde">
         Créditos y licencias
         <svg
           width="22"
@@ -405,6 +398,26 @@ function SeccionCuenta() {
 
 function formatearHoraCorta(t: number) {
   return new Intl.DateTimeFormat('es-CL', { hour: '2-digit', minute: '2-digit' }).format(t)
+}
+
+/** "Apoyar ZANFIT" (modo aporte voluntario): abre la hoja con los datos para aportar. */
+function FilaAporte() {
+  const acceso = useAcceso()
+  const [abierta, setAbierta] = useState(false)
+  if (!acceso?.voluntario) return null
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAbierta(true)}
+        className="flex h-12 w-full items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde"
+      >
+        Apoyar ZANFIT con un aporte
+        <span aria-hidden>💚</span>
+      </button>
+      {abierta && <HojaAporte onCerrar={() => setAbierta(false)} />}
+    </>
+  )
 }
 
 /** "Instalar en tu teléfono": en un teléfono donde no se abrió desde el ícono (aunque haya dicho que ya la instaló). */

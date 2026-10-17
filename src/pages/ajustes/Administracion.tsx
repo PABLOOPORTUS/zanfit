@@ -52,6 +52,7 @@ export default function Administracion() {
 }
 
 function Panel() {
+  const acceso = useAcceso()
   const [cuentas, setCuentas] = useState<Cuenta[] | null>(null)
   const [codigos, setCodigos] = useState<Codigo[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -79,9 +80,10 @@ function Panel() {
   }
   const pendientes = codigos?.filter((c) => !c.usado_por) ?? []
   const lista = cuentas ?? []
-  const porConfirmar = lista.filter((c) => esperaPago(c))
-  const enPruebaLista = lista.filter((c) => c.estado === 'prueba' && !esperaPago(c))
-  const activasLista = lista.filter((c) => c.estado === 'activa' && !esperaPago(c))
+  const voluntario = acceso?.voluntario === true
+  const porConfirmar = lista.filter((c) => esperaPago(c, Date.now(), voluntario))
+  const enPruebaLista = lista.filter((c) => c.estado !== 'activa' && c.estado !== 'bloqueada' && !esperaPago(c, Date.now(), voluntario))
+  const activasLista = lista.filter((c) => c.estado === 'activa' && !esperaPago(c, Date.now(), voluntario))
   const pausadas = lista.filter((c) => c.estado === 'bloqueada')
   const enPrueba = enPruebaLista.length
   const activas = activasLista.length
@@ -91,7 +93,9 @@ function Panel() {
       <BotonVolver to="/ajustes">Ajustes</BotonVolver>
       <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">Administración</h1>
       <p className="mt-1 text-texto-suave">
-        {activas} {activas === 1 ? 'cuenta activa' : 'cuentas activas'} · {enPrueba} en prueba · {porConfirmar.length} por activar
+        {voluntario
+          ? `${activas + enPrueba} ${activas + enPrueba === 1 ? 'cuenta' : 'cuentas'} · gratis con aporte voluntario`
+          : `${activas} ${activas === 1 ? 'cuenta activa' : 'cuentas activas'} · ${enPrueba} en prueba · ${porConfirmar.length} por activar`}
       </p>
       <MedidorEspacio />
       {error && (
@@ -100,19 +104,23 @@ function Panel() {
         </p>
       )}
 
-      <Titulo>
-        Pendientes de activación
-        {porConfirmar.length > 0 && <span className="ml-2 rounded-full bg-lima px-2 py-0.5 text-fondo">{porConfirmar.length}</span>}
-      </Titulo>
-      <p className="mb-3 text-sm text-texto-suave">
-        Terminaron su prueba o su período. Cuando confirmes el pago, actívalos por el período que pagaron.
-      </p>
-      <ListaCuentas cuentas={cuentas && porConfirmar} vacio="No hay nadie esperando activación." onAccion={accion} />
+      {!voluntario && (
+        <>
+          <Titulo>
+            Pendientes de activación
+            {porConfirmar.length > 0 && <span className="ml-2 rounded-full bg-lima px-2 py-0.5 text-fondo">{porConfirmar.length}</span>}
+          </Titulo>
+          <p className="mb-3 text-sm text-texto-suave">
+            Terminaron su prueba o su período. Cuando confirmes el pago, actívalos por el período que pagaron.
+          </p>
+          <ListaCuentas cuentas={cuentas && porConfirmar} vacio="No hay nadie esperando activación." onAccion={accion} />
+        </>
+      )}
 
-      <Titulo>En prueba</Titulo>
+      <Titulo>{voluntario ? 'Usando gratis' : 'En prueba'}</Titulo>
       <ListaCuentas cuentas={cuentas && enPruebaLista} vacio="Nadie está probando la app ahora." onAccion={accion} />
 
-      <Titulo>Activas</Titulo>
+      <Titulo>{voluntario ? 'Con período pagado' : 'Activas'}</Titulo>
       <ListaCuentas cuentas={cuentas && activasLista} vacio="Todavía no hay cuentas activas." onAccion={accion} />
 
       {pausadas.length > 0 && (
@@ -249,11 +257,29 @@ function DatosDeVenta() {
 
   return (
     <>
-      <Titulo>Datos de venta</Titulo>
-      <p className="mb-3 text-sm text-texto-suave">Se muestran a quien tiene la prueba vencida o la cuenta sin activar.</p>
+      <Titulo>Datos de venta y aportes</Titulo>
+      <p className="mb-3 text-sm text-texto-suave">
+        {datos.aporte_voluntario
+          ? 'Se muestran en «Apoyar ZANFIT» (Entrenar y Ajustes), para quien quiera aportar.'
+          : 'Se muestran a quien tiene la prueba vencida o la cuenta sin activar.'}
+      </p>
       <div className="flex flex-col gap-3 rounded-2xl bg-superficie p-4">
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={!!datos.aporte_voluntario}
+            onChange={(e) => cambiar({ aporte_voluntario: e.target.checked })}
+            className="mt-0.5 size-6 shrink-0 accent-lima"
+          />
+          <span>
+            <span className="block font-semibold">Aporte voluntario</span>
+            <span className="block text-sm text-texto-suave">
+              La app es gratis para todos y nadie se bloquea por fecha (solo las cuentas pausadas). Si lo apagas, vuelve el cobro con prueba.
+            </span>
+          </span>
+        </label>
         <label className="flex flex-col gap-2">
-          <span className="font-semibold">Precio</span>
+          <span className="font-semibold">{datos.aporte_voluntario ? 'Aporte sugerido (opcional)' : 'Precio'}</span>
           <input
             value={datos.precio}
             onChange={(e) => cambiar({ precio: e.target.value })}
@@ -286,9 +312,9 @@ function DatosDeVenta() {
             type="number"
             inputMode="numeric"
             min={1}
-            max={60}
+            max={365}
             value={datos.dias_prueba}
-            onChange={(e) => cambiar({ dias_prueba: Math.min(60, Math.max(1, Number(e.target.value) || 7)) })}
+            onChange={(e) => cambiar({ dias_prueba: Math.min(365, Math.max(1, Number(e.target.value) || 7)) })}
             className={`h-12 ${claseCampo}`}
           />
         </label>
@@ -330,7 +356,7 @@ function ListaCuentas({ cuentas, vacio, onAccion }: { cuentas: Cuenta[] | null; 
 /** Una cuenta con su estado y acciones: activar por un período (al confirmar el pago), extender la prueba o pausar. */
 function FilaCuenta({ cuenta: c, onAccion }: { cuenta: Cuenta; onAccion: Accion }) {
   const [eligiendo, setEligiendo] = useState(false)
-  const espera = esperaPago(c)
+  const espera = esperaPago(c, Date.now(), useAcceso()?.voluntario === true)
   return (
     <li className={`rounded-2xl border bg-superficie p-4 ${espera ? 'border-lima/60' : 'border-borde'}`}>
       <div className="flex items-start gap-2">
