@@ -46,6 +46,9 @@ function patronDe(f: Ficha): Patron | undefined {
   if (/flutter|scissor/i.test(id)) return 'core'
   if (/clean|snatch|jerk|hip_flexion|knee_raise|around_the_world|wiper/i.test(id)) return undefined
   if (/pullover/i.test(id)) return 'espalda-aisl'
+  // Los pesos muertos son bisagra aunque la ficha ponga los cuádriceps como músculo principal.
+  if (/deadlift/i.test(id) && f.principales[0] === 'cuadriceps') return 'bisagra'
+  if (/shoulder_raise|pirate_ship/i.test(id)) return 'hombro-aisl'
   switch (f.principales[0]) {
     case 'pectorales':
       return compuesto && !/fly|flye|cross.?over/i.test(id) ? 'empuje-h' : 'pecho-aisl'

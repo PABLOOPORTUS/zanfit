@@ -1,4 +1,5 @@
 import { EJERCICIOS_BASE } from '../db/ejerciciosBase'
+import { FICHAS } from '../db/fichasEjercicios'
 import { mediosDe } from '../db/mediosEjercicios'
 import { PATRONES_COMPUESTOS, type Patron } from '../db/patronesEjercicios'
 import { clasificar, necesitaBarras, necesitaGimnasio } from './clasificacion'
@@ -367,22 +368,38 @@ export function recomendaciones(perfil: Perfil): string[] {
 }
 
 /**
- * Alternativas para "Cambiar ejercicio": mismo patrón de movimiento (o, si no está clasificado, mismo músculo
- * principal), que pueda hacer con su equipo y sin cargar sus lesiones. Primero las del mismo equipo y las básicas.
+ * Ejercicios que de verdad pueden reemplazar a otro en el entreno (máquina ocupada, no le acomoda…): mismo patrón de
+ * movimiento (o, si no está clasificado, mismo tipo y músculo principal), que el usuario pueda hacer con su equipo,
+ * sin sus lesiones y, para principiantes o con precaución, sin los muy técnicos. Primero los del mismo músculo
+ * principal, los del mismo equipo y los básicos.
  */
-export function alternativas(ejercicio: Exercise, catalogo: Exercise[], perfil: Perfil | null, cantidad = 8): Exercise[] {
+export function alternativas(ejercicio: Exercise, catalogo: Exercise[], perfil: Perfil | null, cantidad = 30): Exercise[] {
   const cl = clasificar(ejercicio)
   const principal = mediosDe(ejercicio).musculos.principales[0]
+  const categoria = FICHAS[ejercicio.nombre]?.categoria
+  const nivelMax = perfil && (perfil.experiencia === 'principiante' || perfil.precaucion) ? 2 : 3
   return catalogo
     .filter((e) => {
-      if (e.id === ejercicio.id) return false
+      if (e.id === ejercicio.id || e.nombre === ejercicio.nombre) return false
       const otra = clasificar(e)
-      const parecido = cl && otra ? otra.patron === cl.patron : mediosDe(e).musculos.principales[0] === principal && e.grupoMuscular === ejercicio.grupoMuscular
+      const parecido = cl
+        ? otra?.patron === cl.patron
+        : mediosDe(e).musculos.principales[0] === principal &&
+          e.grupoMuscular === ejercicio.grupoMuscular &&
+          (e.propio || FICHAS[e.nombre]?.categoria === categoria)
       if (!parecido) return false
       if (!perfil) return true
+      if (otra && otra.nivel > nivelMax) return false
       return tieneEquipo(perfil, e) && !otra?.riesgos?.some((r) => perfil.lesiones.includes(r))
     })
-    .map((e) => ({ e, costo: (e.equipo === ejercicio.equipo ? 0 : 1) + (BASICOS.has(e.nombre) ? 0 : 0.5) + (clasificar(e)?.nivel ?? 2) * 0.1 }))
+    .map((e) => ({
+      e,
+      costo:
+        (mediosDe(e).musculos.principales[0] === principal ? 0 : 1.5) +
+        (e.equipo === ejercicio.equipo ? 0 : 0.6) +
+        (BASICOS.has(e.nombre) ? 0 : 0.5) +
+        (clasificar(e)?.nivel ?? 2) * 0.1,
+    }))
     .sort((a, b) => a.costo - b.costo || a.e.nombre.localeCompare(b.e.nombre))
     .slice(0, cantidad)
     .map(({ e }) => e)

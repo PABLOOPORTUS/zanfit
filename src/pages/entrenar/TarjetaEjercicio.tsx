@@ -1,14 +1,11 @@
 import { useState } from 'react'
 import GuiaEjercicio from '../../components/GuiaEjercicio'
 import ImagenEjercicio from '../../components/ImagenEjercicio'
-import SelectorEjercicios from '../../components/SelectorEjercicios'
+import CambiarEjercicio from './CambiarEjercicio'
 import { mediosDe } from '../../db/mediosEjercicios'
 import { nombresMusculos } from '../../lib/musculos'
 import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie, reemplazarEjercicio } from '../../db/workouts'
 import { useUnidad } from '../../hooks/useAjustes'
-import { useExercises } from '../../hooks/useExercises'
-import { usePerfil } from '../../hooks/usePlan'
-import { alternativas } from '../../lib/plan'
 import { useDescanso } from '../../hooks/useDescanso'
 import { usePanel } from '../../hooks/usePanel'
 import { formatearDescanso, leerNumero } from '../../lib/formato'
@@ -48,26 +45,6 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         </div>
         <button
           type="button"
-          onClick={selector.abrir}
-          aria-label={`Cambiar ${exercise.nombre} por otro ejercicio`}
-          className="flex size-12 shrink-0 items-center justify-center rounded-xl text-texto-suave active:bg-borde"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
-          </svg>
-        </button>
-        <button
-          type="button"
           onClick={() => setConfirmandoQuitar((v) => !v)}
           aria-label={`Quitar ${exercise.nombre}`}
           className="flex size-12 shrink-0 items-center justify-center rounded-xl text-texto-suave active:bg-borde"
@@ -88,33 +65,56 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         </button>
       </header>
 
-      <button
-        type="button"
-        onClick={guia.abrir}
-        aria-label={`Ver cómo se hace ${exercise.nombre}`}
-        className="relative mx-4 mb-3 block w-[calc(100%-2rem)] overflow-hidden rounded-2xl border border-borde text-left active:opacity-80"
-      >
-        <ImagenEjercicio ejercicio={exercise} className="h-52 w-full" />
-        <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black via-black/80 to-transparent px-3 pt-8 pb-2.5">
-          <span className="min-w-0 text-sm text-white/80">Trabaja: {principales}</span>
-          <span className="flex shrink-0 items-center gap-1 rounded-full bg-lima px-3 py-1.5 text-sm font-bold text-fondo">
-            Ver cómo se hace
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="m9 6 6 6-6 6" />
-            </svg>
+      <div className="relative mx-4 mb-3">
+        <button
+          type="button"
+          onClick={guia.abrir}
+          aria-label={`Ver cómo se hace ${exercise.nombre}`}
+          className="relative block w-full overflow-hidden rounded-2xl border border-borde text-left active:opacity-80"
+        >
+          <ImagenEjercicio ejercicio={exercise} className="h-52 w-full" />
+          <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black via-black/80 to-transparent px-3 pt-8 pb-2.5">
+            <span className="min-w-0 text-sm text-white/80">Trabaja: {principales}</span>
+            <span className="flex shrink-0 items-center gap-1 rounded-full bg-lima px-3 py-1.5 text-sm font-bold text-fondo">
+              Ver cómo se hace
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="m9 6 6 6-6 6" />
+              </svg>
+            </span>
           </span>
-        </span>
-      </button>
+        </button>
+        <button
+          type="button"
+          onClick={selector.abrir}
+          aria-label={`Cambiar ${exercise.nombre} por otro ejercicio`}
+          className="absolute top-2 right-2 flex h-11 items-center gap-1.5 rounded-full bg-fondo/85 px-4 font-bold text-texto backdrop-blur active:bg-borde"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
+          </svg>
+          Cambiar
+        </button>
+      </div>
 
       {guia.abierto && <GuiaEjercicio ejercicio={exercise} onCerrar={guia.cerrar} />}
 
@@ -284,25 +284,5 @@ function FilaSerie({ serie, descansoSeg }: { serie: WorkoutSet; descansoSeg: num
         </svg>
       </button>
     </li>
-  )
-}
-
-type PropsCambiar = { exercise: Exercise; idsEnEntreno: number[]; onCerrar: () => void; onElegir: (id: number) => void }
-
-/** Selector para reemplazar un ejercicio, con alternativas parecidas arriba (mismo movimiento, su equipo, sin sus lesiones). */
-function CambiarEjercicio({ exercise, idsEnEntreno, onCerrar, onElegir }: PropsCambiar) {
-  const ejercicios = useExercises()
-  const perfil = usePerfil()
-  const sugeridos = ejercicios && perfil !== undefined ? alternativas(exercise, ejercicios, perfil).filter((e) => !idsEnEntreno.includes(e.id!)) : []
-  return (
-    <SelectorEjercicios
-      titulo="Cambiar ejercicio"
-      unico
-      grupoInicial={exercise.grupoMuscular}
-      sugeridos={sugeridos}
-      excluir={idsEnEntreno}
-      onCerrar={onCerrar}
-      onAgregar={([nuevo]) => onElegir(nuevo)}
-    />
   )
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { EJERCICIOS_BASE } from '../db/ejerciciosBase'
 import { EJERCICIOS_EXTRA } from '../db/ejerciciosExtra'
 import { clasificar, necesitaBarras } from './clasificacion'
-import { GRUPOS_TIPO, generarPlan, tieneEquipo, type PlanGenerado } from './plan'
+import { alternativas, GRUPOS_TIPO, generarPlan, tieneEquipo, type PlanGenerado } from './plan'
 import type { Exercise, Perfil } from '../types'
 
 declare const process: { env: Record<string, string | undefined> }
@@ -148,3 +148,35 @@ if (process.env.IMPRIMIR) {
     }
   })
 }
+
+describe('alternativas para cambiar un ejercicio', () => {
+  const buscar = (nombre: string) => CATALOGO.find((e) => e.nombre === nombre)!
+  const casa = PERFILES['Principiante en casa, 3 días (mancuernas y banda)']
+
+  for (const nombre of ['Prensa de piernas', 'Jalón al pecho', 'Press de pecho en máquina', 'Press militar']) {
+    it(`${nombre}: mismo movimiento, en el gimnasio y en la casa`, () => {
+      const original = buscar(nombre)
+      const patron = clasificar(original)!.patron
+      const enGimnasio = alternativas(original, CATALOGO, base)
+      expect(enGimnasio.length).toBeGreaterThanOrEqual(5)
+      // Hay opciones con otro equipo (para cuando la máquina está ocupada).
+      expect(enGimnasio.some((e) => e.equipo !== original.equipo)).toBe(true)
+      for (const e of [...enGimnasio, ...alternativas(original, CATALOGO, casa)]) {
+        expect(clasificar(e)?.patron, e.nombre).toBe(patron)
+        expect(e.nombre).not.toBe(nombre)
+      }
+      for (const e of alternativas(original, CATALOGO, casa)) expect(tieneEquipo(casa, e), e.nombre).toBe(true)
+    })
+  }
+
+  it('respeta las lesiones', () => {
+    const conHombro = PERFILES['Avanzado en gimnasio, 6 días, con lesión de hombro']
+    for (const e of alternativas(buscar('Press militar'), CATALOGO, conHombro)) expect(clasificar(e)?.riesgos ?? []).not.toContain('hombros')
+  })
+
+  if (process.env.IMPRIMIR)
+    it('imprime ejemplos', () => {
+      for (const nombre of ['Prensa de piernas', 'Jalón al pecho', 'Curl con barra', 'Press de pecho en máquina', 'Press militar'])
+        console.log(nombre, '→', alternativas(buscar(nombre), CATALOGO, base).slice(0, 12).map((e) => `${e.nombre} [${e.equipo}]`))
+    })
+})
