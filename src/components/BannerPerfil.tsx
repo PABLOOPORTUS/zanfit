@@ -4,7 +4,7 @@ import { guardarAjustes } from '../db'
 import { useAjustes } from '../hooks/useAjustes'
 import { useCuenta } from '../hooks/useCuenta'
 import { useJuego } from '../hooks/useLogros'
-import { procesarFotoPerfil } from '../lib/medios'
+import EncuadrarFoto from './EncuadrarFoto'
 
 type Props = {
   /** Línea bajo el nombre (por ejemplo, el último entreno o el correo). */
@@ -22,6 +22,8 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
   const juego = useJuego()
   const input = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
+  /** Foto que se está encuadrando (la recién elegida o la actual). */
+  const [encuadrando, setEncuadrando] = useState<Blob | string | null>(null)
   const nombre = usuario?.nombre ?? ''
 
   const contenido = (
@@ -92,13 +94,28 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
         </button>
       </div>
       {fotoPerfil && (
-        <button
-          type="button"
-          onClick={() => guardarAjustes({ fotoPerfil: undefined })}
-          className="mt-1 h-11 px-1 text-sm text-texto-suave underline underline-offset-4"
-        >
-          Quitar foto
-        </button>
+        <div className="mt-1 flex gap-4">
+          <button type="button" onClick={() => setEncuadrando(fotoPerfil)} className="h-11 px-1 text-sm font-semibold text-lima">
+            Encuadrar foto
+          </button>
+          <button
+            type="button"
+            onClick={() => guardarAjustes({ fotoPerfil: undefined })}
+            className="h-11 px-1 text-sm text-texto-suave underline underline-offset-4"
+          >
+            Quitar foto
+          </button>
+        </div>
+      )}
+      {encuadrando && (
+        <EncuadrarFoto
+          fuente={encuadrando}
+          onCancelar={() => setEncuadrando(null)}
+          onListo={async (url) => {
+            await guardarAjustes({ fotoPerfil: url })
+            setEncuadrando(null)
+          }}
+        />
       )}
       {error && (
         <p className="mt-1 text-sm text-peligro" role="alert">
@@ -115,12 +132,10 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
           const archivo = e.target.files?.[0]
           e.target.value = ''
           if (!archivo) return
-          try {
-            setError(null)
-            await guardarAjustes({ fotoPerfil: await procesarFotoPerfil(archivo) })
-          } catch (err) {
-            setError((err as Error).message || 'No se pudo usar esa foto.')
-          }
+          setError(null)
+          // Antes de guardarla, se encuadra (mover y acercar).
+          if (archivo.type.startsWith('image/')) setEncuadrando(archivo)
+          else setError('Elige una foto.')
         }}
       />
     </div>
