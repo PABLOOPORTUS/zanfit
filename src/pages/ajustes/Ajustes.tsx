@@ -407,7 +407,7 @@ function formatearHoraCorta(t: number) {
   return new Intl.DateTimeFormat('es-CL', { hour: '2-digit', minute: '2-digit' }).format(t)
 }
 
-/** "Instalar en tu teléfono": solo en un teléfono donde la app todavía no está instalada. */
+/** "Instalar en tu teléfono": en un teléfono donde no se abrió desde el ícono (aunque haya dicho que ya la instaló). */
 function FilaInstalar() {
   const [abierta, setAbierta] = useState(false)
   if (plataforma() === 'computador' || esInstalada()) return null

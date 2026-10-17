@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import HojaInstalar from './HojaInstalar'
-import { esInstalada, plataforma } from '../lib/instalacion'
+import { ofrecerInstalar } from '../lib/instalacion'
 
 const CLAVE = 'zanfit:recordatorio-instalar'
 const leerOculto = () => {
@@ -13,12 +13,12 @@ const leerOculto = () => {
 
 /**
  * Después de entrenar (resumen), en un teléfono sin la app instalada: "¿Te gustó? Agrégala a tu pantalla de inicio",
- * con "Ver cómo" (abre `<HojaInstalar>`, en iPhone con la animación de Safari). Se puede ocultar para siempre.
+ * con "Ver cómo" (abre `<HojaInstalar>`). Se puede ocultar para siempre.
  */
 export default function RecordatorioInstalar() {
   const [oculto, setOculto] = useState(leerOculto)
   const [abierta, setAbierta] = useState(false)
-  if (oculto || plataforma() === 'computador' || esInstalada()) return null
+  if (oculto || !ofrecerInstalar()) return null
   return (
     <div className="animate-entrar rounded-2xl border border-lima/50 bg-superficie p-4">
       <div className="flex items-center gap-3">

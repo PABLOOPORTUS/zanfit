@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import BannerInstalar from '../../components/BannerInstalar'
 import BannerPerfil from '../../components/BannerPerfil'
 import MetaSemanal from '../../components/MetaSemanal'
 import TarjetaNivel from '../../components/TarjetaNivel'
@@ -31,6 +32,7 @@ export default function ElegirEntreno() {
   return (
     <section>
       <h1 className="sr-only">{usuario ? `Hola, ${usuario.nombre}` : 'Entrenar'}</h1>
+      <BannerInstalar />
       <div className="animate-entrar">
         <BannerPerfil
           detalle={ultimo ? `Último entreno: ${ultimo.nombre.replace(/^Plan · /, '')}, ${formatearFecha(ultimo.fechaInicio)}` : '¡A entrenar!'}

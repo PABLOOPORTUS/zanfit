@@ -21,7 +21,7 @@ if (typeof window !== 'undefined') {
   })
   window.addEventListener('appinstalled', () => {
     evento = null
-    avisar.forEach((f) => f())
+    marcarInstalada()
   })
 }
 
@@ -46,11 +46,38 @@ export async function instalar(): Promise<boolean> {
 export const esInstalada = () =>
   matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
 
-export type Plataforma = 'iphone-safari' | 'iphone-otro' | 'android' | 'computador'
+/**
+ * - `iphone`: Safari (o Chrome/Firefox/Edge en iOS 16.4+, que también tienen "Agregar a pantalla de inicio").
+ * - `app-interna`: el navegador de Instagram, Facebook, TikTok… (iPhone o Android), donde no se puede instalar.
+ */
+export type Plataforma = 'iphone' | 'android' | 'app-interna' | 'computador'
 
 export function plataforma(ua = navigator.userAgent): Plataforma {
-  const iphone = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
-  if (iphone) return /CriOS|FxiOS|EdgiOS|OPiOS|Instagram|FBAN|FBAV|WhatsApp|Line\/|GSA\//.test(ua) ? 'iphone-otro' : 'iphone-safari'
+  if (/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Line\//i.test(ua)) return 'app-interna'
+  if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'iphone'
   if (/Android/.test(ua)) return 'android'
   return 'computador'
 }
+
+const CLAVE = 'zanfit:instalada'
+
+/** La persona tocó "Ya la instalé" (o Chrome avisó que se instaló): no se le vuelve a ofrecer. */
+export function dijoQueLaInstalo(): boolean {
+  try {
+    return localStorage.getItem(CLAVE) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function marcarInstalada() {
+  try {
+    localStorage.setItem(CLAVE, '1')
+  } catch {
+    // Sin localStorage se le puede volver a ofrecer; no es grave.
+  }
+  avisar.forEach((f) => f())
+}
+
+/** Ofrecer instalar: en un teléfono, si no se abrió desde el ícono y no dijo que ya la instaló. */
+export const ofrecerInstalar = () => plataforma() !== 'computador' && !esInstalada() && !dijoQueLaInstalo()
