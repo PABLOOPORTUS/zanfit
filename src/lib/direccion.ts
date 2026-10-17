@@ -5,6 +5,6 @@
 export const DIRECCION = 'https://zanfit.pages.dev'
 export const DIRECCIONES_ANTIGUAS = ['zanfit.vercel.app']
 /** Se activa recién cuando la dirección nueva está funcionando. */
-export const MUDANZA_ACTIVA = false
+export const MUDANZA_ACTIVA = true
 
 export const enDireccionAntigua = () => MUDANZA_ACTIVA && DIRECCIONES_ANTIGUAS.includes(location.hostname)
