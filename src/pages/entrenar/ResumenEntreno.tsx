@@ -33,7 +33,7 @@ export default function ResumenEntreno() {
     return (
       <section>
         <p className="rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">No encontramos este entreno.</p>
-        <Link to="/entrenar" className="mt-4 flex h-14 items-center justify-center rounded-2xl bg-lima font-bold text-fondo">
+        <Link to="/entrenar" className="mt-4 flex h-12 items-center justify-center rounded-2xl bg-lima font-bold text-fondo">
           Volver a Entrenar
         </Link>
       </section>
@@ -87,7 +87,7 @@ export default function ResumenEntreno() {
           <p className="font-marca text-4xl font-bold text-lima tabular-nums">+{puntosAnimados}</p>
           <p className="text-sm text-texto-suave">puntos</p>
         </div>
-        <div className="rounded-2xl border border-borde bg-superficie p-4 text-center">
+        <div className="rounded-2xl bg-superficie p-4 text-center">
           <p className="font-marca text-4xl font-bold tabular-nums">~{kcalAnimadas}</p>
           <p className="text-sm text-texto-suave">kcal (aprox.)</p>
         </div>
@@ -107,7 +107,7 @@ export default function ResumenEntreno() {
       )}
 
       {cosa && (
-        <p className="mt-4 animate-entrar rounded-2xl border border-borde bg-superficie p-4 text-lg leading-snug [animation-delay:300ms]">
+        <p className="mt-4 animate-entrar rounded-2xl bg-superficie p-4 text-lg leading-snug [animation-delay:300ms]">
           Levantaste <span className="font-bold text-lima">{u.volumen(resumen.volumen)}</span> en total: más que {cosa}.
         </p>
       )}
@@ -167,13 +167,13 @@ export default function ResumenEntreno() {
       <Link
         to="/entrenar"
         replace
-        className="mt-6 flex h-16 items-center justify-center rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+        className="mt-6 flex h-13 items-center justify-center rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
       >
         Listo
       </Link>
       <Link
         to={`/progreso/entrenos/${id}`}
-        className="mt-3 flex h-14 items-center justify-center rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde"
+        className="mt-3 flex h-12 items-center justify-center rounded-2xl bg-superficie font-semibold active:bg-borde"
       >
         Ver detalle en Progreso
       </Link>

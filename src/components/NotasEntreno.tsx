@@ -17,7 +17,7 @@ export default function NotasEntreno({ workoutId, inicial }: { workoutId: number
         }}
         rows={3}
         placeholder="¿Cómo te sentiste? Ej: dormí poco, subir peso en sentadilla la próxima"
-        className="rounded-2xl border border-borde bg-superficie px-4 py-3 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none"
+        className="rounded-2xl border border-borde bg-superficie px-4 py-3 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none"
       />
     </label>
   )

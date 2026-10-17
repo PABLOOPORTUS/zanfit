@@ -46,7 +46,7 @@ export default function DetalleEntreno() {
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Ejercicios</h2>
       <div className="flex flex-col gap-3">
         {resumen.bloques.map((b) => (
-          <div key={b.exercise.id} className="rounded-2xl border border-borde bg-superficie p-4">
+          <div key={b.exercise.id} className="rounded-2xl bg-superficie p-4">
             <p className="flex items-center gap-2 text-lg font-semibold">
               {b.exercise.nombre}
               {conRecord.has(b.exercise.id!) && <span className="rounded-full bg-lima px-2 py-0.5 text-xs font-bold text-fondo">Récord</span>}

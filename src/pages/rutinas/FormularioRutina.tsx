@@ -81,7 +81,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
             autoCapitalize="sentences"
             enterKeyHint="done"
             placeholder="Ej: Torso A"
-            className="h-14 rounded-2xl border border-borde bg-superficie px-4 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none"
+            className="h-12 rounded-2xl border border-borde bg-superficie px-4 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none"
           />
         </label>
 
@@ -89,7 +89,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
           <p className="mb-2 font-semibold">Ejercicios</p>
           <ol className="flex flex-col gap-3">
             {items.map((item, i) => (
-              <li key={item.exerciseId} className="rounded-2xl border border-borde bg-superficie p-3">
+              <li key={item.exerciseId} className="rounded-2xl bg-superficie p-3">
                 <div className="flex items-start gap-1">
                   <span className="w-6 shrink-0 pt-3 font-marca text-lg font-bold text-texto-suave">{i + 1}</span>
                   <p className="min-w-0 flex-1 pt-2.5 text-lg leading-snug font-semibold">
@@ -174,7 +174,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
               setError(null)
               selector.abrir()
             }}
-            className="mt-3 flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-lima/60 font-semibold text-lima active:bg-lima/10"
+            className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-lima/60 font-semibold text-lima active:bg-lima/10"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
               <path d="M12 5v14M5 12h14" />
@@ -189,7 +189,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
           </p>
         )}
 
-        <button type="submit" className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro">
+        <button type="submit" className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
           {esNueva ? 'Crear rutina' : 'Guardar cambios'}
         </button>
       </form>

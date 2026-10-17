@@ -13,7 +13,7 @@ export default function CompartirApp() {
   }, [link])
 
   return (
-    <div className="rounded-2xl border border-borde bg-superficie p-4 text-center">
+    <div className="rounded-2xl bg-superficie p-4 text-center">
       {qr && <img src={qr} alt={`Código QR de ${link}`} className="mx-auto size-48 rounded-xl" />}
       <p className="mt-2 font-semibold select-all">{link.replace(/^https?:\/\//, '')}</p>
       <p className="text-sm text-texto-suave">Al escanearlo o abrir el link, la app les ofrece instalarse.</p>

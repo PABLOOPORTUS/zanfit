@@ -7,7 +7,7 @@ export default function OpcionGrande({ titulo, detalle, activo, onClick, multipl
       type="button"
       onClick={onClick}
       aria-pressed={activo}
-      className={`flex min-h-16 w-full items-center gap-3 rounded-2xl border p-4 text-left transition-colors ${
+      className={`flex min-h-13 w-full items-center gap-3 rounded-2xl border p-4 text-left transition-colors ${
         activo ? 'border-lima bg-lima/10' : 'border-borde bg-superficie active:bg-borde'
       }`}
     >

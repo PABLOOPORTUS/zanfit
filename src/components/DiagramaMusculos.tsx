@@ -9,7 +9,7 @@ export default function DiagramaMusculos({ musculos }: { musculos: Musculos }) {
   const descripcion = `Principales: ${nombresMusculos(musculos.principales)}${musculos.secundarios.length ? `. Secundarios: ${nombresMusculos(musculos.secundarios)}` : ''}.`
 
   return (
-    <div className="rounded-2xl border border-borde bg-superficie p-4">
+    <div className="rounded-2xl bg-superficie p-4">
       <div className="mx-auto grid max-w-72 grid-cols-2 gap-4" role="img" aria-label={`Músculos trabajados. ${descripcion}`}>
         {(['frente', 'espalda'] as const).map((vista) => (
           <figure key={vista}>

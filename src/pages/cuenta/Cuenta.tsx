@@ -100,7 +100,7 @@ export default function Cuenta() {
             type="button"
             disabled={enviando}
             onClick={() => elegir('subir')}
-            className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+            className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
           >
             Guardarlos en mi cuenta
           </button>
@@ -108,7 +108,7 @@ export default function Cuenta() {
             type="button"
             disabled={enviando}
             onClick={() => elegir('cero')}
-            className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde disabled:opacity-60"
+            className="h-12 rounded-2xl bg-superficie font-semibold active:bg-borde disabled:opacity-60"
           >
             Empezar de cero
           </button>
@@ -135,7 +135,7 @@ export default function Cuenta() {
         </p>
       )}
 
-      <div className={`${registro ? 'mt-4' : 'mt-6'} grid grid-cols-2 gap-1 rounded-2xl border border-borde bg-superficie p-1`} role="tablist">
+      <div className={`${registro ? 'mt-4' : 'mt-6'} grid grid-cols-2 gap-1 rounded-2xl bg-superficie p-1`} role="tablist">
         {[
           { valor: false, texto: 'Ingresar' },
           { valor: true, texto: 'Crear cuenta' },
@@ -236,7 +236,7 @@ export default function Cuenta() {
         <button
           type="submit"
           disabled={enviando}
-          className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+          className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
         >
           {enviando ? 'Un momento…' : registro ? 'Crear cuenta' : 'Ingresar'}
         </button>
@@ -267,7 +267,7 @@ function Pantalla({ children, compacto = false }: { children: ReactNode; compact
 }
 
 const claseInput =
-  'h-14 w-full rounded-2xl border border-borde bg-superficie px-4 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none'
+  'h-12 w-full rounded-2xl border border-borde bg-superficie px-4 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none'
 
 function Campo({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {
   return (

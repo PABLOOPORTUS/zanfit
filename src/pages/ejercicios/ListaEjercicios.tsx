@@ -70,7 +70,7 @@ export default function ListaEjercicios() {
           placeholder="Buscar ejercicio"
           aria-label="Buscar ejercicio"
           enterKeyHint="search"
-          className="h-14 w-full rounded-2xl border border-borde bg-superficie pr-14 pl-4 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+          className="h-12 w-full rounded-2xl border border-borde bg-superficie pr-14 pl-4 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
         {busqueda && (
           <button
@@ -130,10 +130,10 @@ export default function ListaEjercicios() {
                 {s.etiqueta}
                 <span className="font-normal">{s.total}</span>
               </h2>
-              <ul className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+              <ul className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
                 {s.ejercicios.map((e) => (
                   <li key={e.id}>
-                    <Link to={`/ejercicios/${e.id}`} className="flex min-h-16 items-center gap-3 px-3 py-2.5 active:bg-borde">
+                    <Link to={`/ejercicios/${e.id}`} className="flex min-h-13 items-center gap-3 px-3 py-2.5 active:bg-borde">
                       <MiniaturaEjercicio ejercicio={e} className="h-14 w-20" />
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 text-lg leading-snug font-semibold">{e.nombre}</p>
@@ -166,7 +166,7 @@ export default function ListaEjercicios() {
             <button
               type="button"
               onClick={() => setLimite((l) => l + POR_PAGINA)}
-              className="mt-6 h-14 w-full rounded-2xl border border-borde bg-superficie text-lg font-semibold active:bg-borde"
+              className="mt-6 h-12 w-full rounded-2xl bg-superficie font-semibold active:bg-borde"
             >
               Mostrar más ({filtrados.length - limite} restantes)
             </button>
@@ -178,7 +178,7 @@ export default function ListaEjercicios() {
           {nombreBuscado && (
             <Link
               to={`/ejercicios/nuevo?${new URLSearchParams({ nombre: nombreBuscado, ...(grupo && { grupo }) })}`}
-              className="mt-4 inline-flex h-14 items-center justify-center rounded-2xl bg-lima px-6 text-lg font-bold text-fondo active:bg-lima-oscuro"
+              className="mt-4 inline-flex h-12 items-center justify-center rounded-2xl bg-lima px-6 font-bold text-fondo active:bg-lima-oscuro"
             >
               Crear «{nombreBuscado}»
             </Link>

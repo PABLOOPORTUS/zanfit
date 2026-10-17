@@ -11,7 +11,7 @@ export default function GuiaEjercicio({ ejercicio, onCerrar }: { ejercicio: Exer
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-fondo" role="dialog" aria-modal="true" aria-label={`Cómo se hace: ${ejercicio.nombre}`}>
       <div className="pt-safe border-b border-borde">
-        <div className="mx-auto flex min-h-14 max-w-lg items-center gap-2 px-4 py-2">
+        <div className="mx-auto flex min-h-12 max-w-lg items-center gap-2 px-4 py-2">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold tracking-wide text-texto-suave uppercase">Cómo se hace</p>
             <h2 className="font-marca text-xl leading-tight font-bold">{ejercicio.nombre}</h2>

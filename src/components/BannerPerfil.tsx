@@ -16,7 +16,7 @@ type Props = {
 }
 
 /** Banner con la foto de perfil grande de fondo, el nombre y el nivel (animal). Sin foto, un degradado con la inicial. */
-export default function BannerPerfil({ detalle, editable = false, className = 'h-48' }: Props) {
+export default function BannerPerfil({ detalle, editable = false, className = 'h-32' }: Props) {
   const { fotoPerfil } = useAjustes()
   const { usuario } = useCuenta()
   const juego = useJuego()
@@ -31,7 +31,7 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
         <img src={fotoPerfil} alt="" className="absolute inset-0 size-full object-cover object-[center_30%]" />
       ) : (
         <span className="absolute inset-0 bg-gradient-to-br from-lima/40 via-superficie to-fondo" aria-hidden>
-          <span className="absolute -top-6 -right-4 font-marca text-[10rem] leading-none font-bold text-lima/25">
+          <span className="absolute -top-6 -right-4 font-marca text-[7rem] leading-none font-bold text-lima/20">
             {nombre.charAt(0).toUpperCase()}
           </span>
         </span>
@@ -40,7 +40,7 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
       <span className="absolute inset-0 bg-gradient-to-t from-fondo via-fondo/50 to-transparent" aria-hidden />
       <span className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-4">
         <span className="min-w-0 flex-1">
-          <span className="block font-marca text-3xl leading-tight font-bold tracking-tight drop-shadow-lg">
+          <span className="block font-marca text-2xl leading-tight font-bold tracking-tight drop-shadow-lg">
             {editable ? nombre : nombre ? `Hola, ${nombre}` : 'Hola'}
           </span>
           {detalle && <span className="block text-sm text-texto/80 drop-shadow">{detalle}</span>}
@@ -60,14 +60,14 @@ export default function BannerPerfil({ detalle, editable = false, className = 'h
 
   if (!editable)
     return (
-      <Link to="/ajustes" aria-label="Perfil y ajustes" className={`relative block overflow-hidden rounded-2xl border border-borde ${className}`}>
+      <Link to="/ajustes" aria-label="Perfil y ajustes" className={`relative block overflow-hidden rounded-2xl ${className}`}>
         {contenido}
       </Link>
     )
 
   return (
     <div>
-      <div className={`relative overflow-hidden rounded-2xl border border-borde ${className}`}>
+      <div className={`relative overflow-hidden rounded-2xl ${className}`}>
         {contenido}
         <button
           type="button"

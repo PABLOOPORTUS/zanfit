@@ -26,13 +26,13 @@ export default function ListaRutinas() {
             const series = r.ejercicios.reduce((total, e) => total + e.seriesObjetivo, 0)
             return (
               <li key={r.id}>
-                <Link to={`/rutinas/${r.id}`} className="block rounded-2xl border border-borde bg-superficie p-4 active:bg-borde">
+                <Link to={`/rutinas/${r.id}`} className="block rounded-2xl bg-superficie p-4 active:bg-borde">
                   {delPlan.has(r.id!) && <p className="text-xs font-bold tracking-wide text-lima uppercase">Tu plan</p>}
-                  <p className="font-marca text-2xl leading-tight font-bold tracking-tight break-words">{r.nombre}</p>
-                  <p className="mt-1 text-sm text-texto-suave">
+                  <p className="font-marca text-lg leading-tight font-bold break-words">{r.nombre}</p>
+                  <p className="mt-0.5 text-sm text-texto-suave">
                     {r.ejercicios.length} {r.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'} · {series} series
                   </p>
-                  <p className="mt-2 line-clamp-2 text-texto-suave">
+                  <p className="mt-1.5 line-clamp-2 text-sm text-texto-suave">
                     {r.ejercicios.map((e) => nombres.get(e.exerciseId) ?? 'Ejercicio eliminado').join(' · ')}
                   </p>
                 </Link>

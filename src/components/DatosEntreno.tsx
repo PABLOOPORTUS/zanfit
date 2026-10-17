@@ -52,7 +52,7 @@ export default function DatosEntreno({ resumen }: { resumen: ResumenEntreno }) {
 
 function Dato({ titulo, valor }: { titulo: string; valor: string }) {
   return (
-    <div className="rounded-2xl border border-borde bg-superficie p-3">
+    <div className="rounded-2xl bg-superficie p-3">
       <dt className="text-xs text-texto-suave">{titulo}</dt>
       <dd className="mt-1 font-marca text-lg leading-tight font-bold">{valor}</dd>
     </div>

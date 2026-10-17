@@ -52,8 +52,8 @@ export default function CambiarEjercicio({ exercise, excluir, onCerrar, onElegir
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-fondo" role="dialog" aria-modal="true" aria-label="Cambiar ejercicio">
       <div className="pt-safe mx-auto w-full max-w-lg border-b border-borde px-4 pb-3">
-        <div className="flex h-14 items-center justify-between">
-          <h2 className="font-marca text-2xl font-bold tracking-tight">Cambiar ejercicio</h2>
+        <div className="flex h-12 items-center justify-between">
+          <h2 className="font-marca text-xl font-bold">Cambiar ejercicio</h2>
           <button type="button" onClick={onCerrar} className="-mr-3 h-12 rounded-xl px-3 font-semibold text-texto-suave active:bg-superficie">
             Cancelar
           </button>
@@ -83,7 +83,7 @@ export default function CambiarEjercicio({ exercise, excluir, onCerrar, onElegir
                     <button
                       type="button"
                       onClick={() => onElegir(e.id!)}
-                      className="flex min-h-16 w-full items-center gap-3 py-3 text-left active:bg-superficie"
+                      className="flex min-h-13 w-full items-center gap-3 py-3 text-left active:bg-superficie"
                     >
                       <MiniaturaEjercicio ejercicio={e} className="h-14 w-20" />
                       <span className="min-w-0 flex-1">
@@ -103,7 +103,7 @@ export default function CambiarEjercicio({ exercise, excluir, onCerrar, onElegir
           <button
             type="button"
             onClick={() => setBuscarTodo(true)}
-            className="h-14 w-full rounded-2xl border border-borde bg-fondo text-lg font-semibold active:bg-borde"
+            className="h-12 w-full rounded-2xl border border-borde bg-fondo font-semibold active:bg-borde"
           >
             Buscar en todos los ejercicios
           </button>

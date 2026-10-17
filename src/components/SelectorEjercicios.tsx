@@ -65,7 +65,7 @@ export default function SelectorEjercicios({
           disabled={yaEsta}
           onClick={() => alternar(e.id!)}
           aria-pressed={elegido}
-          className="flex min-h-16 w-full items-center gap-3 py-3 text-left active:bg-superficie disabled:opacity-40"
+          className="flex min-h-13 w-full items-center gap-3 py-3 text-left active:bg-superficie disabled:opacity-40"
         >
           <span
             className={`flex size-8 shrink-0 items-center justify-center rounded-lg border-2 ${
@@ -105,8 +105,8 @@ export default function SelectorEjercicios({
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-fondo" role="dialog" aria-modal="true" aria-label={titulo}>
       <div className="pt-safe mx-auto w-full max-w-lg border-b border-borde px-4 pb-3">
-        <div className="flex h-14 items-center justify-between">
-          <h2 className="font-marca text-2xl font-bold tracking-tight">{titulo}</h2>
+        <div className="flex h-12 items-center justify-between">
+          <h2 className="font-marca text-xl font-bold">{titulo}</h2>
           <button type="button" onClick={onCerrar} className="-mr-3 h-12 rounded-xl px-3 font-semibold text-texto-suave active:bg-superficie">
             Cancelar
           </button>
@@ -118,7 +118,7 @@ export default function SelectorEjercicios({
           placeholder="Buscar ejercicio"
           aria-label="Buscar ejercicio"
           enterKeyHint="search"
-          className="h-14 w-full rounded-2xl border border-borde bg-superficie px-4 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none"
+          className="h-12 w-full rounded-2xl border border-borde bg-superficie px-4 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none"
         />
         <div className="sin-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4">
           {[{ valor: null, etiqueta: 'Todos' }, ...GRUPOS_MUSCULARES].map((g) => (
@@ -166,7 +166,7 @@ export default function SelectorEjercicios({
             <button
               type="button"
               onClick={() => setLimite((l) => l + POR_PAGINA)}
-              className="h-14 w-full rounded-2xl border border-borde bg-superficie text-lg font-semibold active:bg-borde"
+              className="h-12 w-full rounded-2xl bg-superficie font-semibold active:bg-borde"
             >
               Mostrar más ({filtrados.length - limite} restantes)
             </button>
@@ -183,7 +183,7 @@ export default function SelectorEjercicios({
             type="button"
             disabled={elegidos.length === 0}
             onClick={() => onAgregar(elegidos)}
-            className="h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
+            className="h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
           >
             {elegidos.length === 0 ? 'Elige ejercicios' : `Agregar ${elegidos.length} ${elegidos.length === 1 ? 'ejercicio' : 'ejercicios'}`}
           </button>

@@ -35,7 +35,7 @@ export default function ZonaEliminar({
       <button
         type="button"
         onClick={() => setConfirmando(true)}
-        className="h-14 w-full rounded-2xl border border-peligro/60 font-semibold text-peligro active:bg-peligro/10"
+        className="h-12 w-full rounded-2xl border border-peligro/60 font-semibold text-peligro active:bg-peligro/10"
       >
         {boton}
       </button>
@@ -50,11 +50,11 @@ export default function ZonaEliminar({
         <button
           type="button"
           onClick={() => setConfirmando(false)}
-          className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde"
+          className="h-12 rounded-2xl bg-superficie font-semibold active:bg-borde"
         >
           Cancelar
         </button>
-        <button type="button" onClick={onEliminar} className="h-14 rounded-2xl bg-peligro font-bold text-fondo active:opacity-80">
+        <button type="button" onClick={onEliminar} className="h-12 rounded-2xl bg-peligro font-bold text-fondo active:opacity-80">
           {textoConfirmar}
         </button>
       </div>

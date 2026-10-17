@@ -62,7 +62,7 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
           ))}
         </ul>
         {venta?.datos_transferencia && (
-          <div className="mt-4 rounded-2xl border border-borde bg-superficie p-4">
+          <div className="mt-4 rounded-2xl bg-superficie p-4">
             <p className="text-sm font-bold tracking-wide text-texto-suave uppercase">Datos para transferir</p>
             <p className="mt-2 leading-relaxed whitespace-pre-line select-all">{venta.datos_transferencia}</p>
           </div>
@@ -78,7 +78,7 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
             href={whatsapp}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-whatsapp text-lg font-bold text-fondo active:opacity-80"
+            className="mt-4 flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-whatsapp font-bold text-fondo active:opacity-80"
           >
             <IconoWhatsapp className="size-7" />
             Escríbeme por WhatsApp
@@ -103,14 +103,14 @@ export default function PantallaBloqueo({ acceso, onRevisar }: { acceso: Acceso;
             setRevisando(false)
             if (!nuevo || !puedeUsar(nuevo)) setAviso('Todavía no está activa. Apenas confirmemos tu pago, se activa y podrás entrar.')
           }}
-          className={`mt-3 h-14 w-full rounded-2xl font-bold disabled:opacity-60 ${whatsapp ? 'border border-lima/60 text-lima active:bg-lima/10' : 'bg-lima text-fondo active:bg-lima-oscuro'}`}
+          className={`mt-3 h-12 w-full rounded-2xl font-bold disabled:opacity-60 ${whatsapp ? 'border border-lima/60 text-lima active:bg-lima/10' : 'bg-lima text-fondo active:bg-lima-oscuro'}`}
         >
           {revisando ? 'Revisando…' : 'Ya pagué: revisar de nuevo'}
         </button>
         <button
           type="button"
           onClick={() => void cuenta.cerrarSesion()}
-          className="mt-3 h-14 w-full rounded-2xl border border-borde font-semibold active:bg-borde"
+          className="mt-3 h-12 w-full rounded-2xl border border-borde font-semibold active:bg-borde"
         >
           Cerrar sesión
         </button>

@@ -137,7 +137,7 @@ function Panel() {
       ) : (
         <ul className="flex flex-col gap-2">
           {pendientes.map((c) => (
-            <li key={c.codigo} className="rounded-2xl border border-borde bg-superficie p-4">
+            <li key={c.codigo} className="rounded-2xl bg-superficie p-4">
               <p className="font-marca text-xl font-bold tracking-wider select-all">{c.codigo}</p>
               <p className="text-sm text-texto-suave">
                 {c.tipo === 'prueba' ? `Prueba de ${c.dias} días` : 'Compra'} · {formatearFecha(new Date(c.creado_en).getTime())}
@@ -191,7 +191,7 @@ function NuevoCodigo({ onCreado }: { onCreado: () => Promise<void> }) {
           value={nota}
           onChange={(e) => setNota(e.target.value)}
           placeholder="Ej: Juan Pérez, transferencia 12/10"
-          className="h-14 rounded-2xl border border-borde bg-fondo px-4 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none"
+          className="h-12 rounded-2xl border border-borde bg-fondo px-4 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none"
         />
       </label>
       {error && <p className="mt-2 text-sm text-peligro">{error}</p>}
@@ -212,7 +212,7 @@ function NuevoCodigo({ onCreado }: { onCreado: () => Promise<void> }) {
             setCreando(false)
           }
         }}
-        className="mt-4 h-14 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+        className="mt-4 h-12 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
       >
         {creando ? 'Creando…' : 'Generar código'}
       </button>
@@ -245,20 +245,20 @@ function DatosDeVenta() {
     setDatos({ ...datos, ...c })
     setGuardado(false)
   }
-  const claseCampo = 'rounded-2xl border border-borde bg-fondo px-4 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none'
+  const claseCampo = 'rounded-2xl border border-borde bg-fondo px-4 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none'
 
   return (
     <>
       <Titulo>Datos de venta</Titulo>
       <p className="mb-3 text-sm text-texto-suave">Se muestran a quien tiene la prueba vencida o la cuenta sin activar.</p>
-      <div className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
+      <div className="flex flex-col gap-3 rounded-2xl bg-superficie p-4">
         <label className="flex flex-col gap-2">
           <span className="font-semibold">Precio</span>
           <input
             value={datos.precio}
             onChange={(e) => cambiar({ precio: e.target.value })}
             placeholder="Ej: $14.990"
-            className={`h-14 ${claseCampo}`}
+            className={`h-12 ${claseCampo}`}
           />
         </label>
         <label className="flex flex-col gap-2">
@@ -277,7 +277,7 @@ function DatosDeVenta() {
             value={datos.contacto}
             onChange={(e) => cambiar({ contacto: e.target.value })}
             placeholder="Ej: +56 9 1234 5678"
-            className={`h-14 ${claseCampo}`}
+            className={`h-12 ${claseCampo}`}
           />
         </label>
         <label className="flex flex-col gap-2">
@@ -289,7 +289,7 @@ function DatosDeVenta() {
             max={60}
             value={datos.dias_prueba}
             onChange={(e) => cambiar({ dias_prueba: Math.min(60, Math.max(1, Number(e.target.value) || 7)) })}
-            className={`h-14 ${claseCampo}`}
+            className={`h-12 ${claseCampo}`}
           />
         </label>
         {error && <p className="text-sm text-peligro">{error}</p>}
@@ -304,7 +304,7 @@ function DatosDeVenta() {
               setError((e as Error).message)
             }
           }}
-          className="h-14 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+          className="h-12 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
         >
           {guardado ? 'Guardado ✓' : 'Guardar'}
         </button>

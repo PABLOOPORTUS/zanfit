@@ -29,7 +29,7 @@ export default function PestanasEjercicio({ ejercicio, pestana, onCambiar }: Pro
 
   return (
     <div>
-      <div role="tablist" aria-label="Información del ejercicio" className="grid grid-cols-3 gap-1 rounded-2xl border border-borde bg-superficie p-1">
+      <div role="tablist" aria-label="Información del ejercicio" className="grid grid-cols-3 gap-1 rounded-2xl bg-superficie p-1">
         {PESTANAS.map((p) => (
           <button
             key={p.valor}
@@ -46,7 +46,7 @@ export default function PestanasEjercicio({ ejercicio, pestana, onCambiar }: Pro
 
       <div role="tabpanel" className="mt-3">
         {actual === 'instrucciones' && (
-          <div className="rounded-2xl border border-borde bg-superficie p-4 text-lg leading-relaxed">
+          <div className="rounded-2xl bg-superficie p-4 text-lg leading-relaxed">
             {ejercicio.instrucciones ?? (
               <span className="text-texto-suave">Sin instrucciones. {ejercicio.propio && 'Puedes agregarlas editando el ejercicio.'}</span>
             )}
@@ -54,7 +54,7 @@ export default function PestanasEjercicio({ ejercicio, pestana, onCambiar }: Pro
         )}
         {actual === 'musculos' && <DiagramaMusculos musculos={musculos} />}
         {actual === 'equipo' && (
-          <dl className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+          <dl className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
             <Dato titulo="Equipamiento" valor={ficha ? EQUIPAMIENTOS[ficha.equipamiento] : etiquetaEquipo(ejercicio.equipo)} />
             {ficha && <Dato titulo="Nivel" valor={NIVELES[ficha.nivel]} />}
             {ficha && <Dato titulo="Tipo" valor={CATEGORIAS[ficha.categoria]} />}

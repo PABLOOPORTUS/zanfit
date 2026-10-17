@@ -30,7 +30,7 @@ export default function CalendarioEntrenos({ fechas }: { fechas: number[] }) {
         <Dato titulo="Mejor racha" valor={`${mejorRachaSemanal(fechas)} sem`} />
       </dl>
 
-      <div className="mt-3 rounded-2xl border border-borde bg-superficie p-3">
+      <div className="mt-3 rounded-2xl bg-superficie p-3">
         <div className="grid grid-cols-[1.25rem_1fr] gap-1">
           <div />
           <div className="grid text-[10px] text-texto-suave" style={{ gridTemplateColumns: `repeat(${SEMANAS}, 1fr)` }}>
@@ -75,7 +75,7 @@ export default function CalendarioEntrenos({ fechas }: { fechas: number[] }) {
 
 function Dato({ titulo, valor, destacado = false }: { titulo: string; valor: string; destacado?: boolean }) {
   return (
-    <div className="rounded-2xl border border-borde bg-superficie p-3">
+    <div className="rounded-2xl bg-superficie p-3">
       <dt className="text-xs text-texto-suave">{titulo}</dt>
       <dd className={`mt-1 font-marca text-xl font-bold ${destacado ? 'text-lima' : ''}`}>{valor}</dd>
     </div>

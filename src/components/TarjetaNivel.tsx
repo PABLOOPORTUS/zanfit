@@ -17,17 +17,17 @@ export default function TarjetaNivel() {
   const { nivel, siguiente } = juego
 
   return (
-    <Link to="/progreso?vista=logros" className="relative block overflow-hidden rounded-2xl border border-lima/50 bg-superficie p-4 active:bg-borde">
-      <div className="flex items-center gap-4">
-        <img src={`/medios/animales/${nivel.archivo}.webp`} alt="" className="size-20 shrink-0 animate-flotar" />
+    <Link to="/progreso?vista=logros" className="relative block overflow-hidden rounded-2xl bg-superficie p-4 active:bg-borde">
+      <div className="flex items-center gap-3">
+        <img src={`/medios/animales/${nivel.archivo}.webp`} alt="" className="size-12 shrink-0 animate-flotar" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold tracking-wide text-lima uppercase">Nivel {nivel.numero}</p>
-          <p className="font-marca text-2xl leading-tight font-bold">{nivel.animal}</p>
-          <p className="text-sm leading-snug text-texto-suave">{nivel.frase}</p>
+          <p className="text-xs font-bold tracking-wider text-lima uppercase">Nivel {nivel.numero}</p>
+          <p className="font-marca text-lg leading-tight font-bold">{nivel.animal}</p>
+          <p className="line-clamp-1 text-sm text-texto-suave">{nivel.frase}</p>
         </div>
       </div>
       <div className="mt-3 flex items-baseline justify-between text-sm">
-        <span className="font-marca text-lg font-bold text-lima tabular-nums">{puntos.toLocaleString('es-CL')} pts</span>
+        <span className="font-semibold text-lima tabular-nums">{puntos.toLocaleString('es-CL')} pts</span>
         {siguiente ? (
           <span className="text-texto-suave">
             Faltan {(siguiente.desde - juego.puntos).toLocaleString('es-CL')} para {siguiente.animal}
@@ -37,7 +37,7 @@ export default function TarjetaNivel() {
         )}
       </div>
       <div
-        className="relative mt-1.5 h-3 overflow-hidden rounded-full bg-borde"
+        className="relative mt-1.5 h-1.5 overflow-hidden rounded-full bg-borde"
         role="progressbar"
         aria-valuenow={Math.round(juego.avance * 100)}
         aria-valuemin={0}

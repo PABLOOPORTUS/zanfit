@@ -40,7 +40,7 @@ export default function Privacidad() {
 
 function Bloque({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
-    <div className="mt-6 rounded-2xl border border-borde bg-superficie p-4">
+    <div className="mt-6 rounded-2xl bg-superficie p-4">
       <h2 className="font-semibold">{titulo}</h2>
       <p className="mt-1 leading-relaxed text-texto-suave">{children}</p>
     </div>

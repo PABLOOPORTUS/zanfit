@@ -14,7 +14,7 @@ export default function MiniaturaEjercicio({ ejercicio, className = 'size-16' }:
   const propios = useMediosPropios(ejercicio.id)
   const propia = useUrlBlob(propios?.[0]?.miniatura)
   const { musculos, ficha } = mediosDe(ejercicio)
-  const marco = `relative block shrink-0 overflow-hidden rounded-xl border border-borde bg-superficie ${className}`
+  const marco = `relative block shrink-0 overflow-hidden rounded-xl bg-superficie ${className}`
 
   // Primero la foto o video que grabó el usuario (la máquina real de su gimnasio).
   if (propia) {

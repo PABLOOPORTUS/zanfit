@@ -50,7 +50,7 @@ export default function MiPlan() {
         <p className="mt-4 rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">
           Todavía no tienes un plan. Responde la evaluación y te armamos uno a tu medida.
         </p>
-        <Link to="/evaluacion" className="mt-4 flex h-16 items-center justify-center rounded-2xl bg-lima text-lg font-bold text-fondo">
+        <Link to="/evaluacion" className="mt-4 flex h-13 items-center justify-center rounded-2xl bg-lima font-bold text-fondo">
           Hacer la evaluación
         </Link>
       </section>
@@ -75,7 +75,7 @@ export default function MiPlan() {
       <p className="mt-2 text-texto-suave">{DESCRIPCION_DIVISION[plan.division]}</p>
       <OrigenPlan perfil={perfil} origen={plan.origen} motivo={plan.motivoSinIa} />
 
-      <div className="mt-6 rounded-2xl border border-borde bg-superficie p-4">
+      <div className="mt-6 rounded-2xl bg-superficie p-4">
         <p className="font-semibold">
           {perfil.sexo === 'hombre' ? 'Hombre' : 'Mujer'} · {edad(perfil)} años · {u.peso(perfil.pesoKg, 1)} · {perfil.alturaCm} cm
         </p>
@@ -148,7 +148,7 @@ export default function MiPlan() {
                           excluir={r.ejercicios.map((x) => x.exerciseId)}
                           onElegir={(nuevo) => reemplazarEnRutina(r.id!, e.exerciseId, nuevo)}
                           rutinaId={r.id}
-                          className="h-14 w-14 rounded-xl"
+                          className="h-12 w-14 rounded-xl"
                         />
                       )}
                     </li>
@@ -159,7 +159,7 @@ export default function MiPlan() {
                 <button
                   type="button"
                   onClick={() => empezar(r.id!)}
-                  className="mt-4 h-14 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+                  className="mt-4 h-12 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
                 >
                   Empezar este día
                 </button>
@@ -189,7 +189,7 @@ export default function MiPlan() {
 
       <Link
         to="/evaluacion"
-        className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde"
+        className="mt-8 flex h-12 items-center justify-center rounded-2xl bg-superficie font-semibold active:bg-borde"
       >
         Rehacer la evaluación
       </Link>
@@ -238,10 +238,10 @@ function Respuestas({ perfil }: { perfil: Perfil }) {
   return (
     <>
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tus respuestas</h2>
-      <ul className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+      <ul className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
         {filas.map(([paso, titulo, valor]) => (
           <li key={paso}>
-            <Link to={`/evaluacion?paso=${pasos.indexOf(paso)}&editar=1`} className="flex min-h-14 items-center gap-3 px-4 py-2 active:bg-borde">
+            <Link to={`/evaluacion?paso=${pasos.indexOf(paso)}&editar=1`} className="flex min-h-12 items-center gap-3 px-4 py-2 active:bg-borde">
               <span className="min-w-0 flex-1">
                 <span className="block text-sm text-texto-suave">{titulo}</span>
                 <span className="block leading-snug font-semibold">{valor}</span>
@@ -266,7 +266,7 @@ function OrigenPlan({ perfil, origen, motivo }: { perfil: Perfil; origen: Plan['
       </p>
     )
   return (
-    <div className="mt-3 rounded-2xl border border-borde bg-superficie p-3 text-sm leading-snug text-texto-suave">
+    <div className="mt-3 rounded-2xl bg-superficie p-3 text-sm leading-snug text-texto-suave">
       <p>{motivo ? MENSAJE_SIN_IA[motivo] : 'Plan armado con nuestras reglas de entrenamiento.'}</p>
       <button
         type="button"

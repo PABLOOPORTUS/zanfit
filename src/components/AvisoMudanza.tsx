@@ -50,7 +50,7 @@ export default function AvisoMudanza() {
           </ol>
           <a
             href={destino}
-            className="mt-5 flex h-16 items-center justify-center rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+            className="mt-5 flex h-13 items-center justify-center rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
           >
             {segundos > 0 ? `Te llevamos en ${segundos}…` : 'Ir a la nueva dirección'}
           </a>

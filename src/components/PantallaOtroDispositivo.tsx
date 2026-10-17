@@ -30,14 +30,14 @@ export default function PantallaOtroDispositivo({ onUsarAqui }: { onUsarAqui: ()
             await onUsarAqui()
             setCambiando(false)
           }}
-          className="mt-5 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+          className="mt-5 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
         >
           {cambiando ? 'Un momento…' : 'Usar aquí'}
         </button>
         <button
           type="button"
           onClick={() => void cuenta.cerrarSesion()}
-          className="mt-3 h-14 w-full rounded-2xl border border-borde font-semibold active:bg-borde"
+          className="mt-3 h-12 w-full rounded-2xl border border-borde font-semibold active:bg-borde"
         >
           Cerrar sesión
         </button>

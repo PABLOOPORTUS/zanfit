@@ -14,7 +14,7 @@ export default function Avatar({ className = 'size-10 text-lg' }: { className?: 
       </span>
     )
   return (
-    <span className={`${base} border border-borde bg-superficie text-texto-suave`} aria-hidden>
+    <span className={`${base} bg-superficie text-texto-suave`} aria-hidden>
       <svg width="55%" height="55%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="8" r="4" />
         <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />

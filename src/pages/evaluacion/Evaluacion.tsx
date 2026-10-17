@@ -364,7 +364,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
             detalle="Unas preguntas de salud. Si respondes que sí a alguna, te recomendaremos consultar a un médico y el plan partirá más suave."
           >
             {preguntasSalud(b.sexo).map((texto, i) => (
-              <div key={texto} className="rounded-2xl border border-borde bg-superficie p-4">
+              <div key={texto} className="rounded-2xl bg-superficie p-4">
                 <p className="leading-snug">{texto}</p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {[false, true].map((si) => (
@@ -389,7 +389,7 @@ function Cuestionario({ anterior }: { anterior: Perfil | null }) {
         type="button"
         onClick={siguiente}
         disabled={!valido[paso] || guardando}
-        className="mt-8 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
+        className="mt-8 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:bg-borde disabled:text-texto-suave"
       >
         {guardando
           ? 'Armando tu plan…'
@@ -437,7 +437,7 @@ function Campo({ etiqueta, sufijo, valor, onChange, error, modo }: PropsCampo) {
           value={valor}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={Boolean(error)}
-          className={`h-14 w-full rounded-2xl border bg-superficie pr-16 pl-4 font-marca text-xl font-bold focus:outline-none ${error ? 'border-peligro' : 'border-borde focus:border-lima'}`}
+          className={`h-12 w-full rounded-2xl border bg-superficie pr-16 pl-4 font-marca text-xl font-bold focus:outline-none ${error ? 'border-peligro' : 'border-borde focus:border-lima'}`}
         />
         <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-texto-suave">{sufijo}</span>
       </span>

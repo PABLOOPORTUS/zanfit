@@ -42,7 +42,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
   const km = cardio?.includes('velocidad') ? distanciaKm(sets) : 0
 
   return (
-    <article className="rounded-2xl border border-borde bg-superficie">
+    <article className="rounded-2xl bg-superficie">
       <header className="flex items-center gap-2 p-4 pb-2">
         <div className="min-w-0 flex-1">
           <h2 className="text-xl leading-tight font-bold">{exercise.nombre}</h2>
@@ -169,7 +169,7 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
             <button
               type="button"
               onClick={() => setConfirmandoQuitar(false)}
-              className="h-12 rounded-xl border border-borde bg-superficie font-semibold"
+              className="h-12 rounded-xl bg-superficie font-semibold"
             >
               Cancelar
             </button>
@@ -245,7 +245,7 @@ const textoNumero = (n: number | undefined) => (n ? String(n).replace('.', ',') 
 /** Un tramo de cardio: minutos y, según la máquina, velocidad e inclinación o nivel. Al marcarlo no parte el descanso. */
 function FilaCardio({ serie, campos, columnas }: { serie: WorkoutSet; campos: CampoCardio[]; columnas: string }) {
   const [valores, setValores] = useState(() => Object.fromEntries(campos.map((c) => [c, textoNumero(serie[c])])) as Record<CampoCardio, string>)
-  const input = `h-14 w-full min-w-0 rounded-xl border text-center font-marca text-xl font-bold tabular-nums placeholder:text-texto-suave/50 focus:border-lima focus:outline-none ${
+  const input = `h-12 w-full min-w-0 rounded-xl border text-center font-marca text-xl font-bold tabular-nums placeholder:text-texto-suave/50 focus:border-lima focus:outline-none ${
     serie.completada ? 'border-lima/30 bg-lima/10' : 'border-borde bg-fondo'
   }`
   return (
@@ -291,7 +291,7 @@ function FilaSerie({ serie, descansoSeg }: { serie: WorkoutSet; descansoSeg: num
     }
   }
 
-  const input = `h-14 w-full min-w-0 rounded-xl border text-center font-marca text-xl font-bold tabular-nums placeholder:text-texto-suave/50 focus:border-lima focus:outline-none ${
+  const input = `h-12 w-full min-w-0 rounded-xl border text-center font-marca text-xl font-bold tabular-nums placeholder:text-texto-suave/50 focus:border-lima focus:outline-none ${
     serie.completada ? 'border-lima/30 bg-lima/10' : 'border-borde bg-fondo'
   }`
 
@@ -339,7 +339,7 @@ function BotonListo({ serie, onAlternar }: { serie: WorkoutSet; onAlternar: () =
       onClick={onAlternar}
       aria-pressed={serie.completada}
       aria-label={`${serie.completada ? 'Desmarcar' : 'Marcar'} serie ${serie.numeroSerie}`}
-      className={`flex size-14 items-center justify-center rounded-xl border-2 transition-colors ${
+      className={`flex size-12 items-center justify-center rounded-xl border-2 transition-colors ${
         serie.completada ? 'animate-pop border-lima bg-lima text-fondo' : 'border-borde text-texto-suave active:bg-borde'
       }`}
     >

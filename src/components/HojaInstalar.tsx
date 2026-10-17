@@ -91,7 +91,7 @@ export default function HojaInstalar({ onCerrar }: { onCerrar: () => void }) {
                   onClick={async () => {
                     if (await instalar()) listo()
                   }}
-                  className="mt-5 h-16 w-full rounded-2xl bg-lima text-xl font-bold text-fondo active:bg-lima-oscuro"
+                  className="mt-5 h-13 w-full rounded-2xl bg-lima text-xl font-bold text-fondo active:bg-lima-oscuro"
                 >
                   Instalar ZANFIT
                 </button>
@@ -112,10 +112,10 @@ export default function HojaInstalar({ onCerrar }: { onCerrar: () => void }) {
           )}
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button type="button" onClick={onCerrar} className="h-14 rounded-2xl border border-borde font-semibold active:bg-borde">
+            <button type="button" onClick={onCerrar} className="h-12 rounded-2xl border border-borde font-semibold active:bg-borde">
               Ahora no
             </button>
-            <button type="button" onClick={listo} className="h-14 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
+            <button type="button" onClick={listo} className="h-12 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
               Ya la instalé
             </button>
           </div>

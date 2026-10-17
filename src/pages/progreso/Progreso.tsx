@@ -26,7 +26,7 @@ export default function Progreso() {
         <CalendarioEntrenos fechas={fechas} />
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-1 rounded-2xl border border-borde bg-superficie p-1" role="tablist">
+      <div className="mt-6 grid grid-cols-3 gap-1 rounded-2xl bg-superficie p-1" role="tablist">
         {(['historial', 'records', 'logros'] as const).map((v) => (
           <button
             key={v}
@@ -63,10 +63,10 @@ function Historial() {
       {[...porMes.entries()].map(([titulo, filasMes]) => (
         <div key={titulo}>
           <h2 className="mb-2 px-1 text-sm font-bold tracking-wide text-texto-suave uppercase">{titulo}</h2>
-          <ul className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+          <ul className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
             {filasMes.map((f) => (
               <li key={f.workout.id}>
-                <Link to={`/progreso/entrenos/${f.workout.id}`} className="flex min-h-16 items-center gap-4 px-4 py-3 active:bg-borde">
+                <Link to={`/progreso/entrenos/${f.workout.id}`} className="flex min-h-13 items-center gap-4 px-4 py-3 active:bg-borde">
                   <div className="w-11 shrink-0 text-center">
                     <p className="text-xs text-texto-suave uppercase">{diaSemana.format(f.workout.fechaInicio).replace('.', '')}</p>
                     <p className="font-marca text-2xl leading-none font-bold">{new Date(f.workout.fechaInicio).getDate()}</p>
@@ -97,10 +97,10 @@ function Records() {
   return (
     <>
       <p className="mb-3 px-1 text-sm text-texto-suave">1RM estimado con la fórmula de Epley: peso × (1 + reps / 30).</p>
-      <ul className="divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie">
+      <ul className="divide-y divide-borde overflow-hidden rounded-2xl bg-superficie">
         {records.map((r) => (
           <li key={r.exercise.id}>
-            <Link to={`/progreso/ejercicios/${r.exercise.id}`} className="flex min-h-16 items-center gap-3 px-4 py-3 active:bg-borde">
+            <Link to={`/progreso/ejercicios/${r.exercise.id}`} className="flex min-h-13 items-center gap-3 px-4 py-3 active:bg-borde">
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-lg leading-snug font-semibold">{r.exercise.nombre}</p>
                 <p className="text-sm text-texto-suave">Último: {formatearFecha(r.ultimaVez)}</p>

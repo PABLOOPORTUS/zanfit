@@ -32,7 +32,7 @@ export default function BotonCompartir({
       type="button"
       disabled={!imagen}
       onClick={() => imagen && void compartirImagen(imagen, texto)}
-      className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-lima/60 font-semibold text-lima active:bg-lima/10 disabled:opacity-50"
+      className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-lima/60 font-semibold text-lima active:bg-lima/10 disabled:opacity-50"
     >
       <svg
         width="22"

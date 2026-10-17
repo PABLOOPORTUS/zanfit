@@ -164,13 +164,13 @@ export default function Ajustes() {
         </p>
 
         <div className="mt-4 flex flex-col gap-3">
-          <button type="button" onClick={exportar} className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro">
+          <button type="button" onClick={exportar} className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
             Exportar respaldo
           </button>
           <button
             type="button"
             onClick={() => inputArchivo.current?.click()}
-            className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde"
+            className="h-12 rounded-2xl bg-superficie font-semibold active:bg-borde"
           >
             Importar respaldo
           </button>
@@ -191,7 +191,7 @@ export default function Ajustes() {
         )}
 
         {d && (
-          <div className="mt-4 rounded-2xl border border-borde bg-superficie p-4">
+          <div className="mt-4 rounded-2xl bg-superficie p-4">
             <p className="font-semibold">Respaldo{porImportar.exportadoEn ? ` del ${formatearFecha(porImportar.exportadoEn)}` : ''}</p>
             <p className="mt-1 text-texto-suave">
               {contar(d.exercises.length, 'ejercicio', 'ejercicios')}, {contar(d.routines.length, 'rutina', 'rutinas')} y{' '}
@@ -222,7 +222,7 @@ export default function Ajustes() {
             type="button"
             onClick={compartirMedios}
             disabled={trabajandoMedios || !cantidadMedios}
-            className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde disabled:opacity-50"
+            className="h-12 rounded-2xl bg-superficie font-semibold active:bg-borde disabled:opacity-50"
           >
             Compartir
           </button>
@@ -230,7 +230,7 @@ export default function Ajustes() {
             type="button"
             onClick={() => inputMedios.current?.click()}
             disabled={trabajandoMedios}
-            className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde disabled:opacity-50"
+            className="h-12 rounded-2xl bg-superficie font-semibold active:bg-borde disabled:opacity-50"
           >
             Importar
           </button>
@@ -255,7 +255,7 @@ export default function Ajustes() {
 
       <Link
         to="/plan"
-        className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde"
+        className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde"
       >
         Mi evaluación y plan
         <svg
@@ -279,7 +279,7 @@ export default function Ajustes() {
       {acceso?.admin && (
         <Link
           to="/admin"
-          className="flex h-14 items-center justify-between rounded-2xl border border-lima/60 bg-superficie px-4 font-semibold active:bg-borde"
+          className="flex h-12 items-center justify-between rounded-2xl border border-lima/60 bg-superficie px-4 font-semibold active:bg-borde"
         >
           Administración (códigos y cuentas)
           <svg
@@ -301,7 +301,7 @@ export default function Ajustes() {
 
       <Link
         to="/ajustes/privacidad"
-        className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde"
+        className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde"
       >
         Privacidad
         <svg
@@ -322,7 +322,7 @@ export default function Ajustes() {
 
       <Link
         to="/ajustes/creditos"
-        className="flex h-14 items-center justify-between rounded-2xl border border-borde bg-superficie px-4 font-semibold active:bg-borde"
+        className="flex h-12 items-center justify-between rounded-2xl bg-superficie px-4 font-semibold active:bg-borde"
       >
         Créditos y licencias
         <svg
@@ -365,8 +365,8 @@ function SeccionCuenta() {
   if (!cuenta.usuario) return null
   const { usuario, estado, ultimaSync } = cuenta
   return (
-    <div className="rounded-2xl border border-borde bg-superficie p-4">
-      <BannerPerfil editable detalle={usuario.correo} className="h-56" />
+    <div className="rounded-2xl bg-superficie p-4">
+      <BannerPerfil editable detalle={usuario.correo} className="h-40" />
       <p
         className={`mt-3 text-sm ${estado === 'error' ? 'text-peligro' : estado === 'sincronizado' ? 'text-lima' : 'text-texto-suave'}`}
         role="status"
@@ -380,7 +380,7 @@ function SeccionCuenta() {
           type="button"
           onClick={cuenta.sincronizarAhora}
           disabled={estado === 'sincronizando'}
-          className="h-14 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50"
+          className="h-12 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50"
         >
           Sincronizar
         </button>
@@ -391,7 +391,7 @@ function SeccionCuenta() {
             setSaliendo(true)
             await cuenta.cerrarSesion()
           }}
-          className="h-14 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50"
+          className="h-12 rounded-2xl border border-borde font-semibold active:bg-borde disabled:opacity-50"
         >
           Cerrar sesión
         </button>
@@ -416,7 +416,7 @@ function FilaInstalar() {
       <button
         type="button"
         onClick={() => setAbierta(true)}
-        className="flex h-14 w-full items-center justify-between rounded-2xl border border-lima/60 bg-superficie px-4 font-semibold active:bg-borde"
+        className="flex h-12 w-full items-center justify-between rounded-2xl border border-lima/60 bg-superficie px-4 font-semibold active:bg-borde"
       >
         Instalar ZANFIT en tu teléfono
         <img src="/icon-192.png" alt="" className="size-8 rounded-lg" />

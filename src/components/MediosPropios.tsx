@@ -37,7 +37,7 @@ export default function MediosPropios({ ejercicio }: { ejercicio: Exercise }) {
   }
 
   return (
-    <div className="rounded-2xl border border-borde bg-superficie p-3">
+    <div className="rounded-2xl bg-superficie p-3">
       {actual ? (
         <>
           <Visor medio={actual} nombre={ejercicio.nombre} />
@@ -67,7 +67,7 @@ export default function MediosPropios({ ejercicio }: { ejercicio: Exercise }) {
           <button
             type="button"
             onClick={() => input.current?.click()}
-            className="flex h-14 items-center justify-center gap-2 rounded-xl border border-lima/60 font-semibold text-lima active:bg-lima/10"
+            className="flex h-12 items-center justify-center gap-2 rounded-xl border border-lima/60 font-semibold text-lima active:bg-lima/10"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
@@ -84,12 +84,12 @@ export default function MediosPropios({ ejercicio }: { ejercicio: Exercise }) {
                   setConfirmando(false)
                   setIndice(0)
                 }}
-                className="h-14 rounded-xl bg-peligro font-bold text-fondo"
+                className="h-12 rounded-xl bg-peligro font-bold text-fondo"
               >
                 Sí, eliminar
               </button>
             ) : (
-              <button type="button" onClick={() => setConfirmando(true)} className="h-14 rounded-xl border border-borde font-semibold text-texto-suave active:bg-borde">
+              <button type="button" onClick={() => setConfirmando(true)} className="h-12 rounded-xl border border-borde font-semibold text-texto-suave active:bg-borde">
                 Eliminar este
               </button>
             ))}

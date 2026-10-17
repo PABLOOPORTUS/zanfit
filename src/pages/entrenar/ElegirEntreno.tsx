@@ -57,7 +57,7 @@ export default function ElegirEntreno() {
       {hoy ? (
         <div className="mt-4 animate-entrar rounded-2xl border border-lima bg-lima/10 p-4 [animation-delay:240ms]">
           <p className="text-sm font-bold tracking-wide text-lima uppercase">Tu plan · Hoy te toca</p>
-          <p className="mt-1 font-marca text-2xl leading-tight font-bold tracking-tight">{hoy.nombre.replace(/^Plan · /, '')}</p>
+          <p className="mt-1 font-marca text-xl leading-tight font-bold">{hoy.nombre.replace(/^Plan · /, '')}</p>
           <p className="text-sm text-texto-suave">
             {hoy.ejercicios.length} ejercicios · ~{duracionEstimada(hoy)} min · ~
             {caloriasRutina(hoy, duracionEstimada(hoy), porId, perfil?.pesoKg ?? PESO_POR_DEFECTO)} kcal
@@ -78,7 +78,7 @@ export default function ElegirEntreno() {
           <button
             type="button"
             onClick={() => iniciarEntreno(hoy.id)}
-            className="mt-4 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+            className="mt-4 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
           >
             Empezar
           </button>
@@ -102,7 +102,7 @@ export default function ElegirEntreno() {
           <p className="text-texto-suave">Todavía no tienes rutinas.</p>
           <Link
             to="/rutinas/nueva"
-            className="mt-4 inline-flex h-14 items-center rounded-2xl border border-lima/60 px-6 font-semibold text-lima active:bg-lima/10"
+            className="mt-4 inline-flex h-12 items-center rounded-2xl border border-lima/60 px-6 font-semibold text-lima active:bg-lima/10"
           >
             Crear rutina
           </Link>
@@ -117,10 +117,10 @@ export default function ElegirEntreno() {
                   type="button"
                   onClick={() => iniciarEntreno(r.id)}
                   disabled={r.ejercicios.length === 0}
-                  className="flex min-h-20 w-full items-center gap-3 rounded-2xl border border-borde bg-superficie p-4 text-left active:bg-borde disabled:opacity-50"
+                  className="flex min-h-20 w-full items-center gap-3 rounded-2xl bg-superficie p-4 text-left active:bg-borde disabled:opacity-50"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="line-clamp-2 font-marca text-2xl leading-tight font-bold tracking-tight break-words">{r.nombre}</span>
+                    <span className="line-clamp-2 font-marca text-lg leading-tight font-bold break-words">{r.nombre}</span>
                     <span className="text-sm text-texto-suave">
                       {delPlan.has(r.id!) && <span className="font-semibold text-lima">Plan · </span>}
                       {r.ejercicios.length} {r.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'}
@@ -141,7 +141,7 @@ export default function ElegirEntreno() {
       <button
         type="button"
         onClick={() => iniciarEntreno()}
-        className="mt-4 h-16 w-full rounded-2xl border border-borde bg-superficie text-lg font-semibold active:bg-borde"
+        className="mt-4 h-13 w-full rounded-2xl bg-superficie font-semibold active:bg-borde"
       >
         Entreno libre
       </button>

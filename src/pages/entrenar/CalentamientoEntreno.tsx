@@ -36,7 +36,7 @@ export default function CalentamientoEntreno({ workoutId, pasos }: { workoutId: 
       <button
         type="button"
         onClick={() => terminar(false)}
-        className="flex h-12 w-full items-center justify-between rounded-2xl border border-borde bg-superficie px-4 text-sm font-semibold text-texto-suave active:bg-borde"
+        className="flex h-12 w-full items-center justify-between rounded-2xl bg-superficie px-4 text-sm font-semibold text-texto-suave active:bg-borde"
       >
         <span>✓ Calentamiento hecho</span>
         <span>Ver</span>
@@ -59,7 +59,7 @@ export default function CalentamientoEntreno({ workoutId, pasos }: { workoutId: 
                 type="button"
                 aria-pressed={hecho}
                 onClick={() => setHechos((h) => (hecho ? h.filter((x) => x !== p.exerciseId) : [...h, p.exerciseId]))}
-                className="flex min-h-16 w-full items-center gap-3 rounded-xl text-left active:bg-borde"
+                className="flex min-h-13 w-full items-center gap-3 rounded-xl text-left active:bg-borde"
               >
                 <MiniaturaEjercicio ejercicio={ejercicio} className="h-14 w-20" />
                 <span className="min-w-0 flex-1">
@@ -93,7 +93,7 @@ export default function CalentamientoEntreno({ workoutId, pasos }: { workoutId: 
       <button
         type="button"
         onClick={() => terminar(true)}
-        className="mt-4 h-14 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+        className="mt-4 h-12 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
       >
         Listo, a entrenar
       </button>

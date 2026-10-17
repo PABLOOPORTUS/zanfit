@@ -100,7 +100,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
 
       {bloques.length > 1 && (
         <div
-          className="mt-4 grid grid-cols-2 gap-1 rounded-2xl border border-borde bg-superficie p-1"
+          className="mt-4 grid grid-cols-2 gap-1 rounded-2xl bg-superficie p-1"
           role="group"
           aria-label="Cómo ver los ejercicios"
         >
@@ -167,7 +167,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
             type="button"
             disabled={indice === 0}
             onClick={() => ir(indice - 1)}
-            className="h-14 rounded-2xl border border-borde bg-superficie font-semibold active:bg-borde disabled:opacity-40"
+            className="h-12 rounded-2xl bg-superficie font-semibold active:bg-borde disabled:opacity-40"
           >
             ‹ Anterior
           </button>
@@ -175,12 +175,12 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
             <button
               type="button"
               onClick={() => ir(indice + 1)}
-              className={`h-14 rounded-2xl font-bold ${actualCompleto ? 'bg-lima text-fondo active:bg-lima-oscuro' : 'border border-borde bg-superficie active:bg-borde'}`}
+              className={`h-12 rounded-2xl font-bold ${actualCompleto ? 'bg-lima text-fondo active:bg-lima-oscuro' : 'bg-superficie active:bg-borde'}`}
             >
               Siguiente ›
             </button>
           ) : (
-            <button type="button" onClick={finalizar.abrir} className="h-14 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
+            <button type="button" onClick={finalizar.abrir} className="h-12 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro">
               Finalizar
             </button>
           )}
@@ -190,7 +190,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
       <button
         type="button"
         onClick={selector.abrir}
-        className="mt-4 flex h-16 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-lima/60 text-lg font-semibold text-lima active:bg-lima/10"
+        className="mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-lima/60 font-semibold text-lima active:bg-lima/10"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
           <path d="M12 5v14M5 12h14" />
@@ -239,7 +239,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
                   <button
                     type="button"
                     onClick={confirmarFinalizar}
-                    className="mt-5 h-16 w-full rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro"
+                    className="mt-5 h-13 w-full rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro"
                   >
                     Finalizar entreno
                   </button>
@@ -251,7 +251,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
                   <button
                     type="button"
                     onClick={descartar}
-                    className="mt-5 h-16 w-full rounded-2xl bg-peligro text-lg font-bold text-fondo active:opacity-80"
+                    className="mt-5 h-13 w-full rounded-2xl bg-peligro font-bold text-fondo active:opacity-80"
                   >
                     Descartar entreno
                   </button>
@@ -260,7 +260,7 @@ export default function EntrenoActivo({ workout }: { workout: Workout }) {
               <button
                 type="button"
                 onClick={finalizar.cerrar}
-                className="mt-3 h-14 w-full rounded-2xl border border-borde font-semibold active:bg-borde"
+                className="mt-3 h-12 w-full rounded-2xl border border-borde font-semibold active:bg-borde"
               >
                 Seguir entrenando
               </button>

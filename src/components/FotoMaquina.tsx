@@ -5,7 +5,7 @@ import { useAlternar } from '../hooks/useAlternar'
 export default function FotoMaquina({ foto, nombre }: { foto: Ficha; nombre: string }) {
   const cuadro = useAlternar(true)
   return (
-    <figure className="overflow-hidden rounded-2xl border border-borde bg-superficie">
+    <figure className="overflow-hidden rounded-2xl bg-superficie">
       <div className="relative aspect-[3/2] w-full bg-black">
         {[`${foto.archivo}.webp`, `${foto.archivo}-final.webp`].map((archivo, i) => (
           <img

@@ -65,7 +65,7 @@ export default function FormularioEjercicio({ id, inicial }: { id?: number; inic
             enterKeyHint="done"
             placeholder="Ej: Remo en máquina"
             aria-invalid={error !== null}
-            className={`h-14 rounded-2xl border bg-superficie px-4 text-lg placeholder:text-texto-suave focus:outline-none ${
+            className={`h-12 rounded-2xl border bg-superficie px-4 text-base placeholder:text-texto-suave focus:outline-none ${
               error ? 'border-peligro' : 'border-borde focus:border-lima'
             }`}
           />
@@ -88,14 +88,14 @@ export default function FormularioEjercicio({ id, inicial }: { id?: number; inic
             onChange={(e) => setInstrucciones(e.target.value)}
             rows={4}
             placeholder="Ej: asiento en la posición 4, agarre neutro, bajar lento"
-            className="rounded-2xl border border-borde bg-superficie px-4 py-3 text-lg placeholder:text-texto-suave focus:border-lima focus:outline-none"
+            className="rounded-2xl border border-borde bg-superficie px-4 py-3 text-base placeholder:text-texto-suave focus:border-lima focus:outline-none"
           />
         </label>
 
         <button
           type="submit"
           disabled={guardando}
-          className="h-16 rounded-2xl bg-lima text-lg font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
+          className="h-13 rounded-2xl bg-lima font-bold text-fondo active:bg-lima-oscuro disabled:opacity-60"
         >
           {esNuevo ? 'Crear ejercicio' : 'Guardar cambios'}
         </button>

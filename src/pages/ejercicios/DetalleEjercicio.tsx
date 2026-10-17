@@ -60,7 +60,7 @@ export default function DetalleEjercicio() {
         <>
           <Link
             to={`/ejercicios/${id}/editar`}
-            className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-borde bg-superficie text-lg font-semibold active:bg-borde"
+            className="mt-8 flex h-12 items-center justify-center rounded-2xl bg-superficie font-semibold active:bg-borde"
           >
             Editar ejercicio
           </Link>
@@ -114,7 +114,7 @@ function Registro({ id, cardio }: { id: number; cardio: boolean }) {
 
 function Dato({ titulo, valor }: { titulo: string; valor: string }) {
   return (
-    <div className="rounded-2xl border border-borde bg-superficie p-3">
+    <div className="rounded-2xl bg-superficie p-3">
       <dt className="text-xs text-texto-suave">{titulo}</dt>
       <dd className="mt-1 font-marca text-xl font-bold">{valor}</dd>
     </div>
