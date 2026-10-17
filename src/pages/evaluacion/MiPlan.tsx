@@ -26,6 +26,7 @@ import {
   type Paso,
 } from '../../lib/evaluacion'
 import { caloriasRutina } from '../../lib/calorias'
+import { esCardio, objetivoCardio } from '../../lib/cardio'
 import { MENSAJE_SIN_IA } from '../../lib/clienteIa'
 import { formatearDescanso } from '../../lib/formato'
 import { DESCRIPCION_DIVISION, duracionEstimada, edad, imc, recomendaciones } from '../../lib/plan'
@@ -127,7 +128,9 @@ export default function MiPlan() {
                         <span className="min-w-0 flex-1">
                           <span className="block leading-snug font-semibold">{ejercicio?.nombre ?? 'Ejercicio eliminado'}</span>
                           <span className="text-sm text-texto-suave tabular-nums">
-                            {e.seriesObjetivo}×{e.repsObjetivo}
+                            {ejercicio && esCardio(ejercicio)
+                              ? objetivoCardio(e.seriesObjetivo, e.repsObjetivo)
+                              : `${e.seriesObjetivo}×${e.repsObjetivo}`}
                             {e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)}` : ''} · {formatearDescanso(e.descansoSeg)}
                           </span>
                         </span>

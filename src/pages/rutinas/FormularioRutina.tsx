@@ -10,6 +10,7 @@ import { useExercises } from '../../hooks/useExercises'
 import { usePanel } from '../../hooks/usePanel'
 import { usePerfil } from '../../hooks/usePlan'
 import { formatearDescanso } from '../../lib/formato'
+import { esCardio, objetivoPorDefecto } from '../../lib/cardio'
 import { reemplazoEnRutina } from '../../lib/plan'
 import type { RoutineExercise } from '../../types'
 
@@ -29,6 +30,10 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
   const [error, setError] = useState<string | null>(null)
 
   const porId = new Map((ejercicios ?? []).map((e) => [e.id!, e]))
+  const cardio = (item: RoutineExercise) => {
+    const e = porId.get(item.exerciseId)
+    return !!e && esCardio(e)
+  }
 
   type Campo = 'seriesObjetivo' | 'repsObjetivo' | 'descansoSeg'
   function cambiar(i: number, campo: Campo, actualizar: (anterior: number) => number) {
@@ -123,8 +128,25 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
                   </button>
                 )}
                 <div className="mt-2 grid grid-cols-2 gap-3">
-                  <Stepper etiqueta="Series" valor={item.seriesObjetivo} min={1} max={10} onChange={(f) => cambiar(i, 'seriesObjetivo', f)} />
-                  <Stepper etiqueta="Reps" valor={item.repsObjetivo} min={1} max={50} onChange={(f) => cambiar(i, 'repsObjetivo', f)} />
+                  <Stepper
+                    etiqueta={cardio(item) ? 'Tramos' : 'Series'}
+                    valor={item.seriesObjetivo}
+                    min={1}
+                    max={10}
+                    onChange={(f) => cambiar(i, 'seriesObjetivo', f)}
+                  />
+                  {cardio(item) ? (
+                    <Stepper
+                      etiqueta="Minutos"
+                      valor={item.repsObjetivo}
+                      min={1}
+                      max={180}
+                      paso={5}
+                      onChange={(f) => cambiar(i, 'repsObjetivo', f)}
+                    />
+                  ) : (
+                    <Stepper etiqueta="Reps" valor={item.repsObjetivo} min={1} max={50} onChange={(f) => cambiar(i, 'repsObjetivo', f)} />
+                  )}
                 </div>
                 <div className="mt-3 flex items-end gap-3">
                   <div className="min-w-0 flex-1">
@@ -180,7 +202,9 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
           onElegir={(nuevo) => {
             const ejercicio = porId.get(nuevo)
             if (ejercicio)
-              setItems((actual) => actual.map((item) => (item.exerciseId === cambiando ? reemplazoEnRutina(item, ejercicio, perfil) : item)))
+              setItems((actual) =>
+                actual.map((item) => (item.exerciseId === cambiando ? reemplazoEnRutina(item, ejercicio, perfil, porId.get(cambiando)) : item)),
+              )
             cambio.cerrar()
           }}
         />
@@ -193,7 +217,7 @@ export default function FormularioRutina({ id, inicial }: { id?: number; inicial
           onAgregar={(ids) => {
             setItems((actual) => [
               ...actual,
-              ...ids.map((exerciseId) => ({ exerciseId, seriesObjetivo: 3, repsObjetivo: 10, descansoSeg: descansoPorDefectoSeg })),
+              ...ids.map((exerciseId) => ({ exerciseId, ...objetivoPorDefecto(porId.get(exerciseId)), descansoSeg: descansoPorDefectoSeg })),
             ])
             selector.cerrar()
           }}

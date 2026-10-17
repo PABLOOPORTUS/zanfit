@@ -4,6 +4,7 @@ import { inicioSemana, rachaSemanal } from '../lib/calculos'
 import { caloriasEntreno, PESO_POR_DEFECTO } from '../lib/calorias'
 import { calcularJuego } from '../lib/juego'
 import { calcularLogros } from '../lib/logros'
+import type { WorkoutSet } from '../types'
 
 /** Logros calculados desde el historial. `undefined` mientras carga. */
 export function useLogros() {
@@ -36,9 +37,11 @@ export function useMetaSemanal() {
       (await db.exercises.bulkGet([...new Set(sets.map((s) => s.exerciseId))])).flatMap((e) => (e ? [[e.id!, e] as const] : [])),
     )
     const kcal = deLaSemana.reduce((total, w) => {
-      const porEjercicio = new Map<number, number>()
-      for (const s of sets) if (s.workoutId === w.id) porEjercicio.set(s.exerciseId, (porEjercicio.get(s.exerciseId) ?? 0) + 1)
-      const partes = [...porEjercicio].flatMap(([id, series]) => (ejercicios.has(id) ? [{ ejercicio: ejercicios.get(id)!, series }] : []))
+      const porEjercicio = new Map<number, WorkoutSet[]>()
+      for (const s of sets) if (s.workoutId === w.id) porEjercicio.set(s.exerciseId, [...(porEjercicio.get(s.exerciseId) ?? []), s])
+      const partes = [...porEjercicio].flatMap(([id, propias]) =>
+        ejercicios.has(id) ? [{ ejercicio: ejercicios.get(id)!, series: propias.length, sets: propias }] : [],
+      )
       return total + caloriasEntreno(w.fechaFin! - w.fechaInicio, partes, perfil?.pesoKg ?? PESO_POR_DEFECTO)
     }, 0)
     return {

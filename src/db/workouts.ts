@@ -1,6 +1,7 @@
 import { db } from '.'
 import { mejor1RM, pesoMaximo } from '../lib/calculos'
-import type { Equipo, RoutineExercise, Workout, WorkoutSet } from '../types'
+import { camposCardio, MINUTOS_POR_DEFECTO } from '../lib/cardio'
+import type { Equipo, Exercise, RoutineExercise, Workout, WorkoutSet } from '../types'
 
 const SERIES_POR_DEFECTO = 3
 
@@ -14,9 +15,7 @@ export async function obtenerEntrenoActivo(): Promise<Workout | undefined> {
  * primero), cada una ordenada por número de serie.
  */
 export async function sesionesAnteriores(exerciseId: number, excluirWorkoutId?: number, cantidad = 2): Promise<WorkoutSet[][]> {
-  const sets = (await db.sets.where('exerciseId').equals(exerciseId).toArray()).filter(
-    (s) => s.completada && s.workoutId !== excluirWorkoutId,
-  )
+  const sets = (await db.sets.where('exerciseId').equals(exerciseId).toArray()).filter((s) => s.completada && s.workoutId !== excluirWorkoutId)
   if (sets.length === 0) return []
   const workouts = (await db.workouts.bulkGet([...new Set(sets.map((s) => s.workoutId))]))
     .filter((w): w is Workout => w?.fechaFin !== undefined)
@@ -57,14 +56,21 @@ export function debeSubir(sesiones: WorkoutSet[][], objetivo?: Meta): boolean {
 
 type Objetivo = Pick<RoutineExercise, 'seriesObjetivo' | 'repsObjetivo' | 'pesoSugerido'>
 
+/** Lo que se anota en un tramo de cardio, copiado de una serie anterior (o vacío). */
+function datosCardio(previa: WorkoutSet | undefined): Pick<WorkoutSet, 'minutos' | 'velocidad' | 'inclinacion' | 'nivel'> {
+  return { minutos: previa?.minutos, velocidad: previa?.velocidad, inclinacion: previa?.inclinacion, nivel: previa?.nivel }
+}
+
 /**
  * Series nuevas (sin completar). Peso y reps salen de la última vez; si completaste todo dos veces seguidas, el peso sube.
- * Sin historial se usa el peso sugerido por el plan y las reps objetivo.
+ * Sin historial se usa el peso sugerido por el plan y las reps objetivo. En el cardio se copian minutos, velocidad,
+ * inclinación y nivel (sin historial, los minutos son las "reps" de la rutina, o 20); por defecto es 1 tramo.
  */
 async function seriesPrecargadas(workoutId: number, exerciseId: number, objetivo?: Objetivo, cantidadFija?: number): Promise<WorkoutSet[]> {
   const sesiones = await sesionesAnteriores(exerciseId, workoutId)
   const anteriores = sesiones[0] ?? []
   const ejercicio = await db.exercises.get(exerciseId)
+  if (ejercicio && camposCardio(ejercicio)) return tramosPrecargados(workoutId, ejercicio, anteriores, objetivo, cantidadFija)
   const subir = debeSubir(sesiones, objetivo) ? incrementoPeso(ejercicio?.equipo ?? 'otro') : 0
   const cantidad = cantidadFija ?? objetivo?.seriesObjetivo ?? (anteriores.length || SERIES_POR_DEFECTO)
   return Array.from({ length: cantidad }, (_, i) => {
@@ -78,6 +84,29 @@ async function seriesPrecargadas(workoutId: number, exerciseId: number, objetivo
       // Al subir el peso, se vuelve a las reps objetivo.
       reps: subir && objetivo ? objetivo.repsObjetivo : (previa?.reps ?? objetivo?.repsObjetivo ?? 0),
       completada: false,
+    }
+  })
+}
+
+function tramosPrecargados(
+  workoutId: number,
+  ejercicio: Exercise,
+  anteriores: WorkoutSet[],
+  objetivo?: Objetivo,
+  cantidadFija?: number,
+): WorkoutSet[] {
+  const cantidad = cantidadFija ?? objetivo?.seriesObjetivo ?? (anteriores.length || 1)
+  return Array.from({ length: cantidad }, (_, i) => {
+    const previa = anteriores[Math.min(i, anteriores.length - 1)]
+    return {
+      workoutId,
+      exerciseId: ejercicio.id!,
+      numeroSerie: i + 1,
+      peso: 0,
+      reps: 0,
+      completada: false,
+      ...datosCardio(previa),
+      minutos: previa?.minutos ?? objetivo?.repsObjetivo ?? MINUTOS_POR_DEFECTO,
     }
   })
 }
@@ -121,7 +150,11 @@ export async function reemplazarEjercicio(workoutId: number, viejoId: number, nu
     const objetivo = rutina?.ejercicios.find((e) => e.exerciseId === nuevoId) ?? rutina?.ejercicios.find((e) => e.exerciseId === viejoId)
     // El peso sugerido era para el ejercicio viejo: no sirve para el nuevo.
     const nuevas = await seriesPrecargadas(workoutId, nuevoId, objetivo && { ...objetivo, pesoSugerido: undefined }, sets.length)
-    await Promise.all(sets.map((s, i) => db.sets.update(s.id!, { exerciseId: nuevoId, peso: nuevas[i].peso, reps: nuevas[i].reps, completada: false })))
+    await Promise.all(
+      sets.map((s, i) =>
+        db.sets.update(s.id!, { exerciseId: nuevoId, peso: nuevas[i].peso, reps: nuevas[i].reps, completada: false, ...datosCardio(nuevas[i]) }),
+      ),
+    )
   })
 }
 
@@ -130,7 +163,7 @@ async function seriesDe(workoutId: number, exerciseId: number): Promise<WorkoutS
   return sets.sort((a, b) => a.numeroSerie - b.numeroSerie)
 }
 
-/** Agrega una serie copiando el peso y las reps de la última. */
+/** Agrega una serie copiando el peso y las reps de la última (en el cardio, sus minutos, velocidad, etc.). */
 export async function agregarSerie(workoutId: number, exerciseId: number): Promise<void> {
   const sets = await seriesDe(workoutId, exerciseId)
   const ultima = sets.at(-1)
@@ -141,6 +174,7 @@ export async function agregarSerie(workoutId: number, exerciseId: number): Promi
     peso: ultima?.peso ?? 0,
     reps: ultima?.reps ?? 0,
     completada: false,
+    ...(ultima?.minutos !== undefined && datosCardio(ultima)),
   })
 }
 
@@ -154,14 +188,21 @@ export async function quitarEjercicio(workoutId: number, exerciseId: number): Pr
   await db.sets.where('[workoutId+exerciseId]').equals([workoutId, exerciseId]).delete()
 }
 
-export async function actualizarSerie(id: number, cambios: Partial<Pick<WorkoutSet, 'peso' | 'reps' | 'completada'>>) {
+export async function actualizarSerie(
+  id: number,
+  cambios: Partial<Pick<WorkoutSet, 'peso' | 'reps' | 'completada' | 'minutos' | 'velocidad' | 'inclinacion' | 'nivel'>>,
+) {
   await db.sets.update(id, cambios)
 }
 
 /** Cierra el entreno. Las series sin marcar se descartan. */
 export async function finalizarEntreno(id: number): Promise<void> {
   await db.transaction('rw', db.workouts, db.sets, async () => {
-    await db.sets.where('workoutId').equals(id).and((s) => !s.completada).delete()
+    await db.sets
+      .where('workoutId')
+      .equals(id)
+      .and((s) => !s.completada)
+      .delete()
     await db.workouts.update(id, { fechaFin: Date.now() })
   })
 }
@@ -194,16 +235,12 @@ export async function recordsDelEntreno(workoutId: number): Promise<RecordPerson
   if (!workout) return []
   const sets = (await db.sets.where('workoutId').equals(workoutId).toArray()).filter((s) => s.completada)
   const anterioresIds = new Set(
-    (await db.workouts.where('fechaInicio').below(workout.fechaInicio).toArray())
-      .filter((w) => w.fechaFin !== undefined)
-      .map((w) => w.id),
+    (await db.workouts.where('fechaInicio').below(workout.fechaInicio).toArray()).filter((w) => w.fechaFin !== undefined).map((w) => w.id),
   )
   const records: RecordPersonal[] = []
   for (const exerciseId of new Set(sets.map((s) => s.exerciseId))) {
     const hoy = sets.filter((s) => s.exerciseId === exerciseId)
-    const antes = (await db.sets.where('exerciseId').equals(exerciseId).toArray()).filter(
-      (s) => s.completada && anterioresIds.has(s.workoutId),
-    )
+    const antes = (await db.sets.where('exerciseId').equals(exerciseId).toArray()).filter((s) => s.completada && anterioresIds.has(s.workoutId))
     if (antes.length === 0) continue
     const [pesoHoy, pesoAntes] = [pesoMaximo(hoy), pesoMaximo(antes)]
     const [rmHoy, rmAntes] = [mejor1RM(hoy), mejor1RM(antes)]

@@ -1,8 +1,9 @@
 import { FICHAS } from '../db/fichasEjercicios'
 import { PATRONES_COMPUESTOS } from '../db/patronesEjercicios'
+import { camposCardio, metTrotadora } from './cardio'
 import { clasificar } from './clasificacion'
 import type { ResumenEntreno } from '../db/progreso'
-import type { Exercise, PasoCalentamiento, RoutineExercise } from '../types'
+import type { Exercise, PasoCalentamiento, RoutineExercise, WorkoutSet } from '../types'
 
 /**
  * Calorías estimadas con el método MET (Compendium of Physical Activities): kcal = MET × peso (kg) × horas.
@@ -53,14 +54,36 @@ function metPromedio(partes: { met: number; peso: number }[]): number {
 
 const redondear = (kcal: number) => Math.max(5, Math.round(kcal / 5) * 5)
 
+/** MET de un tramo de cardio: en la trotadora, con su velocidad e inclinación (ACSM); si no, el de la máquina. */
+function metTramo(ejercicio: Exercise, serie: WorkoutSet): number {
+  return serie.velocidad && camposCardio(ejercicio)?.includes('velocidad') ? metTrotadora(serie.velocidad, serie.inclinacion) : metDe(ejercicio)
+}
+
 /**
  * Calorías de un entreno terminado: duración real (entre 5 min y 3 h, por si quedó abierto) × MET promedio de lo que
- * se hizo, según las series completadas de cada ejercicio.
+ * se hizo, según las series completadas de cada ejercicio. El cardio con minutos anotados se calcula aparte, con su
+ * tiempo y su intensidad reales, y el resto del entreno ocupa el tiempo que queda.
  */
-export function caloriasEntreno(duracionMs: number, seriesPorEjercicio: { ejercicio: Exercise; series: number }[], pesoKg: number): number {
+export function caloriasEntreno(
+  duracionMs: number,
+  seriesPorEjercicio: { ejercicio: Exercise; series: number; sets?: WorkoutSet[] }[],
+  pesoKg: number,
+): number {
   const horas = Math.min(Math.max(duracionMs / 3_600_000, 5 / 60), 3)
-  const met = metPromedio(seriesPorEjercicio.map((x) => ({ met: metDe(x.ejercicio), peso: x.series })))
-  return redondear(met * pesoKg * horas)
+  let kcalCardio = 0
+  let horasCardio = 0
+  const resto: { met: number; peso: number }[] = []
+  for (const x of seriesPorEjercicio) {
+    const tramos = camposCardio(x.ejercicio) ? (x.sets ?? []).filter((s) => (s.minutos ?? 0) > 0) : []
+    if (tramos.length === 0) resto.push({ met: metDe(x.ejercicio), peso: x.series })
+    for (const s of tramos) {
+      horasCardio += s.minutos! / 60
+      kcalCardio += metTramo(x.ejercicio, s) * pesoKg * (s.minutos! / 60)
+    }
+  }
+  if (horasCardio === 0) return redondear(metPromedio(resto) * pesoKg * horas)
+  const horasResto = resto.length ? Math.max(horas - horasCardio, 0) : 0
+  return redondear(kcalCardio + metPromedio(resto) * pesoKg * horasResto)
 }
 
 /** Calorías estimadas de una rutina, con su duración estimada (minutos) y su calentamiento. */
@@ -81,7 +104,7 @@ export function caloriasRutina(
 export function caloriasDeResumen(resumen: Pick<ResumenEntreno, 'duracionMs' | 'bloques'>, pesoKg: number | undefined): number {
   return caloriasEntreno(
     resumen.duracionMs,
-    resumen.bloques.map((b) => ({ ejercicio: b.exercise, series: b.sets.length })),
+    resumen.bloques.map((b) => ({ ejercicio: b.exercise, series: b.sets.length, sets: b.sets })),
     pesoKg ?? PESO_POR_DEFECTO,
   )
 }

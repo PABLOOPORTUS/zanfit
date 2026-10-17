@@ -3,6 +3,7 @@ import { epley, mejor1RM, pesoMaximo, volumen } from '../lib/calculos'
 import { compararNombres } from '../lib/texto'
 import type { Exercise, Workout, WorkoutSet } from '../types'
 import { recordsDelEntreno, type RecordPersonal } from './workouts'
+import { esCardio } from '../lib/cardio'
 
 export interface BloqueEjercicio {
   exercise: Exercise
@@ -17,9 +18,7 @@ export async function agruparPorEjercicio(sets: WorkoutSet[]): Promise<BloqueEje
   }
   const exercises = await db.exercises.bulkGet([...porEjercicio.keys()])
   return exercises.flatMap((exercise) =>
-    exercise
-      ? [{ exercise, sets: porEjercicio.get(exercise.id!)!.sort((a, b) => a.numeroSerie - b.numeroSerie) }]
-      : [],
+    exercise ? [{ exercise, sets: porEjercicio.get(exercise.id!)!.sort((a, b) => a.numeroSerie - b.numeroSerie) }] : [],
   )
 }
 
@@ -77,9 +76,7 @@ export async function historial(): Promise<FilaHistorial[]> {
 
 /** Series completadas de entrenos terminados, junto con su entreno. */
 async function seriesTerminadas(exerciseId?: number) {
-  const terminados = new Map(
-    (await db.workouts.toArray()).filter((w) => w.fechaFin !== undefined).map((w) => [w.id!, w]),
-  )
+  const terminados = new Map((await db.workouts.toArray()).filter((w) => w.fechaFin !== undefined).map((w) => [w.id!, w]))
   const sets = exerciseId === undefined ? await db.sets.toArray() : await db.sets.where('exerciseId').equals(exerciseId).toArray()
   return { terminados, sets: sets.filter((s) => s.completada && terminados.has(s.workoutId)) }
 }
@@ -102,7 +99,7 @@ export async function recordsPorEjercicio(): Promise<RecordEjercicio[]> {
   const exercises = await db.exercises.bulkGet([...porEjercicio.keys()])
   return exercises
     .flatMap((exercise) => {
-      if (!exercise) return []
+      if (!exercise || esCardio(exercise)) return [] // el cardio no tiene peso ni récords
       const propios = porEjercicio.get(exercise.id!)!
       const top = propios.reduce((a, b) => (b.peso > a.peso || (b.peso === a.peso && b.reps > a.reps) ? b : a))
       return [

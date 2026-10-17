@@ -2,19 +2,30 @@ import type { ResumenEntreno } from '../db/progreso'
 import { useUnidad } from '../hooks/useAjustes'
 import { usePerfil } from '../hooks/usePlan'
 import { caloriasDeResumen } from '../lib/calorias'
+import { esCardio } from '../lib/cardio'
 import { formatearDuracion } from '../lib/formato'
 
-/** Duración, volumen, series, calorías y récords nuevos de un entreno. Se usa en el resumen al finalizar y en el historial. */
+/** Duración, volumen (o minutos de cardio), series, calorías y récords nuevos de un entreno. Se usa en el resumen al finalizar y en el historial. */
 export default function DatosEntreno({ resumen }: { resumen: ResumenEntreno }) {
   const u = useUnidad()
   const perfil = usePerfil()
+  const minutosCardio = resumen.bloques.filter((b) => esCardio(b.exercise)).reduce((t, b) => t + b.sets.reduce((m, s) => m + (s.minutos ?? 0), 0), 0)
+  const soloCardio = minutosCardio > 0 && resumen.volumen === 0
   return (
     <>
       <dl className="grid grid-cols-2 gap-2">
         <Dato titulo="Duración" valor={formatearDuracion(resumen.duracionMs)} />
-        <Dato titulo="Volumen" valor={u.volumen(resumen.volumen)} />
-        <Dato titulo="Series" valor={String(resumen.series)} />
-        <Dato titulo={perfil?.pesoKg ? 'Calorías (aprox.)' : 'Calorías (aprox., 70 kg)'} valor={`~${caloriasDeResumen(resumen, perfil?.pesoKg)} kcal`} />
+        {/* En un día de solo cardio, el volumen (kilos) no dice nada: va el tiempo de cardio. */}
+        {soloCardio ? <Dato titulo="Cardio" valor={`${minutosCardio} min`} /> : <Dato titulo="Volumen" valor={u.volumen(resumen.volumen)} />}
+        {soloCardio || minutosCardio === 0 ? (
+          <Dato titulo={soloCardio ? 'Tramos' : 'Series'} valor={String(resumen.series)} />
+        ) : (
+          <Dato titulo="Series · cardio" valor={`${resumen.series} · ${minutosCardio} min`} />
+        )}
+        <Dato
+          titulo={perfil?.pesoKg ? 'Calorías (aprox.)' : 'Calorías (aprox., 70 kg)'}
+          valor={`~${caloriasDeResumen(resumen, perfil?.pesoKg)} kcal`}
+        />
       </dl>
 
       {resumen.records.length > 0 && (
@@ -27,8 +38,8 @@ export default function DatosEntreno({ resumen }: { resumen: ResumenEntreno }) {
               <li key={`${r.exerciseId}-${r.tipo}`}>
                 <p className="font-semibold">{r.nombre}</p>
                 <p className="text-sm text-texto-suave">
-                  {r.tipo === 'peso' ? 'Peso máximo' : '1RM estimado'}: <span className="font-semibold text-texto">{u.peso(r.valor, 1)}</span>{' '}
-                  (antes {u.peso(r.anterior, 1)})
+                  {r.tipo === 'peso' ? 'Peso máximo' : '1RM estimado'}: <span className="font-semibold text-texto">{u.peso(r.valor, 1)}</span> (antes{' '}
+                  {u.peso(r.anterior, 1)})
                 </p>
               </li>
             ))}

@@ -8,6 +8,7 @@ import { agregarSerie, actualizarSerie, quitarEjercicio, quitarUltimaSerie, reem
 import { useUnidad } from '../../hooks/useAjustes'
 import { useDescanso } from '../../hooks/useDescanso'
 import { usePanel } from '../../hooks/usePanel'
+import { CAMPOS_CARDIO, camposCardio, distanciaKm, textoCardio, type CampoCardio } from '../../lib/cardio'
 import { formatearDescanso, leerNumero } from '../../lib/formato'
 import type { Exercise, WorkoutSet } from '../../types'
 
@@ -24,7 +25,10 @@ type Props = {
   idsEnEntreno: number[]
 }
 
-/** Un ejercicio del entreno en curso: filas peso | reps | check, y botones para agregar o quitar series. */
+/**
+ * Un ejercicio del entreno en curso: filas peso | reps | check, y botones para agregar o quitar series. En el cardio,
+ * cada fila es un tramo con minutos y, según la máquina, velocidad e inclinación o nivel (`lib/cardio.ts`).
+ */
 export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSeg, anteriores, subePeso, casiSube, nota, idsEnEntreno }: Props) {
   const [confirmandoQuitar, setConfirmandoQuitar] = useState(false)
   const u = useUnidad()
@@ -33,6 +37,9 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
   const guia = usePanel(`guia-${exercise.id}`)
   const principales = nombresMusculos(mediosDe(exercise).musculos.principales)
   const completadas = sets.filter((s) => s.completada).length
+  const cardio = camposCardio(exercise)
+  const columnas = cardio ? COLUMNAS[cardio.length] : COLUMNAS[2]
+  const km = cardio?.includes('velocidad') ? distanciaKm(sets) : 0
 
   return (
     <article className="rounded-2xl border border-borde bg-superficie">
@@ -40,7 +47,9 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         <div className="min-w-0 flex-1">
           <h2 className="text-xl leading-tight font-bold">{exercise.nombre}</h2>
           <p className="text-sm text-texto-suave">
-            {completadas}/{sets.length} series · descanso {formatearDescanso(descansoSeg)}
+            {cardio
+              ? `Cardio · ${sets.reduce((t, s) => t + (s.minutos ?? 0), 0)} min${sets.length > 1 ? ` en ${sets.length} tramos` : ''}`
+              : `${completadas}/${sets.length} series · descanso ${formatearDescanso(descansoSeg)}`}
           </p>
         </div>
         <button
@@ -132,7 +141,8 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         </p>
       )}
 
-      {anteriores.length > 0 && (
+      {anteriores.length > 0 && cardio && <p className="px-4 pb-2 text-sm text-texto-suave">Última vez: {anteriores.map(textoCardio).join(' + ')}</p>}
+      {anteriores.length > 0 && !cardio && (
         <p className="px-4 pb-2 text-sm text-texto-suave">
           Última vez: {u.peso(Math.max(...anteriores.map((s) => s.peso)))} × {anteriores.map((s) => s.reps).join(' · ')}
           {subePeso && <span className="mt-1 block font-semibold text-lima">↑ Completaste todo dos veces seguidas: hoy sube el peso</span>}
@@ -174,17 +184,33 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
         </div>
       )}
 
-      <div className="grid grid-cols-[2rem_1fr_1fr_3.5rem] gap-2 px-4 pb-1 text-center text-xs font-semibold text-texto-suave">
-        <span>Serie</span>
-        <span>{unidad}</span>
-        <span>Reps</span>
+      <div className={`grid ${columnas} gap-2 px-4 pb-1 text-center text-xs font-semibold text-texto-suave`}>
+        <span>{cardio ? 'Tramo' : 'Serie'}</span>
+        {cardio ? (
+          cardio.map((c) => <span key={c}>{CAMPOS_CARDIO[c].etiqueta}</span>)
+        ) : (
+          <>
+            <span>{unidad}</span>
+            <span>Reps</span>
+          </>
+        )}
         <span>Listo</span>
       </div>
       <ol className="flex flex-col gap-2 px-4">
-        {sets.map((s) => (
-          <FilaSerie key={`${s.id}-${unidad}`} serie={s} descansoSeg={descansoSeg} />
-        ))}
+        {sets.map((s) =>
+          cardio ? (
+            <FilaCardio key={s.id} serie={s} campos={cardio} columnas={columnas} />
+          ) : (
+            <FilaSerie key={`${s.id}-${unidad}`} serie={s} descansoSeg={descansoSeg} />
+          ),
+        )}
       </ol>
+      {km > 0 && (
+        <p className="px-4 pt-2 text-sm text-texto-suave">
+          Distancia aprox.:{' '}
+          <span className="font-semibold text-texto">{new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 }).format(km)} km</span>
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-2 p-4">
         <button
@@ -193,17 +219,58 @@ export default function TarjetaEjercicio({ workoutId, exercise, sets, descansoSe
           disabled={sets.length <= 1}
           className="h-12 rounded-xl border border-borde font-semibold active:bg-borde disabled:opacity-30"
         >
-          − Quitar serie
+          {cardio ? '− Quitar tramo' : '− Quitar serie'}
         </button>
         <button
           type="button"
           onClick={() => agregarSerie(workoutId, exercise.id!)}
           className="h-12 rounded-xl border border-borde font-semibold active:bg-borde"
         >
-          + Agregar serie
+          {cardio ? '+ Agregar tramo' : '+ Agregar serie'}
         </button>
       </div>
     </article>
+  )
+}
+
+/** Columnas de la grilla según cuántos datos se anotan (Tailwind necesita las clases completas). */
+const COLUMNAS: Record<number, string> = {
+  1: 'grid-cols-[2rem_1fr_3.5rem]',
+  2: 'grid-cols-[2rem_1fr_1fr_3.5rem]',
+  3: 'grid-cols-[2rem_1fr_1fr_1fr_3.5rem]',
+}
+
+const textoNumero = (n: number | undefined) => (n ? String(n).replace('.', ',') : '')
+
+/** Un tramo de cardio: minutos y, según la máquina, velocidad e inclinación o nivel. Al marcarlo no parte el descanso. */
+function FilaCardio({ serie, campos, columnas }: { serie: WorkoutSet; campos: CampoCardio[]; columnas: string }) {
+  const [valores, setValores] = useState(() => Object.fromEntries(campos.map((c) => [c, textoNumero(serie[c])])) as Record<CampoCardio, string>)
+  const input = `h-14 w-full min-w-0 rounded-xl border text-center font-marca text-xl font-bold tabular-nums placeholder:text-texto-suave/50 focus:border-lima focus:outline-none ${
+    serie.completada ? 'border-lima/30 bg-lima/10' : 'border-borde bg-fondo'
+  }`
+  return (
+    <li className={`grid ${columnas} items-center gap-2`}>
+      <span className="text-center font-marca text-lg font-bold text-texto-suave">{serie.numeroSerie}</span>
+      {campos.map((c) => (
+        <input
+          key={c}
+          type="text"
+          inputMode={CAMPOS_CARDIO[c].decimales ? 'decimal' : 'numeric'}
+          value={valores[c]}
+          placeholder="0"
+          aria-label={`${CAMPOS_CARDIO[c].etiqueta} tramo ${serie.numeroSerie}`}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => {
+            const texto = e.target.value.replace(CAMPOS_CARDIO[c].decimales ? /[^\d.,]/g : /\D/g, '')
+            setValores((v) => ({ ...v, [c]: texto }))
+            const n = Math.min(leerNumero(texto) || 0, CAMPOS_CARDIO[c].max)
+            void actualizarSerie(serie.id!, { [c]: n || undefined })
+          }}
+          className={input}
+        />
+      ))}
+      <BotonListo serie={serie} onAlternar={() => void actualizarSerie(serie.id!, { completada: !serie.completada })} />
+    </li>
   )
 }
 
@@ -260,29 +327,35 @@ function FilaSerie({ serie, descansoSeg }: { serie: WorkoutSet; descansoSeg: num
         }}
         className={input}
       />
-      <button
-        type="button"
-        onClick={alternarCompletada}
-        aria-pressed={serie.completada}
-        aria-label={`${serie.completada ? 'Desmarcar' : 'Marcar'} serie ${serie.numeroSerie}`}
-        className={`flex size-14 items-center justify-center rounded-xl border-2 transition-colors ${
-          serie.completada ? 'animate-pop border-lima bg-lima text-fondo' : 'border-borde text-texto-suave active:bg-borde'
-        }`}
-      >
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="m5 12 5 5 9-10" />
-        </svg>
-      </button>
+      <BotonListo serie={serie} onAlternar={alternarCompletada} />
     </li>
+  )
+}
+
+function BotonListo({ serie, onAlternar }: { serie: WorkoutSet; onAlternar: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onAlternar}
+      aria-pressed={serie.completada}
+      aria-label={`${serie.completada ? 'Desmarcar' : 'Marcar'} serie ${serie.numeroSerie}`}
+      className={`flex size-14 items-center justify-center rounded-xl border-2 transition-colors ${
+        serie.completada ? 'animate-pop border-lima bg-lima text-fondo' : 'border-borde text-texto-suave active:bg-borde'
+      }`}
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="m5 12 5 5 9-10" />
+      </svg>
+    </button>
   )
 }

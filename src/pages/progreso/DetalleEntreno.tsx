@@ -7,6 +7,7 @@ import { eliminarEntreno } from '../../db/workouts'
 import { useResumenEntreno } from '../../hooks/useWorkouts'
 import { useUnidad } from '../../hooks/useAjustes'
 import { formatearFechaLarga, formatearHora } from '../../lib/formato'
+import { esCardio, textoCardio } from '../../lib/cardio'
 
 /** `/progreso/entrenos/:id`. */
 export default function DetalleEntreno() {
@@ -20,7 +21,9 @@ export default function DetalleEntreno() {
     return (
       <section>
         <BotonVolver to="/progreso">Progreso</BotonVolver>
-        <p className="mt-6 rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">No encontramos este entreno.</p>
+        <p className="mt-6 rounded-2xl border border-dashed border-borde bg-superficie p-6 text-center text-texto-suave">
+          No encontramos este entreno.
+        </p>
       </section>
     )
   }
@@ -51,10 +54,10 @@ export default function DetalleEntreno() {
             <ol className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
               {b.sets.map((s, i) => (
                 <li key={s.id} className="contents">
-                  <span className="text-texto-suave">Serie {i + 1}</span>
-                  <span className="font-semibold tabular-nums">
-                    {u.peso(s.peso)} × {s.reps}
+                  <span className="text-texto-suave">
+                    {esCardio(b.exercise) ? 'Tramo' : 'Serie'} {i + 1}
                   </span>
+                  <span className="font-semibold tabular-nums">{esCardio(b.exercise) ? textoCardio(s) : `${u.peso(s.peso)} × ${s.reps}`}</span>
                 </li>
               ))}
             </ol>

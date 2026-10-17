@@ -2,6 +2,7 @@ import { EJERCICIOS_BASE } from '../db/ejerciciosBase'
 import { FICHAS } from '../db/fichasEjercicios'
 import { mediosDe } from '../db/mediosEjercicios'
 import { PATRONES_COMPUESTOS, type Patron } from '../db/patronesEjercicios'
+import { esCardio, objetivoPorDefecto } from './cardio'
 import { clasificar, necesitaBarras, necesitaGimnasio } from './clasificacion'
 import { EQUIPAMIENTO_POR_DEFECTO } from './evaluacion'
 import type { DiaIa, PedidoIa, Rango } from './planIa'
@@ -409,7 +410,14 @@ export function alternativas(ejercicio: Exercise, catalogo: Exercise[], perfil: 
  * El ejercicio de una rutina reemplazado por otro: mantiene series, reps y descanso; quita la nota del anterior y, si
  * tenía peso sugerido (rutinas del plan), lo recalcula para el nuevo.
  */
-export function reemplazoEnRutina(item: RoutineExercise, nuevo: Exercise, perfil: Perfil | null | undefined): RoutineExercise {
+export function reemplazoEnRutina(
+  item: RoutineExercise,
+  nuevo: Exercise,
+  perfil: Perfil | null | undefined,
+  anterior?: Exercise,
+): RoutineExercise {
+  // Entre cardio y fuerza las "reps" cambian de significado (minutos): se parte con los valores por defecto.
+  if (anterior && esCardio(anterior) !== esCardio(nuevo)) return { exerciseId: nuevo.id!, ...objetivoPorDefecto(nuevo), descansoSeg: item.descansoSeg }
   const patron = clasificar(nuevo)?.patron
   const peso = item.pesoSugerido !== undefined && perfil && patron ? pesoSugerido(perfil, nuevo, patron) : undefined
   return {

@@ -12,6 +12,7 @@ import { etiquetaEquipo, etiquetaGrupo } from '../../lib/catalogos'
 import { CATEGORIAS, EQUIPAMIENTOS, NIVELES } from '../../lib/musculos'
 import { useUnidad } from '../../hooks/useAjustes'
 import { formatearFecha } from '../../lib/formato'
+import { esCardio } from '../../lib/cardio'
 import EjercicioNoEncontrado from './EjercicioNoEncontrado'
 
 export default function DetalleEjercicio() {
@@ -53,7 +54,7 @@ export default function DetalleEjercicio() {
       </div>
 
       <h2 className="mt-8 mb-2 text-sm font-bold tracking-wide text-texto-suave uppercase">Tu registro</h2>
-      <Registro id={id} />
+      <Registro id={id} cardio={esCardio(ejercicio)} />
 
       {ejercicio.propio ? (
         <>
@@ -74,7 +75,7 @@ export default function DetalleEjercicio() {
   )
 }
 
-function Registro({ id }: { id: number }) {
+function Registro({ id, cardio }: { id: number; cardio: boolean }) {
   const registro = useRegistroEjercicio(id)
   const u = useUnidad()
   if (registro === undefined) return null
@@ -85,6 +86,15 @@ function Registro({ id }: { id: number }) {
       </p>
     )
   }
+  // El cardio no tiene peso: tiempo total y veces, sin gráficos de progreso.
+  if (cardio)
+    return (
+      <dl className="grid grid-cols-3 gap-2">
+        <Dato titulo="Tiempo total" valor={`${new Intl.NumberFormat('es-CL').format(registro.minutos)} min`} />
+        <Dato titulo="Tramos" valor={String(registro.seriesCompletadas)} />
+        <Dato titulo="Última vez" valor={registro.ultimaVez !== null ? formatearFecha(registro.ultimaVez) : '—'} />
+      </dl>
+    )
   return (
     <>
       <dl className="grid grid-cols-3 gap-2">

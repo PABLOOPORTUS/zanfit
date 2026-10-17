@@ -75,6 +75,14 @@ export interface WorkoutSet {
   /** En kg. */
   peso: number
   completada: boolean
+  /** Cardio (ver lib/cardio.ts): en vez de peso y reps, tiempo y, según la máquina, velocidad e inclinación o nivel. */
+  minutos?: number
+  /** km/h (trotadora). */
+  velocidad?: number
+  /** % (trotadora). */
+  inclinacion?: number
+  /** Nivel de resistencia de la máquina (bicicleta, elíptica, escaladora, remo). */
+  nivel?: number
 }
 
 export type Unidad = 'kg' | 'lb'

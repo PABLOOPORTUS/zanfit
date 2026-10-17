@@ -48,18 +48,21 @@ export async function eliminarEjercicio(id: number): Promise<void> {
 export interface RegistroEjercicio {
   seriesCompletadas: number
   mejorPeso: number | null
+  /** Minutos sumados (cardio). */
+  minutos: number
   /** Fecha de inicio del último entrenamiento con una serie completada de este ejercicio. */
   ultimaVez: number | null
 }
 
 export async function obtenerRegistro(id: number): Promise<RegistroEjercicio> {
   const sets = (await db.sets.where('exerciseId').equals(id).toArray()).filter((s) => s.completada)
-  if (sets.length === 0) return { seriesCompletadas: 0, mejorPeso: null, ultimaVez: null }
+  if (sets.length === 0) return { seriesCompletadas: 0, mejorPeso: null, minutos: 0, ultimaVez: null }
   const workouts = await db.workouts.bulkGet([...new Set(sets.map((s) => s.workoutId))])
   const fechas = workouts.flatMap((w) => (w ? [w.fechaInicio] : []))
   return {
     seriesCompletadas: sets.length,
     mejorPeso: Math.max(...sets.map((s) => s.peso)),
+    minutos: sets.reduce((t, s) => t + (s.minutos ?? 0), 0),
     ultimaVez: fechas.length ? Math.max(...fechas) : null,
   }
 }

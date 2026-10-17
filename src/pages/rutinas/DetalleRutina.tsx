@@ -14,6 +14,7 @@ import { formatearDescanso } from '../../lib/formato'
 import { caloriasRutina, PESO_POR_DEFECTO } from '../../lib/calorias'
 import { duracionEstimada } from '../../lib/plan'
 import type { Exercise } from '../../types'
+import { esCardio, objetivoCardio } from '../../lib/cardio'
 import RutinaNoEncontrada from './RutinaNoEncontrada'
 
 export default function DetalleRutina() {
@@ -74,7 +75,7 @@ export default function DetalleRutina() {
               <FilaEjercicio
                 numero={i + 1}
                 ejercicio={porId.get(e.exerciseId)}
-                detalle={`${e.seriesObjetivo} × ${e.repsObjetivo} reps${e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso ${formatearDescanso(e.descansoSeg)}${e.nota ? ` · ${e.nota}` : ''}`}
+                detalle={`${porId.get(e.exerciseId) && esCardio(porId.get(e.exerciseId)!) ? objetivoCardio(e.seriesObjetivo, e.repsObjetivo) : `${e.seriesObjetivo} × ${e.repsObjetivo} reps`}${e.pesoSugerido ? ` · ${u.peso(e.pesoSugerido, 1)} sugerido` : ''} · descanso ${formatearDescanso(e.descansoSeg)}${e.nota ? ` · ${e.nota}` : ''}`}
               />
             </div>
             {porId.get(e.exerciseId) && (
