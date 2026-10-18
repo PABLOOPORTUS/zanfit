@@ -270,6 +270,28 @@ export async function espacioUsado(): Promise<number | null> {
   }
 }
 
+/** Uso de la app por cuenta (solo admin; ver supabase/uso.sql). Solo números, sin el detalle de los entrenos. */
+export interface UsoCuenta {
+  user_id: string
+  ultimo_ingreso: string | null
+  ultima_sync: string | null
+  entrenos: number
+  entrenos_30d: number
+  ultimo_entreno: string | null
+  evaluacion: boolean
+}
+
+/** `null` si la función todavía no existe en Supabase o no se pudo consultar. */
+export async function usoCuentas(): Promise<Map<string, UsoCuenta> | null> {
+  try {
+    const { data, error } = await (await cliente()).rpc('uso_cuentas')
+    if (error || !Array.isArray(data)) return null
+    return new Map((data as UsoCuenta[]).map((u) => [u.user_id, u]))
+  } catch {
+    return null
+  }
+}
+
 export async function guardarDatosVenta(datos: DatosVenta): Promise<void> {
   revisar(await (await tabla('ajustes_venta')).update(datos).eq('id', 1))
 }

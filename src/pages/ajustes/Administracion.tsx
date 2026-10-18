@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import BotonVolver from '../../components/BotonVolver'
 import CompartirApp from '../../components/CompartirApp'
@@ -20,6 +20,8 @@ import {
   type Codigo,
   type Cuenta,
   type DatosVenta,
+  usoCuentas,
+  type UsoCuenta,
 } from '../../lib/acceso'
 import { formatearFecha } from '../../lib/formato'
 
@@ -55,13 +57,15 @@ function Panel() {
   const acceso = useAcceso()
   const [cuentas, setCuentas] = useState<Cuenta[] | null>(null)
   const [codigos, setCodigos] = useState<Codigo[] | null>(null)
+  const [uso, setUso] = useState<Map<string, UsoCuenta> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const cargar = useCallback(async () => {
     try {
       setError(null)
-      const [c, k] = await Promise.all([listarCuentas(), listarCodigos()])
+      const [c, k, u] = await Promise.all([listarCuentas(), listarCodigos(), usoCuentas()])
       setCuentas(c)
       setCodigos(k)
+      setUso(u)
     } catch (e) {
       setError((e as Error).message)
     }
@@ -88,82 +92,97 @@ function Panel() {
   const enPrueba = enPruebaLista.length
   const activas = activasLista.length
 
+  const conUso = uso ? lista.filter((c) => c.estado !== 'bloqueada').map((c) => uso.get(c.user_id)) : []
+  const usando = conUso.filter((u) => u && u.entrenos_30d > 0).length
+  const soloRegistro = conUso.filter((u) => !u || u.entrenos === 0).length
+
   return (
-    <section className="pb-10">
-      <BotonVolver to="/ajustes">Ajustes</BotonVolver>
-      <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">Administración</h1>
-      <p className="mt-1 text-texto-suave">
-        {voluntario
-          ? `${activas + enPrueba} ${activas + enPrueba === 1 ? 'cuenta' : 'cuentas'} · gratis con aporte voluntario`
-          : `${activas} ${activas === 1 ? 'cuenta activa' : 'cuentas activas'} · ${enPrueba} en prueba · ${porConfirmar.length} por activar`}
-      </p>
-      <MedidorEspacio />
-      {error && (
-        <p className="mt-3 rounded-xl border border-peligro/50 bg-peligro/10 p-3 text-sm" role="alert">
-          {error}
+    <UsoContext.Provider value={uso}>
+      <section className="pb-10">
+        <BotonVolver to="/ajustes">Ajustes</BotonVolver>
+        <h1 className="mt-2 font-marca text-3xl font-semibold tracking-tight">Administración</h1>
+        <p className="mt-1 text-texto-suave">
+          {voluntario
+            ? `${activas + enPrueba} ${activas + enPrueba === 1 ? 'cuenta' : 'cuentas'} · gratis con aporte voluntario`
+            : `${activas} ${activas === 1 ? 'cuenta activa' : 'cuentas activas'} · ${enPrueba} en prueba · ${porConfirmar.length} por activar`}
         </p>
-      )}
-
-      {!voluntario && (
-        <>
-          <Titulo>
-            Pendientes de activación
-            {porConfirmar.length > 0 && <span className="ml-2 rounded-full bg-lima px-2 py-0.5 text-fondo">{porConfirmar.length}</span>}
-          </Titulo>
-          <p className="mb-3 text-sm text-texto-suave">
-            Terminaron su prueba o su período. Cuando confirmes el pago, actívalos por el período que pagaron.
+        {uso && (
+          <p className="mt-1 text-sm">
+            <span className="font-semibold text-lima">{usando} entrenando</span>
+            <span className="text-texto-suave">
+              {' '}
+              (en los últimos 30 días) · {soloRegistro} solo se {soloRegistro === 1 ? 'registró' : 'registraron'}
+            </span>
           </p>
-          <ListaCuentas cuentas={cuentas && porConfirmar} vacio="No hay nadie esperando activación." onAccion={accion} />
-        </>
-      )}
+        )}
+        <MedidorEspacio />
+        {error && (
+          <p className="mt-3 rounded-xl border border-peligro/50 bg-peligro/10 p-3 text-sm" role="alert">
+            {error}
+          </p>
+        )}
 
-      <Titulo>{voluntario ? 'Usando gratis' : 'En prueba'}</Titulo>
-      <ListaCuentas cuentas={cuentas && enPruebaLista} vacio="Nadie está probando la app ahora." onAccion={accion} />
+        {!voluntario && (
+          <>
+            <Titulo>
+              Pendientes de activación
+              {porConfirmar.length > 0 && <span className="ml-2 rounded-full bg-lima px-2 py-0.5 text-fondo">{porConfirmar.length}</span>}
+            </Titulo>
+            <p className="mb-3 text-sm text-texto-suave">
+              Terminaron su prueba o su período. Cuando confirmes el pago, actívalos por el período que pagaron.
+            </p>
+            <ListaCuentas cuentas={cuentas && porConfirmar} vacio="No hay nadie esperando activación." onAccion={accion} />
+          </>
+        )}
 
-      <Titulo>{voluntario ? 'Con período pagado' : 'Activas'}</Titulo>
-      <ListaCuentas cuentas={cuentas && activasLista} vacio="Todavía no hay cuentas activas." onAccion={accion} />
+        <Titulo>{voluntario ? 'Usando gratis' : 'En prueba'}</Titulo>
+        <ListaCuentas cuentas={cuentas && enPruebaLista} vacio="Nadie está probando la app ahora." onAccion={accion} />
 
-      {pausadas.length > 0 && (
-        <>
-          <Titulo>Pausadas</Titulo>
-          <ListaCuentas cuentas={pausadas} vacio="" onAccion={accion} />
-        </>
-      )}
+        <Titulo>{voluntario ? 'Con período pagado' : 'Activas'}</Titulo>
+        <ListaCuentas cuentas={cuentas && activasLista} vacio="Todavía no hay cuentas activas." onAccion={accion} />
 
-      <Titulo>Compartir ZANFIT</Titulo>
-      <CompartirApp />
+        {pausadas.length > 0 && (
+          <>
+            <Titulo>Pausadas</Titulo>
+            <ListaCuentas cuentas={pausadas} vacio="" onAccion={accion} />
+          </>
+        )}
 
-      <Titulo>Regalar acceso</Titulo>
-      <p className="mb-3 text-sm text-texto-suave">
-        Opcional: un código para crear una cuenta ya activa (compra) o con prueba, por ejemplo para regalar.
-      </p>
-      <NuevoCodigo onCreado={cargar} />
+        <Titulo>Compartir ZANFIT</Titulo>
+        <CompartirApp />
 
-      <Titulo>Códigos sin usar</Titulo>
-      {pendientes.length === 0 ? (
-        <p className="text-texto-suave">No hay códigos pendientes.</p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {pendientes.map((c) => (
-            <li key={c.codigo} className="rounded-2xl bg-superficie p-4">
-              <p className="font-marca text-xl font-semibold tracking-wider select-all">{c.codigo}</p>
-              <p className="text-sm text-texto-suave">
-                {c.tipo === 'prueba' ? `Prueba de ${c.dias} días` : 'Compra'} · {formatearFecha(new Date(c.creado_en).getTime())}
-                {c.nota ? ` · ${c.nota}` : ''}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Boton principal onClick={() => void compartirCodigo(c)}>
-                  Compartir
-                </Boton>
-                <Boton onClick={accion(() => borrarCodigo(c.codigo))}>Borrar</Boton>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+        <Titulo>Regalar acceso</Titulo>
+        <p className="mb-3 text-sm text-texto-suave">
+          Opcional: un código para crear una cuenta ya activa (compra) o con prueba, por ejemplo para regalar.
+        </p>
+        <NuevoCodigo onCreado={cargar} />
 
-      <DatosDeVenta />
-    </section>
+        <Titulo>Códigos sin usar</Titulo>
+        {pendientes.length === 0 ? (
+          <p className="text-texto-suave">No hay códigos pendientes.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {pendientes.map((c) => (
+              <li key={c.codigo} className="rounded-2xl bg-superficie p-4">
+                <p className="font-marca text-xl font-semibold tracking-wider select-all">{c.codigo}</p>
+                <p className="text-sm text-texto-suave">
+                  {c.tipo === 'prueba' ? `Prueba de ${c.dias} días` : 'Compra'} · {formatearFecha(new Date(c.creado_en).getTime())}
+                  {c.nota ? ` · ${c.nota}` : ''}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Boton principal onClick={() => void compartirCodigo(c)}>
+                    Compartir
+                  </Boton>
+                  <Boton onClick={accion(() => borrarCodigo(c.codigo))}>Borrar</Boton>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <DatosDeVenta />
+      </section>
+    </UsoContext.Provider>
   )
 }
 
@@ -341,6 +360,36 @@ function DatosDeVenta() {
 
 type Accion = (fn: () => Promise<void>) => () => Promise<void>
 
+/** Uso de la app por cuenta (de `uso_cuentas()`); `null` si la función todavía no existe en Supabase. */
+const UsoContext = createContext<Map<string, UsoCuenta> | null>(null)
+
+function hace(fecha: string | null): string {
+  if (!fecha) return 'nunca'
+  const dias = Math.floor((Date.now() - new Date(fecha).getTime()) / DIA)
+  return dias <= 0 ? 'hoy' : dias === 1 ? 'ayer' : `hace ${dias} días`
+}
+
+/** "12 entrenos · el último hace 2 días" o "Solo se registró". */
+function LineaUso({ userId }: { userId: string }) {
+  const u = useContext(UsoContext)?.get(userId)
+  if (!u) return null
+  if (u.entrenos === 0)
+    return (
+      <p className="mt-1 text-xs text-texto-suave">
+        <span className="font-semibold text-amarillo">Solo se registró</span> · sin entrenos
+        {u.evaluacion ? ' · hizo la evaluación' : ' · sin evaluación'} · último ingreso {hace(u.ultimo_ingreso)}
+      </p>
+    )
+  return (
+    <p className="mt-1 text-xs text-texto-suave">
+      <span className="font-semibold text-lima">
+        {u.entrenos} {u.entrenos === 1 ? 'entreno' : 'entrenos'}
+      </span>{' '}
+      · el último {hace(u.ultimo_entreno)} · {u.entrenos_30d} en 30 días
+    </p>
+  )
+}
+
 function ListaCuentas({ cuentas, vacio, onAccion }: { cuentas: Cuenta[] | null; vacio: string; onAccion: Accion }) {
   if (cuentas === null) return <p className="text-texto-suave">Cargando…</p>
   if (cuentas.length === 0) return <p className="text-texto-suave">{vacio}</p>
@@ -370,6 +419,7 @@ function FilaCuenta({ cuenta: c, onAccion }: { cuenta: Cuenta; onAccion: Accion 
         Se registró el {formatearFecha(new Date(c.creada_en).getTime())}
         {c.codigo ? ` · ${c.codigo}` : ''}
       </p>
+      <LineaUso userId={c.user_id} />
       {!!c.cambios_dispositivo && (
         <p className={`mt-1 text-xs ${c.cambios_dispositivo >= 5 ? 'font-semibold text-peligro' : 'text-texto-suave'}`}>
           Cambió de teléfono {c.cambios_dispositivo} {c.cambios_dispositivo === 1 ? 'vez' : 'veces'}
